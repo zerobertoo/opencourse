@@ -2,11 +2,10 @@ import { Award, Play } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Link, useSearchParams } from 'react-router-dom';
 import { useAuth } from '@/auth/AuthContext';
-import { CourseCard } from '@/components/CourseCard';
 import { CourseCover } from '@/components/CourseCover';
+import { CourseRow } from '@/components/CourseRow';
 import { EmptyState, ErrorState } from '@/components/StateViews';
 import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
 import { ProgressBar } from '@/components/ui/progress';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useContinueLearning, useMyCertificates, useMyCourses } from '@/hooks/queries';
@@ -14,132 +13,169 @@ import { formatClock } from '@/lib/duration';
 import { localizeCourse, localizeLesson, toLocale } from '@/lib/content';
 import { useFormatters } from '@/lib/intl';
 
-function ContinueLearningSection({ timeZone }: { timeZone: string }) {
+/** Large banner for the course the student should open next. */
+function HeroSection({ timeZone }: { timeZone: string }) {
   const { t, i18n } = useTranslation(['student', 'common']);
   const { formatPercent } = useFormatters(timeZone);
-  const query = useContinueLearning();
+  const continueQuery = useContinueLearning();
+  const coursesQuery = useMyCourses();
   const locale = toLocale(i18n.resolvedLanguage);
 
-  if (query.isPending) {
+  if (continueQuery.isPending || coursesQuery.isPending) {
     return (
       <div role="status" aria-busy="true">
         <span className="sr-only">{t('common:states.loading')}</span>
-        <Skeleton className="h-40 w-full" />
+        <Skeleton className="h-72 w-full" />
       </div>
     );
   }
-  if (query.isError) return <ErrorState onRetry={() => void query.refetch()} />;
-  // with nothing in progress the section disappears; "my courses" carries the empty state
-  if (!query.data) return null;
+  if (continueQuery.isError) return <ErrorState onRetry={() => void continueQuery.refetch()} />;
 
-  const { course, lesson, progress, videoPositionSeconds } = query.data;
+  const resume = continueQuery.data;
+  // with nothing in progress, feature the first course that is not finished yet
+  const courses = coursesQuery.data ?? [];
+  const featured = resume
+    ? null
+    : (courses.find(({ progress }) => !progress.isComplete) ?? courses[0] ?? null);
+  // no courses at all (or they failed to load): the rows below carry the state
+  if (!resume && !featured) return null;
+
+  const course = resume ? resume.course : featured!.course;
+  const progress = resume ? resume.progress : featured!.progress;
   const courseContent = localizeCourse(course, locale);
-  const lessonContent = localizeLesson(lesson, locale, course.defaultLocale);
+  const lessonContent = resume ? localizeLesson(resume.lesson, locale, course.defaultLocale) : null;
+  const target = resume
+    ? `/courses/${course.slug}/lessons/${resume.lesson.id}`
+    : `/courses/${course.slug}`;
+  const resumeSeconds = resume?.lesson.type === 'video' ? resume.videoPositionSeconds : 0;
 
   return (
-    <section aria-labelledby="continue-heading" className="space-y-3">
-      <h2 id="continue-heading" className="text-xl font-semibold">
-        {t('home.continueTitle')}
-      </h2>
-      <Card className="flex flex-col overflow-hidden sm:flex-row">
-        <CourseCover
-          imageUrl={course.coverImageUrl}
-          className="aspect-video w-full sm:aspect-auto sm:w-56"
-        />
-        <div className="flex flex-1 flex-col gap-4 p-4 sm:p-5">
-          <div className="space-y-1">
-            <p className="text-sm text-muted-foreground">{courseContent.title}</p>
-            <p className="text-xl font-semibold leading-snug">{lessonContent.title}</p>
-            {lesson.type === 'video' && videoPositionSeconds > 0 ? (
-              <p className="font-mono text-xs text-muted-foreground">
-                {t('home.resumeAt', { time: formatClock(videoPositionSeconds) })}
-              </p>
-            ) : null}
-          </div>
-          <div className="space-y-1.5">
-            <ProgressBar
-              value={progress.percent}
-              label={t('course.progressLabel', { title: courseContent.title })}
-            />
+    <section
+      aria-labelledby="hero-heading"
+      className="overflow-hidden rounded-xl border bg-surface md:grid md:grid-cols-[minmax(0,5fr)_minmax(0,6fr)]"
+    >
+      <CourseCover
+        imageUrl={course.coverImageUrl}
+        className="aspect-video w-full md:order-last md:aspect-auto md:min-h-80"
+      />
+      <div className="flex flex-col justify-center gap-6 p-5 sm:p-8 lg:p-10">
+        <div className="space-y-3">
+          <h2 id="hero-heading" className="sr-only">
+            {resume ? t('home.continueTitle') : t('home.featuredTitle')}
+          </h2>
+          <p className="text-balance text-3xl font-semibold leading-tight lg:text-4xl">
+            {courseContent.title}
+          </p>
+          {lessonContent ? (
+            <p className="text-muted-foreground">{lessonContent.title}</p>
+          ) : courseContent.description ? (
+            <p className="line-clamp-3 text-muted-foreground">{courseContent.description}</p>
+          ) : null}
+          {resumeSeconds > 0 ? (
             <p className="font-mono text-xs text-muted-foreground">
-              {t('course.lessonsCompleted', {
-                completed: progress.completedCount,
-                total: progress.totalCount,
-              })}{' '}
-              · {formatPercent(progress.percent)}
+              {t('home.resumeAt', { time: formatClock(resumeSeconds) })}
             </p>
-          </div>
-          <Button asChild className="w-full sm:w-fit">
-            <Link to={`/courses/${course.slug}/lessons/${lesson.id}`}>
-              <Play aria-hidden="true" />
-              {t('home.continueAction')}
-            </Link>
-          </Button>
+          ) : null}
         </div>
-      </Card>
+        <div className="space-y-1.5">
+          <ProgressBar
+            value={progress.percent}
+            label={t('course.progressLabel', { title: courseContent.title })}
+          />
+          <p className="font-mono text-xs text-muted-foreground">
+            {t('course.lessonsCompleted', {
+              completed: progress.completedCount,
+              total: progress.totalCount,
+            })}{' '}
+            · {formatPercent(progress.percent)}
+          </p>
+        </div>
+        <Button asChild className="w-full sm:w-fit">
+          <Link to={target}>
+            <Play aria-hidden="true" />
+            {resume ? t('home.continueAction') : t('home.startAction')}
+          </Link>
+        </Button>
+      </div>
     </section>
   );
 }
 
-function MyCoursesSection({ timeZone }: { timeZone: string }) {
+/** Course rows by progress state: in progress, not started and completed. */
+function CourseRowsSection({ timeZone }: { timeZone: string }) {
   const { t, i18n } = useTranslation(['student', 'common']);
   const [params, setParams] = useSearchParams();
   const search = params.get('q')?.trim() ?? '';
   const query = useMyCourses();
   const locale = toLocale(i18n.resolvedLanguage);
 
-  let body: React.ReactNode;
   if (query.isPending) {
-    body = (
-      <div role="status" aria-busy="true" className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+    return (
+      <div role="status" aria-busy="true" className="space-y-3">
         <span className="sr-only">{t('common:states.loading')}</span>
-        <Skeleton className="h-64" />
-        <Skeleton className="h-64" />
-        <Skeleton className="h-64" />
+        <Skeleton className="h-7 w-40" />
+        <div className="flex gap-4 overflow-hidden">
+          <Skeleton className="h-64 w-72 shrink-0" />
+          <Skeleton className="h-64 w-72 shrink-0" />
+          <Skeleton className="h-64 w-72 shrink-0" />
+        </div>
       </div>
     );
-  } else if (query.isError) {
-    body = <ErrorState onRetry={() => void query.refetch()} />;
-  } else if (query.data.length === 0) {
-    body = (
+  }
+  if (query.isError) return <ErrorState onRetry={() => void query.refetch()} />;
+  if (query.data.length === 0) {
+    return (
       <EmptyState
         title={t('home.emptyTitle')}
         description={t('home.emptyDescription')}
         action={{ label: t('home.emptyAction'), onClick: () => void query.refetch() }}
       />
     );
-  } else {
-    const needle = search.toLowerCase();
-    const visible = needle
-      ? query.data.filter(({ course }) =>
-          localizeCourse(course, locale).title.toLowerCase().includes(needle),
-        )
-      : query.data;
-    body =
-      visible.length === 0 ? (
-        <EmptyState
-          title={t('home.noResultsTitle')}
-          description={t('home.noResultsDescription', { query: search })}
-          action={{ label: t('home.clearSearch'), onClick: () => setParams({}) }}
-        />
-      ) : (
-        <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {visible.map((enrolled) => (
-            <li key={enrolled.course.id} className="flex min-w-0">
-              <CourseCard enrolled={enrolled} timeZone={timeZone} />
-            </li>
-          ))}
-        </ul>
-      );
   }
 
+  const needle = search.toLowerCase();
+  const visible = needle
+    ? query.data.filter(({ course }) =>
+        localizeCourse(course, locale).title.toLowerCase().includes(needle),
+      )
+    : query.data;
+  if (visible.length === 0) {
+    return (
+      <EmptyState
+        title={t('home.noResultsTitle')}
+        description={t('home.noResultsDescription', { query: search })}
+        action={{ label: t('home.clearSearch'), onClick: () => setParams({}) }}
+      />
+    );
+  }
+
+  const rows = [
+    {
+      key: 'inProgress',
+      courses: visible.filter(
+        ({ progress }) => !progress.isComplete && progress.completedCount > 0,
+      ),
+    },
+    {
+      key: 'notStarted',
+      courses: visible.filter(
+        ({ progress }) => !progress.isComplete && progress.completedCount === 0,
+      ),
+    },
+    { key: 'completed', courses: visible.filter(({ progress }) => progress.isComplete) },
+  ].filter((row) => row.courses.length > 0);
+
   return (
-    <section aria-labelledby="courses-heading" className="space-y-3">
-      <h2 id="courses-heading" className="text-xl font-semibold">
-        {t('home.myCoursesTitle')}
-      </h2>
-      {body}
-    </section>
+    <div className="space-y-8">
+      {rows.map((row) => (
+        <CourseRow
+          key={row.key}
+          title={t(`home.rows.${row.key as 'inProgress' | 'notStarted' | 'completed'}`)}
+          courses={row.courses}
+          timeZone={timeZone}
+        />
+      ))}
+    </div>
   );
 }
 
@@ -211,7 +247,7 @@ function RecentCertificatesSection({ timeZone }: { timeZone: string }) {
   );
 }
 
-/** Student home: continue where you left off, my courses and recent certificates. */
+/** Student home: hero banner, course rows by progress and recent certificates. */
 export function Home() {
   const { t } = useTranslation(['student', 'common']);
   const { user } = useAuth();
@@ -223,8 +259,8 @@ export function Home() {
       <h1 className="text-2xl font-semibold sm:text-3xl">
         {t('home.greeting', { name: firstName })}
       </h1>
-      <ContinueLearningSection timeZone={user.timeZone} />
-      <MyCoursesSection timeZone={user.timeZone} />
+      <HeroSection timeZone={user.timeZone} />
+      <CourseRowsSection timeZone={user.timeZone} />
       <RecentCertificatesSection timeZone={user.timeZone} />
     </div>
   );

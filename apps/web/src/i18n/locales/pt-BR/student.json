@@ -5,7 +5,13 @@
     "continueTitle": "Continuar de onde parou",
     "continueAction": "Continuar aula",
     "resumeAt": "Retomar em {time}",
-    "myCoursesTitle": "Meus cursos",
+    "featuredTitle": "Curso em destaque",
+    "startAction": "Começar curso",
+    "rows": {
+      "inProgress": "Em andamento",
+      "notStarted": "Para começar",
+      "completed": "Concluídos"
+    },
     "emptyTitle": "Você ainda não tem cursos",
     "emptyDescription": "Quando um instrutor liberar o seu acesso a um curso, ele aparecerá aqui.",
     "emptyAction": "Verificar novamente",

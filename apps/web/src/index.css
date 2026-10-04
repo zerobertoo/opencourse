@@ -63,6 +63,12 @@
   --font-mono: 'JetBrains Mono Variable', ui-monospace, monospace;
 }
 
+/* Thin scrollbar drawn from the palette, for horizontal course rows. */
+@utility scrollbar-themed {
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+}
+
 @layer base {
   * {
     border-color: var(--border);

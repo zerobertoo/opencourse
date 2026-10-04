@@ -5,7 +5,13 @@
     "continueTitle": "Continue where you left off",
     "continueAction": "Continue lesson",
     "resumeAt": "Resume at {time}",
-    "myCoursesTitle": "My courses",
+    "featuredTitle": "Featured course",
+    "startAction": "Start course",
+    "rows": {
+      "inProgress": "In progress",
+      "notStarted": "Not started",
+      "completed": "Completed"
+    },
     "emptyTitle": "You don't have any courses yet",
     "emptyDescription": "When an instructor gives you access to a course, it will show up here.",
     "emptyAction": "Check again",
