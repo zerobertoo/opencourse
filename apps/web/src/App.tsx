@@ -18,6 +18,7 @@ import { AdminPlugins } from '@/pages/admin/Plugins';
 import { AdminSettings } from '@/pages/admin/Settings';
 import { AdminUsers } from '@/pages/admin/Users';
 import { Showcase } from '@/pages/Showcase';
+import { VerifyCertificate } from '@/pages/VerifyCertificate';
 import { CourseEditor } from '@/pages/studio/CourseEditor';
 import { StudioCourses } from '@/pages/studio/Courses';
 import { StudioDashboard } from '@/pages/studio/Dashboard';
@@ -37,6 +38,7 @@ export function App() {
           <Route path="forgot-password" element={<ForgotPassword />} />
           <Route path="reset-password" element={<ResetPassword />} />
           <Route path="invite/:token" element={<AcceptInvite />} />
+          <Route path="verify/:code" element={<VerifyCertificate />} />
         </Route>
 
         <Route element={<StudentLayout />}>

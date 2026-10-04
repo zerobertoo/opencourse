@@ -46,6 +46,16 @@ describe('authentication', () => {
     await renderApp('/reset-password');
     expect(await screen.findByText('Link inválido')).toBeVisible();
   });
+
+  it('verifies a certificate by its code without signing in', async () => {
+    await renderApp('/verify/OC-7K2M-9QXA');
+    expect(await screen.findByText('Este certificado é autêntico.')).toBeVisible();
+  });
+
+  it('explains that an unknown certificate code was not found', async () => {
+    await renderApp('/verify/OC-0000-0000');
+    expect(await screen.findByText('Certificado não encontrado')).toBeVisible();
+  });
 });
 
 describe('student home', () => {

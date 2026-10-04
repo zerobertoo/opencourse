@@ -77,6 +77,14 @@
     "dialogTitle": "Pré-visualização do certificado",
     "dialogDescription": "Esta é a aparência do certificado em PDF."
   },
+  "verify": {
+    "title": "Verificação de certificado",
+    "subtitle": "Conferindo o código {code}",
+    "valid": "Este certificado é autêntico.",
+    "invalidTitle": "Certificado não encontrado",
+    "invalidDescription": "Nenhum certificado corresponde a este código. Confira o código e tente novamente.",
+    "home": "Ir para a página inicial"
+  },
   "settings": {
     "title": "Configurações",
     "subtitle": "Gerencie seu perfil, idioma, aparência e senha.",

@@ -153,3 +153,13 @@ export function useSaveLessonNote(lessonId: string) {
     onSuccess: (note) => queryClient.setQueryData(queryKeys.lessonNote(lessonId), note),
   });
 }
+
+/** Public certificate verification by code; resolves to null for an unknown code. */
+export function useVerifyCertificate(code: string) {
+  const { certificates } = useServices();
+  return useQuery({
+    queryKey: ['certificates', 'verify', code] as const,
+    queryFn: () => certificates.verify(code),
+    enabled: code.trim() !== '',
+  });
+}

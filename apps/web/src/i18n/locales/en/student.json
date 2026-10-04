@@ -77,6 +77,14 @@
     "dialogTitle": "Certificate preview",
     "dialogDescription": "This is what the PDF certificate looks like."
   },
+  "verify": {
+    "title": "Certificate verification",
+    "subtitle": "Checking code {code}",
+    "valid": "This certificate is authentic.",
+    "invalidTitle": "Certificate not found",
+    "invalidDescription": "No certificate matches this code. Check the code and try again.",
+    "home": "Go to the home page"
+  },
   "settings": {
     "title": "Settings",
     "subtitle": "Manage your profile, language, appearance and password.",
