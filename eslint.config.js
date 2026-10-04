@@ -50,6 +50,25 @@ export default tseslint.config(
     },
   },
   {
+    // componentes só conhecem as interfaces de `@/services`, nunca a implementação mock
+    files: ['apps/web/src/**/*.{ts,tsx}'],
+    ignores: ['apps/web/src/services/**', 'apps/web/src/test/**', '**/*.test.{ts,tsx}'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            {
+              regex: '(^|/)services/mock(/|$)',
+              message:
+                'Acesse dados somente por "@/services"; a implementação mock é detalhe interno.',
+            },
+          ],
+        },
+      ],
+    },
+  },
+  {
     // testes e arquivos de configuração podem usar strings literais
     files: ['**/*.test.{ts,tsx}', 'apps/web/src/test/**'],
     rules: { 'no-restricted-syntax': 'off' },
