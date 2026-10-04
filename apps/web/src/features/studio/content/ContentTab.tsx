@@ -103,7 +103,7 @@ export function ContentTab({ course }: { course: CourseDetail }) {
   const deletingModule = course.modules.find((item) => item.id === deletingModuleId) ?? null;
 
   return (
-    <div className="grid gap-6 lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)] lg:items-start">
+    <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)] lg:items-start">
       <div className={cn(selectedLesson && 'hidden lg:block')}>
         <CurriculumTree
           course={course}
