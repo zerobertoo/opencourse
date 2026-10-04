@@ -1,0 +1,10 @@
+{
+  "notFound": {
+    "title": "Página não encontrada",
+    "description": "O endereço que você acessou não existe ou foi movido."
+  },
+  "forbidden": {
+    "title": "Acesso negado",
+    "description": "Você não tem permissão para ver esta página."
+  }
+}

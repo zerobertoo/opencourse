@@ -1,0 +1,73 @@
+{
+  "app": { "name": "OpenCourse", "tagline": "Sua plataforma de cursos" },
+  "nav": {
+    "studio": "Studio",
+    "admin": "Administração",
+    "student": "Área do aluno",
+    "openMenu": "Abrir menu",
+    "closeMenu": "Fechar menu",
+    "collapseSidebar": "Recolher barra lateral",
+    "expandSidebar": "Expandir barra lateral",
+    "mainNavigation": "Navegação principal",
+    "skipToContent": "Ir para o conteúdo"
+  },
+  "search": { "label": "Buscar", "placeholder": "Buscar cursos e aulas" },
+  "language": { "label": "Idioma", "pt-BR": "Português (Brasil)", "en": "English" },
+  "theme": {
+    "label": "Tema",
+    "light": "Claro",
+    "dark": "Escuro",
+    "system": "Sistema",
+    "switchTo": "Alternar para o tema {theme, select, light {claro} dark {escuro} other {do sistema}}"
+  },
+  "actions": {
+    "retry": "Tentar novamente",
+    "cancel": "Cancelar",
+    "confirm": "Confirmar",
+    "goHome": "Voltar ao início"
+  },
+  "states": {
+    "loading": "Carregando",
+    "underConstruction": {
+      "title": "Em construção",
+      "description": "Esta área será construída nas próximas etapas."
+    },
+    "error": {
+      "title": "Algo deu errado",
+      "description": "Não foi possível carregar este conteúdo."
+    }
+  },
+  "showcase": {
+    "title": "Guia de componentes",
+    "intro": "Página de verificação do design system, dos temas e da internacionalização.",
+    "typography": "Tipografia",
+    "headingSample": "Títulos em fonte serifada",
+    "bodySample": "O texto corrido usa sans serif, com bastante espaço em branco.",
+    "monoSample": "Números, durações e rótulos usam monoespaçada: 12:45",
+    "buttons": "Botões",
+    "buttonPrimary": "Primário",
+    "buttonSecondary": "Secundário",
+    "buttonOutline": "Contorno",
+    "buttonGhost": "Fantasma",
+    "buttonDestructive": "Destrutivo",
+    "intl": "Formatação por idioma",
+    "lessonCount": "{count, plural, =0 {Nenhuma aula} one {# aula} other {# aulas}}",
+    "dateLabel": "Data",
+    "numberLabel": "Número",
+    "percentLabel": "Progresso",
+    "states": "Estados de interface",
+    "skeleton": "Carregamento",
+    "empty": "Estado vazio",
+    "emptyTitle": "Nenhum curso por aqui",
+    "emptyDescription": "Quando houver cursos, eles aparecerão nesta lista.",
+    "emptyAction": "Criar curso",
+    "errorState": "Estado de erro",
+    "feedback": "Confirmação e avisos",
+    "openConfirm": "Excluir item",
+    "confirmTitle": "Excluir este item?",
+    "confirmDescription": "Esta ação não pode ser desfeita.",
+    "confirmAction": "Excluir",
+    "toastTrigger": "Mostrar aviso",
+    "toastMessage": "Ação concluída com sucesso."
+  }
+}

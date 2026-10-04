@@ -1,0 +1,70 @@
+{
+  "app": { "name": "OpenCourse", "tagline": "Your course platform" },
+  "nav": {
+    "studio": "Studio",
+    "admin": "Administration",
+    "student": "Student area",
+    "openMenu": "Open menu",
+    "closeMenu": "Close menu",
+    "collapseSidebar": "Collapse sidebar",
+    "expandSidebar": "Expand sidebar",
+    "mainNavigation": "Main navigation",
+    "skipToContent": "Skip to content"
+  },
+  "search": { "label": "Search", "placeholder": "Search courses and lessons" },
+  "language": { "label": "Language", "pt-BR": "Português (Brasil)", "en": "English" },
+  "theme": {
+    "label": "Theme",
+    "light": "Light",
+    "dark": "Dark",
+    "system": "System",
+    "switchTo": "Switch to {theme, select, light {light} dark {dark} other {system}} theme"
+  },
+  "actions": {
+    "retry": "Try again",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "goHome": "Back to home"
+  },
+  "states": {
+    "loading": "Loading",
+    "underConstruction": {
+      "title": "Under construction",
+      "description": "This area will be built in the next steps."
+    },
+    "error": { "title": "Something went wrong", "description": "We could not load this content." }
+  },
+  "showcase": {
+    "title": "Component guide",
+    "intro": "Verification page for the design system, themes and internationalization.",
+    "typography": "Typography",
+    "headingSample": "Headings use a serif typeface",
+    "bodySample": "Body text uses a sans serif, with plenty of white space.",
+    "monoSample": "Numbers, durations and labels use monospace: 12:45",
+    "buttons": "Buttons",
+    "buttonPrimary": "Primary",
+    "buttonSecondary": "Secondary",
+    "buttonOutline": "Outline",
+    "buttonGhost": "Ghost",
+    "buttonDestructive": "Destructive",
+    "intl": "Locale-aware formatting",
+    "lessonCount": "{count, plural, =0 {No lessons} one {# lesson} other {# lessons}}",
+    "dateLabel": "Date",
+    "numberLabel": "Number",
+    "percentLabel": "Progress",
+    "states": "Interface states",
+    "skeleton": "Loading",
+    "empty": "Empty state",
+    "emptyTitle": "No courses here",
+    "emptyDescription": "When there are courses, they will show up in this list.",
+    "emptyAction": "Create course",
+    "errorState": "Error state",
+    "feedback": "Confirmation and notices",
+    "openConfirm": "Delete item",
+    "confirmTitle": "Delete this item?",
+    "confirmDescription": "This action cannot be undone.",
+    "confirmAction": "Delete",
+    "toastTrigger": "Show notice",
+    "toastMessage": "Action completed successfully."
+  }
+}

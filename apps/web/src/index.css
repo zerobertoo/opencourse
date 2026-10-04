@@ -1,0 +1,94 @@
+@import 'tailwindcss';
+@import '@fontsource-variable/fraunces';
+@import '@fontsource-variable/inter';
+@import '@fontsource-variable/jetbrains-mono';
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* Design tokens. Tudo que muda entre temas vive em CSS variables. */
+:root {
+  --background: #f4f6f2;
+  --foreground: #1c2420;
+  --surface: #ffffff;
+  --surface-foreground: #1c2420;
+  --muted: #e9ede5;
+  --muted-foreground: #55615a;
+  --border: #d5dcd0;
+  --primary: #2f6f5e;
+  --primary-foreground: #ffffff;
+  --accent: #dfe9e2;
+  --accent-foreground: #1f4a3f;
+  --destructive: #b3261e;
+  --destructive-foreground: #ffffff;
+  --ring: #2f6f5e;
+  --radius: 0.625rem;
+}
+
+.dark {
+  --background: #111613;
+  --foreground: #e6ece4;
+  --surface: #181f1b;
+  --surface-foreground: #e6ece4;
+  --muted: #212a25;
+  --muted-foreground: #a3b0a7;
+  --border: #2f3a34;
+  --primary: #6fbfa6;
+  --primary-foreground: #0d1a15;
+  --accent: #1f2e27;
+  --accent-foreground: #bfe3d6;
+  --destructive: #f2877f;
+  --destructive-foreground: #2a0d0a;
+  --ring: #6fbfa6;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-surface: var(--surface);
+  --color-surface-foreground: var(--surface-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-border: var(--border);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-ring: var(--ring);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --font-serif: 'Fraunces Variable', Georgia, serif;
+  --font-sans: 'Inter Variable', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono Variable', ui-monospace, monospace;
+}
+
+@layer base {
+  * {
+    border-color: var(--border);
+  }
+  html {
+    color-scheme: light;
+  }
+  html.dark {
+    color-scheme: dark;
+  }
+  body {
+    background: var(--background);
+    color: var(--foreground);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+  }
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-family: var(--font-serif);
+    letter-spacing: -0.01em;
+  }
+  :focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
+}

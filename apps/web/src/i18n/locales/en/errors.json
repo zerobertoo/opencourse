@@ -1,0 +1,10 @@
+{
+  "notFound": {
+    "title": "Page not found",
+    "description": "The address you opened does not exist or has been moved."
+  },
+  "forbidden": {
+    "title": "Access denied",
+    "description": "You do not have permission to view this page."
+  }
+}
