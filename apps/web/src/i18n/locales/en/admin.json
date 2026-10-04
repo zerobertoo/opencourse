@@ -1,1 +1,179 @@
-{ "dashboard": { "title": "Administration" } }
+{
+  "dashboard": {
+    "title": "Administration",
+    "subtitle": "Manage users, access and instance settings."
+  },
+  "nav": {
+    "label": "Administration sections",
+    "users": "Users",
+    "grants": "Access",
+    "settings": "Settings",
+    "plugins": "Plugins"
+  },
+  "roles": {
+    "student": "Student",
+    "instructor": "Instructor",
+    "admin": "Admin"
+  },
+  "users": {
+    "title": "Users",
+    "listLabel": "Users",
+    "you": "(you)",
+    "searchLabel": "Search users",
+    "searchPlaceholder": "Search by name or e-mail",
+    "roleFilterLabel": "Filter by role",
+    "allRoles": "All roles",
+    "statusFilterLabel": "Filter by status",
+    "allStatuses": "All statuses",
+    "status": {
+      "active": "Active",
+      "inactive": "Deactivated"
+    },
+    "joinedOn": "Joined on {date}",
+    "emptyTitle": "No users yet",
+    "emptyDescription": "Invite the first person to the platform.",
+    "noResultsTitle": "No users found",
+    "noResultsDescription": "No user matches the current search and filters.",
+    "clearFilters": "Clear filters",
+    "editFor": "Edit {name}",
+    "deactivate": "Deactivate",
+    "activate": "Reactivate",
+    "deactivateFor": "Deactivate {name}",
+    "activateFor": "Reactivate {name}",
+    "deactivateDialog": {
+      "title": "Deactivate this user?",
+      "description": "{name} will no longer be able to sign in. Their data and progress are kept."
+    },
+    "activateDialog": {
+      "title": "Reactivate this user?",
+      "description": "{name} will be able to sign in again."
+    },
+    "deactivatedToast": "{name} was deactivated.",
+    "activatedToast": "{name} was reactivated.",
+    "edit": {
+      "open": "Edit",
+      "title": "Edit user",
+      "role": "Role",
+      "roleHint": "The role defines which areas the user can open.",
+      "submit": "Save",
+      "successToast": "Role of {name} updated."
+    },
+    "invite": {
+      "open": "Invite user",
+      "title": "Invite user",
+      "description": "The invite lets the person create an account on this platform.",
+      "email": "E-mail",
+      "validity": "Invite validity",
+      "validityOption": "{count, plural, one {# day} other {# days}}",
+      "submit": "Create invite",
+      "successToast": "Invite created.",
+      "linkReady": "Invite created. Share this link with the person:",
+      "linkLabel": "Invite link",
+      "copy": "Copy link",
+      "copied": "Copied",
+      "copyFailed": "Could not copy the link. Select it and copy manually.",
+      "mockNote": "In this demo no e-mail is sent, so share the link yourself.",
+      "done": "Done"
+    }
+  },
+  "grants": {
+    "title": "Course access",
+    "listLabel": "Access grants",
+    "searchLabel": "Search by student",
+    "searchPlaceholder": "Search by name or e-mail",
+    "courseFilterLabel": "Filter by course",
+    "allCourses": "All courses",
+    "statusFilterLabel": "Filter by status",
+    "allStatuses": "All statuses",
+    "status": {
+      "active": "Active",
+      "expired": "Expired",
+      "revoked": "Revoked"
+    },
+    "source": {
+      "manual": "Granted manually",
+      "invite": "Joined by invite"
+    },
+    "accessUntil": "Access until {date}",
+    "lifetime": "Lifetime access",
+    "emptyTitle": "No access grants yet",
+    "emptyDescription": "Grants show up here when instructors give students access to courses.",
+    "noResultsTitle": "No grants found",
+    "noResultsDescription": "No grant matches the current search and filters.",
+    "clearFilters": "Clear filters",
+    "revoke": "Revoke access",
+    "revokeFor": "Revoke access of {name} to {course}",
+    "extendFor": "Change expiry of {name} for {course}",
+    "revokeDialog": {
+      "title": "Revoke access?",
+      "description": "{name} will immediately lose access to {course}. Their progress is kept."
+    },
+    "revokedToast": "Access of {name} revoked.",
+    "extend": {
+      "open": "Change expiry",
+      "title": "Change access expiry",
+      "description": "Set how long {name} keeps access. Expired access becomes active again.",
+      "access": "Access duration",
+      "accessOption": {
+        "lifetime": "Lifetime",
+        "until": "Until a date"
+      },
+      "expiresOn": "Access ends on",
+      "submit": "Save",
+      "successToast": "Access of {name} updated."
+    }
+  },
+  "settings": {
+    "title": "Settings",
+    "save": "Save settings",
+    "discard": "Discard changes",
+    "savedToast": "Settings saved.",
+    "brand": {
+      "title": "Branding",
+      "name": "Platform name",
+      "logoUrl": "Logo link",
+      "logoUrlHint": "Optional. Leave empty to use the default logo.",
+      "primaryColor": "Primary color"
+    },
+    "languages": {
+      "title": "Languages",
+      "enabled": "Enabled languages",
+      "default": "Default language",
+      "defaultHint": "Used for new users and whenever a translation is missing."
+    },
+    "email": {
+      "title": "Transactional e-mail",
+      "description": "SMTP server used for invites and password recovery. In this demo nothing is sent.",
+      "host": "SMTP host",
+      "port": "Port",
+      "username": "Username",
+      "fromAddress": "Sender address",
+      "secure": "Use a secure connection (TLS)",
+      "secureHint": "Usually on for port 465."
+    }
+  },
+  "plugins": {
+    "title": "Plugins",
+    "listLabel": "Planned extensions",
+    "description": "Extensions will let you connect the platform to other tools. None is available yet.",
+    "comingSoon": "Coming soon",
+    "items": {
+      "webhooks": {
+        "name": "Outbound webhooks",
+        "description": "Notify other systems when events happen, such as a new user or a completed course."
+      },
+      "apiTokens": {
+        "name": "API tokens",
+        "description": "Let trusted integrations create and manage access through the API."
+      },
+      "videoAdapters": {
+        "name": "Video providers",
+        "description": "Host lesson videos on Bunny Stream, Vimeo or Cloudflare Stream."
+      },
+      "examplePlugin": {
+        "name": "Example plugin",
+        "description": "A documented starting point for building your own extension."
+      }
+    }
+  }
+}

@@ -16,25 +16,13 @@ import {
   grantAccessSchema,
   inviteStudentSchema,
   toExpiryIso,
+  tomorrowInputValue,
+  daysFromNowIso,
   type GrantAccessValues,
   type InviteStudentValues,
 } from '@/lib/schemas';
 import { useServiceErrorMessage } from '@/lib/serviceError';
 import type { CourseStudent } from '@/services';
-
-const DAY_MS = 24 * 60 * 60 * 1000;
-
-/** Tomorrow as `YYYY-MM-DD`, the earliest expiry the date input offers. */
-function tomorrowInputValue(): string {
-  const tomorrow = new Date(Date.now() + DAY_MS);
-  const pad = (value: number) => String(value).padStart(2, '0');
-  return `${tomorrow.getFullYear()}-${pad(tomorrow.getMonth() + 1)}-${pad(tomorrow.getDate())}`;
-}
-
-/** ISO date `days` days from now. */
-function inviteExpiry(days: number): string {
-  return new Date(Date.now() + days * DAY_MS).toISOString();
-}
 
 /** Grants manual access to a student, for a period or for life. */
 export function GrantAccessDialog({
@@ -201,7 +189,7 @@ export function InviteDialog({
       const invite = await createInvite.mutateAsync({
         email: values.email,
         courseId,
-        expiresAt: inviteExpiry(Number(values.validityDays)),
+        expiresAt: daysFromNowIso(Number(values.validityDays)),
       });
       setInviteLink(`${window.location.origin}/invite/${invite.token}`);
       toast.success(t('studio:students.invite.successToast'));

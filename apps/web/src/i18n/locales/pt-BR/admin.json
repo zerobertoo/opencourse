@@ -1,1 +1,179 @@
-{ "dashboard": { "title": "Administração" } }
+{
+  "dashboard": {
+    "title": "Administração",
+    "subtitle": "Gerencie usuários, acessos e configurações da instância."
+  },
+  "nav": {
+    "label": "Seções da administração",
+    "users": "Usuários",
+    "grants": "Acessos",
+    "settings": "Configurações",
+    "plugins": "Plugins"
+  },
+  "roles": {
+    "student": "Aluno",
+    "instructor": "Instrutor",
+    "admin": "Administrador"
+  },
+  "users": {
+    "title": "Usuários",
+    "listLabel": "Usuários",
+    "you": "(você)",
+    "searchLabel": "Buscar usuários",
+    "searchPlaceholder": "Buscar por nome ou e-mail",
+    "roleFilterLabel": "Filtrar por papel",
+    "allRoles": "Todos os papéis",
+    "statusFilterLabel": "Filtrar por situação",
+    "allStatuses": "Todas as situações",
+    "status": {
+      "active": "Ativo",
+      "inactive": "Desativado"
+    },
+    "joinedOn": "Entrou em {date}",
+    "emptyTitle": "Nenhum usuário ainda",
+    "emptyDescription": "Convide a primeira pessoa para a plataforma.",
+    "noResultsTitle": "Nenhum usuário encontrado",
+    "noResultsDescription": "Nenhum usuário corresponde à busca e aos filtros atuais.",
+    "clearFilters": "Limpar filtros",
+    "editFor": "Editar {name}",
+    "deactivate": "Desativar",
+    "activate": "Reativar",
+    "deactivateFor": "Desativar {name}",
+    "activateFor": "Reativar {name}",
+    "deactivateDialog": {
+      "title": "Desativar este usuário?",
+      "description": "{name} não poderá mais entrar. Os dados e o progresso são mantidos."
+    },
+    "activateDialog": {
+      "title": "Reativar este usuário?",
+      "description": "{name} poderá entrar novamente."
+    },
+    "deactivatedToast": "{name} foi desativado.",
+    "activatedToast": "{name} foi reativado.",
+    "edit": {
+      "open": "Editar",
+      "title": "Editar usuário",
+      "role": "Papel",
+      "roleHint": "O papel define quais áreas o usuário pode abrir.",
+      "submit": "Salvar",
+      "successToast": "Papel de {name} atualizado."
+    },
+    "invite": {
+      "open": "Convidar usuário",
+      "title": "Convidar usuário",
+      "description": "O convite permite que a pessoa crie uma conta nesta plataforma.",
+      "email": "E-mail",
+      "validity": "Validade do convite",
+      "validityOption": "{count, plural, one {# dia} other {# dias}}",
+      "submit": "Criar convite",
+      "successToast": "Convite criado.",
+      "linkReady": "Convite criado. Compartilhe este link com a pessoa:",
+      "linkLabel": "Link do convite",
+      "copy": "Copiar link",
+      "copied": "Copiado",
+      "copyFailed": "Não foi possível copiar o link. Selecione e copie manualmente.",
+      "mockNote": "Nesta demonstração nenhum e-mail é enviado, então compartilhe o link você mesmo.",
+      "done": "Concluir"
+    }
+  },
+  "grants": {
+    "title": "Acesso aos cursos",
+    "listLabel": "Concessões de acesso",
+    "searchLabel": "Buscar por aluno",
+    "searchPlaceholder": "Buscar por nome ou e-mail",
+    "courseFilterLabel": "Filtrar por curso",
+    "allCourses": "Todos os cursos",
+    "statusFilterLabel": "Filtrar por situação",
+    "allStatuses": "Todas as situações",
+    "status": {
+      "active": "Ativo",
+      "expired": "Expirado",
+      "revoked": "Revogado"
+    },
+    "source": {
+      "manual": "Concedido manualmente",
+      "invite": "Entrou por convite"
+    },
+    "accessUntil": "Acesso até {date}",
+    "lifetime": "Acesso vitalício",
+    "emptyTitle": "Nenhuma concessão ainda",
+    "emptyDescription": "As concessões aparecem aqui quando instrutores liberam cursos para alunos.",
+    "noResultsTitle": "Nenhuma concessão encontrada",
+    "noResultsDescription": "Nenhuma concessão corresponde à busca e aos filtros atuais.",
+    "clearFilters": "Limpar filtros",
+    "revoke": "Revogar acesso",
+    "revokeFor": "Revogar acesso de {name} a {course}",
+    "extendFor": "Alterar validade de {name} em {course}",
+    "revokeDialog": {
+      "title": "Revogar acesso?",
+      "description": "{name} perderá imediatamente o acesso a {course}. O progresso é mantido."
+    },
+    "revokedToast": "Acesso de {name} revogado.",
+    "extend": {
+      "open": "Alterar validade",
+      "title": "Alterar validade do acesso",
+      "description": "Defina por quanto tempo {name} mantém o acesso. Um acesso expirado volta a ficar ativo.",
+      "access": "Duração do acesso",
+      "accessOption": {
+        "lifetime": "Vitalício",
+        "until": "Até uma data"
+      },
+      "expiresOn": "O acesso termina em",
+      "submit": "Salvar",
+      "successToast": "Acesso de {name} atualizado."
+    }
+  },
+  "settings": {
+    "title": "Configurações",
+    "save": "Salvar configurações",
+    "discard": "Descartar alterações",
+    "savedToast": "Configurações salvas.",
+    "brand": {
+      "title": "Identidade visual",
+      "name": "Nome da plataforma",
+      "logoUrl": "Link do logo",
+      "logoUrlHint": "Opcional. Deixe vazio para usar o logo padrão.",
+      "primaryColor": "Cor principal"
+    },
+    "languages": {
+      "title": "Idiomas",
+      "enabled": "Idiomas habilitados",
+      "default": "Idioma padrão",
+      "defaultHint": "Usado para novos usuários e sempre que uma tradução estiver faltando."
+    },
+    "email": {
+      "title": "E-mail transacional",
+      "description": "Servidor SMTP usado em convites e recuperação de senha. Nesta demonstração nada é enviado.",
+      "host": "Servidor SMTP",
+      "port": "Porta",
+      "username": "Usuário",
+      "fromAddress": "Endereço do remetente",
+      "secure": "Usar conexão segura (TLS)",
+      "secureHint": "Normalmente ligado na porta 465."
+    }
+  },
+  "plugins": {
+    "title": "Plugins",
+    "listLabel": "Extensões planejadas",
+    "description": "As extensões permitirão conectar a plataforma a outras ferramentas. Nenhuma está disponível ainda.",
+    "comingSoon": "Em breve",
+    "items": {
+      "webhooks": {
+        "name": "Webhooks de saída",
+        "description": "Avise outros sistemas quando algo acontecer, como um novo usuário ou um curso concluído."
+      },
+      "apiTokens": {
+        "name": "Tokens de API",
+        "description": "Permita que integrações confiáveis criem e gerenciem acessos pela API."
+      },
+      "videoAdapters": {
+        "name": "Provedores de vídeo",
+        "description": "Hospede os vídeos das aulas no Bunny Stream, Vimeo ou Cloudflare Stream."
+      },
+      "examplePlugin": {
+        "name": "Plugin de exemplo",
+        "description": "Um ponto de partida documentado para criar sua própria extensão."
+      }
+    }
+  }
+}

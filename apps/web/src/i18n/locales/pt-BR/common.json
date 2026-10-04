@@ -98,7 +98,11 @@
     "url": "Informe um link válido que comece com http:// ou https://.",
     "messageTooLong": "A mensagem é longa demais.",
     "dateRequired": "Escolha uma data.",
-    "dateFuture": "Escolha uma data futura."
+    "dateFuture": "Escolha uma data futura.",
+    "color": "Use uma cor como #2f6f5e.",
+    "port": "Informe uma porta entre 1 e 65535.",
+    "localeRequired": "Habilite pelo menos um idioma.",
+    "defaultLocaleDisabled": "O idioma padrão precisa estar habilitado."
   },
   "lessonTypes": {
     "video": "Vídeo",

@@ -1,4 +1,10 @@
-import { lessonTypeSchema, localeSchema, SUPPORTED_LOCALES, type Locale } from '@opencourse/shared';
+import {
+  lessonTypeSchema,
+  localeSchema,
+  roleSchema,
+  SUPPORTED_LOCALES,
+  type Locale,
+} from '@opencourse/shared';
 import { z } from 'zod';
 import { parseClock } from './duration';
 
@@ -193,3 +199,69 @@ export const inviteStudentSchema = z.object({
   validityDays: z.enum(INVITE_VALIDITY_DAYS),
 });
 export type InviteStudentValues = z.infer<typeof inviteStudentSchema>;
+
+/** Extends an existing grant: forever or until a given day. */
+export const extendGrantSchema = z.object(accessFields).superRefine(refineAccessDate);
+export type ExtendGrantValues = z.infer<typeof extendGrantSchema>;
+
+const DAY_MS = 24 * 60 * 60 * 1000;
+
+/** ISO date `days` days from now. */
+export function daysFromNowIso(days: number): string {
+  return new Date(Date.now() + days * DAY_MS).toISOString();
+}
+
+/** Tomorrow as `YYYY-MM-DD`, the earliest expiry a date input should offer. */
+export function tomorrowInputValue(): string {
+  const tomorrow = new Date(Date.now() + DAY_MS);
+  const pad = (value: number) => String(value).padStart(2, '0');
+  return `${tomorrow.getFullYear()}-${pad(tomorrow.getMonth() + 1)}-${pad(tomorrow.getDate())}`;
+}
+
+// ---------- Admin ----------
+
+export const inviteUserSchema = z.object({
+  email,
+  validityDays: z.enum(INVITE_VALIDITY_DAYS),
+});
+export type InviteUserValues = z.infer<typeof inviteUserSchema>;
+
+export const editUserSchema = z.object({ role: roleSchema });
+export type EditUserValues = z.infer<typeof editUserSchema>;
+
+const MAX_SMTP_PORT = 65535;
+
+export const platformSettingsFormSchema = z
+  .object({
+    brandName: z.string().trim().min(1, required),
+    logoUrl: z
+      .string()
+      .trim()
+      .refine((value) => value === '' || /^https?:\/\//i.test(value), 'validation.url'),
+    primaryColor: z.string().regex(/^#[0-9a-fA-F]{6}$/, 'validation.color'),
+    // An empty checkbox group may arrive as `false`, so every failure maps to the same message.
+    enabledLocales: z
+      .array(localeSchema, 'validation.localeRequired')
+      .min(1, 'validation.localeRequired'),
+    defaultLocale: localeSchema,
+    host: z.string().trim(),
+    // Kept as text so the field can be emptied while typing; converted on submit.
+    port: z
+      .string()
+      .trim()
+      .refine((value) => {
+        const port = Number(value);
+        return Number.isInteger(port) && port >= 1 && port <= MAX_SMTP_PORT;
+      }, 'validation.port'),
+    username: z.string().trim(),
+    fromAddress: z
+      .string()
+      .trim()
+      .refine((value) => value === '' || z.email().safeParse(value).success, 'validation.email'),
+    secure: z.boolean(),
+  })
+  .refine((values) => values.enabledLocales.includes(values.defaultLocale), {
+    message: 'validation.defaultLocaleDisabled',
+    path: ['defaultLocale'],
+  });
+export type PlatformSettingsFormValues = z.infer<typeof platformSettingsFormSchema>;

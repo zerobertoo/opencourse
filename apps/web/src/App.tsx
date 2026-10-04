@@ -1,6 +1,7 @@
-import { Route, Routes } from 'react-router-dom';
+import { Navigate, Route, Routes } from 'react-router-dom';
 import { RequireAuth } from '@/auth/RequireAuth';
 import { RequireRole } from '@/auth/RequireRole';
+import { BrandStyles } from '@/components/BrandStyles';
 import { AuthLayout } from '@/components/layout/AuthLayout';
 import { StaffLayout } from '@/components/layout/StaffLayout';
 import { StudentLayout } from '@/components/layout/StudentLayout';
@@ -11,6 +12,11 @@ import { Login } from '@/pages/auth/Login';
 import { ResetPassword } from '@/pages/auth/ResetPassword';
 import { SignUp } from '@/pages/auth/SignUp';
 import { NotFound } from '@/pages/NotFound';
+import { AdminLayout } from '@/pages/admin/AdminLayout';
+import { AdminGrants } from '@/pages/admin/Grants';
+import { AdminPlugins } from '@/pages/admin/Plugins';
+import { AdminSettings } from '@/pages/admin/Settings';
+import { AdminUsers } from '@/pages/admin/Users';
 import { Showcase } from '@/pages/Showcase';
 import { CourseEditor } from '@/pages/studio/CourseEditor';
 import { StudioCourses } from '@/pages/studio/Courses';
@@ -20,7 +26,6 @@ import { CoursePage } from '@/pages/student/CoursePage';
 import { Home } from '@/pages/student/Home';
 import { LessonPlayer } from '@/pages/student/LessonPlayer';
 import { Settings } from '@/pages/student/Settings';
-import { UnderConstruction } from '@/pages/UnderConstruction';
 
 export function App() {
   return (
@@ -55,10 +60,13 @@ export function App() {
               </Route>
             </Route>
             <Route element={<RequireRole roles={['admin']} />}>
-              <Route
-                path="admin"
-                element={<UnderConstruction titleKey="admin:dashboard.title" />}
-              />
+              <Route path="admin" element={<AdminLayout />}>
+                <Route index element={<Navigate to="users" replace />} />
+                <Route path="users" element={<AdminUsers />} />
+                <Route path="grants" element={<AdminGrants />} />
+                <Route path="settings" element={<AdminSettings />} />
+                <Route path="plugins" element={<AdminPlugins />} />
+              </Route>
             </Route>
           </Route>
         </Route>
@@ -66,6 +74,7 @@ export function App() {
         <Route path="*" element={<NotFound />} />
       </Routes>
       <Toaster />
+      <BrandStyles />
     </>
   );
 }
