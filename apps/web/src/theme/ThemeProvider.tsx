@@ -10,7 +10,8 @@ function readStoredPreference(): ThemePreference {
   } catch {
     // storage unavailable: use the default
   }
-  return 'system';
+  // dark is the default; light is the variant and "system" is opt-in
+  return 'dark';
 }
 
 function systemPrefersDark() {

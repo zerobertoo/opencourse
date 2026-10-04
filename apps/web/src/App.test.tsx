@@ -42,16 +42,24 @@ describe('language switching', () => {
 });
 
 describe('theme', () => {
+  it('defaults to dark when there is no saved preference', async () => {
+    await renderApp('/showcase');
+
+    expect(document.documentElement).toHaveClass('dark');
+    expect(screen.getByRole('button', { name: 'Alternar para o tema claro' })).toBeInTheDocument();
+  });
+
   it('toggles the dark class and persists the preference', async () => {
     const user = userEvent.setup();
     await renderApp('/showcase');
 
+    await user.click(screen.getByRole('button', { name: 'Alternar para o tema claro' }));
+    expect(document.documentElement).not.toHaveClass('dark');
+    expect(localStorage.getItem('opencourse.theme')).toBe('light');
+
     await user.click(screen.getByRole('button', { name: 'Alternar para o tema escuro' }));
     expect(document.documentElement).toHaveClass('dark');
     expect(localStorage.getItem('opencourse.theme')).toBe('dark');
-
-    await user.click(screen.getByRole('button', { name: 'Alternar para o tema claro' }));
-    expect(document.documentElement).not.toHaveClass('dark');
   });
 });
 
