@@ -1,11 +1,13 @@
 /** Brand color helpers: derives accessible theme tokens from a single primary color. */
 
+import { NEUTRAL_COLORS } from '@/theme/neutralColors';
+
 type Rgb = [number, number, number];
 
 /** Page backgrounds of the two themes (see `index.css`); the brand color must read on them. */
-const LIGHT_BACKGROUND = '#f4f6f2';
-const DARK_BACKGROUND = '#111613';
-const DARK_FOREGROUND = '#0d1a15';
+const LIGHT_BACKGROUND = NEUTRAL_COLORS.lightBackground;
+const DARK_BACKGROUND = NEUTRAL_COLORS.darkBackground;
+const DARK_FOREGROUND = NEUTRAL_COLORS.darkOnPrimary;
 const MIN_TEXT_CONTRAST = 4.5;
 const MIX_STEPS = 20;
 

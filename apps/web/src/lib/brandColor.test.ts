@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { NEUTRAL_COLORS } from '@/theme/neutralColors';
 import { brandCss, contrastRatio, deriveBrandTokens, mixColors } from './brandColor';
 
 describe('contrastRatio', () => {
@@ -21,10 +22,14 @@ describe('deriveBrandTokens', () => {
     'keeps text readable in both themes for %s',
     (color) => {
       const { light, dark } = deriveBrandTokens(color);
-      expect(contrastRatio(light.primary, '#f4f6f2')).toBeGreaterThanOrEqual(4.5);
+      expect(contrastRatio(light.primary, NEUTRAL_COLORS.lightBackground)).toBeGreaterThanOrEqual(
+        4.5,
+      );
       expect(contrastRatio(light.primaryForeground, light.primary)).toBeGreaterThanOrEqual(4.5);
       expect(contrastRatio(light.accentForeground, light.accent)).toBeGreaterThanOrEqual(4.5);
-      expect(contrastRatio(dark.primary, '#111613')).toBeGreaterThanOrEqual(4.5);
+      expect(contrastRatio(dark.primary, NEUTRAL_COLORS.darkBackground)).toBeGreaterThanOrEqual(
+        4.5,
+      );
       expect(contrastRatio(dark.primaryForeground, dark.primary)).toBeGreaterThanOrEqual(4.5);
       expect(contrastRatio(dark.accentForeground, dark.accent)).toBeGreaterThanOrEqual(4.5);
     },

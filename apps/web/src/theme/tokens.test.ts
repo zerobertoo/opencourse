@@ -1,6 +1,7 @@
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { describe, expect, it } from 'vitest';
+import { NEUTRAL_COLORS } from './neutralColors';
 
 const css = readFileSync(path.resolve(__dirname, '../index.css'), 'utf8');
 
@@ -42,10 +43,29 @@ const PAIRS: Array<[string, string]> = [
 ];
 
 describe('design tokens', () => {
-  it('keeps the brand colors required by the spec', () => {
-    const light = readTokens(':root');
-    expect(light.primary?.toLowerCase()).toBe('#2f6f5e');
-    expect(light.background?.toLowerCase()).toBe('#f4f6f2');
+  it('keeps olive as the default accent', () => {
+    expect(readTokens(':root').primary?.toLowerCase()).toBe('#2f6f5e');
+  });
+
+  it('keeps the brand derivation constants in sync with the neutral tokens', () => {
+    expect(readTokens(':root').background).toBe(NEUTRAL_COLORS.lightBackground);
+    expect(readTokens('.dark').background).toBe(NEUTRAL_COLORS.darkBackground);
+    expect(readTokens('.dark')['primary-foreground']).toBe(NEUTRAL_COLORS.darkOnPrimary);
+  });
+
+  it('has no hue in the neutral tokens', () => {
+    const neutrals = ['background', 'foreground', 'surface', 'muted', 'muted-foreground', 'border'];
+    for (const tokens of [readTokens(':root'), readTokens('.dark')]) {
+      for (const name of neutrals) {
+        const [red, green, blue] = [1, 3, 5].map((start) =>
+          parseInt(tokens[name]!.slice(start, start + 2), 16),
+        );
+        // graphite allows a faint cool cast, never a green or warm one
+        expect(green! - red!).toBeLessThanOrEqual(3);
+        expect(blue! - red!).toBeLessThanOrEqual(10);
+        expect(blue!).toBeGreaterThanOrEqual(green!);
+      }
+    }
   });
 
   it('defines every light token in the dark theme too', () => {

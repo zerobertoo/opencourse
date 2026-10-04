@@ -5,15 +5,16 @@
 
 @custom-variant dark (&:where(.dark, .dark *));
 
-/* Design tokens. Tudo que muda entre temas vive em CSS variables. */
+/* Design tokens. Everything that changes between themes lives in CSS variables. */
+/* Neutrals are plain graphite; the instance accent is the only hue (see lib/brandColor.ts). */
 :root {
-  --background: #f4f6f2;
-  --foreground: #1c2420;
+  --background: #f6f7f8;
+  --foreground: #1a1c1f;
   --surface: #ffffff;
-  --surface-foreground: #1c2420;
-  --muted: #e9ede5;
-  --muted-foreground: #55615a;
-  --border: #d5dcd0;
+  --surface-foreground: #1a1c1f;
+  --muted: #eceef0;
+  --muted-foreground: #5a5d64;
+  --border: #d4d7dc;
   --primary: #2f6f5e;
   --primary-foreground: #ffffff;
   --accent: #dfe9e2;
@@ -25,15 +26,15 @@
 }
 
 .dark {
-  --background: #111613;
-  --foreground: #e6ece4;
-  --surface: #181f1b;
-  --surface-foreground: #e6ece4;
-  --muted: #212a25;
-  --muted-foreground: #a3b0a7;
-  --border: #2f3a34;
+  --background: #111214;
+  --foreground: #e8e9ec;
+  --surface: #17181b;
+  --surface-foreground: #e8e9ec;
+  --muted: #212327;
+  --muted-foreground: #a3a6ad;
+  --border: #31343a;
   --primary: #6fbfa6;
-  --primary-foreground: #0d1a15;
+  --primary-foreground: #0d0e10;
   --accent: #1f2e27;
   --accent-foreground: #bfe3d6;
   --destructive: #f2877f;
