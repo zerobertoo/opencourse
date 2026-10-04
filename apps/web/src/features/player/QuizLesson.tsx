@@ -71,7 +71,7 @@ export function QuizLesson({
           role="status"
           className={cn('space-y-1 p-4', result.passed ? 'border-primary' : 'border-destructive')}
         >
-          <p className="flex items-center gap-2 font-serif text-lg font-semibold">
+          <p className="flex items-center gap-2 text-lg font-semibold">
             {result.passed ? (
               <CircleCheck className="size-5 text-primary" aria-hidden="true" />
             ) : (

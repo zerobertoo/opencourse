@@ -287,7 +287,7 @@ export function LessonPlayer() {
                 </span>
               ) : null}
             </p>
-            <h1 className="font-serif text-2xl font-semibold sm:text-3xl">{content.title}</h1>
+            <h1 className="text-2xl font-semibold sm:text-3xl">{content.title}</h1>
             {content.isFallback ? (
               <p role="note" className="text-sm text-muted-foreground">
                 {t('lesson.fallbackNotice', { language: t(`common:language.${content.locale}`) })}
@@ -389,7 +389,7 @@ export function LessonPlayer() {
             id="player-curriculum"
             className="rounded-xl border bg-surface p-3 lg:sticky lg:top-24 lg:max-h-[calc(100dvh-8rem)] lg:overflow-y-auto"
           >
-            <h2 className="px-2 pb-3 font-serif text-lg font-semibold">{t('curriculum.title')}</h2>
+            <h2 className="px-2 pb-3 text-lg font-semibold">{t('curriculum.title')}</h2>
             <CurriculumSidebar
               course={courseQuery.data}
               currentLessonId={lesson.id}

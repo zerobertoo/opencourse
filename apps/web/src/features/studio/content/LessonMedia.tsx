@@ -34,7 +34,7 @@ export function PanelSection({
   return (
     <section aria-labelledby={headingId} className="space-y-3 border-t pt-5">
       <div className="space-y-1">
-        <h3 id={headingId} className="font-serif text-lg font-semibold">
+        <h3 id={headingId} className="text-lg font-semibold">
           {title}
         </h3>
         {description ? <p className="text-sm text-muted-foreground">{description}</p> : null}
@@ -207,7 +207,7 @@ export function VideoSection({
             ) : null}
           </div>
           {lesson.video?.provider === 'external' && lesson.video.playbackUrl ? (
-            <p className="break-all font-mono text-xs text-muted-foreground">
+            <p className="break-all text-xs text-muted-foreground">
               {lesson.video.playbackUrl}
             </p>
           ) : null}

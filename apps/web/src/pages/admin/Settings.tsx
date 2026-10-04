@@ -81,7 +81,7 @@ function SettingsForm({ settings }: { settings: PlatformSettings }) {
       <FormError message={formError} />
 
       <Card role="region" aria-labelledby="settings-brand" className="space-y-4 p-5">
-        <h3 id="settings-brand" className="font-serif text-lg font-semibold">
+        <h3 id="settings-brand" className="text-lg font-semibold">
           {t('admin:settings.brand.title')}
         </h3>
         <div className="grid gap-4 sm:grid-cols-2">
@@ -100,7 +100,6 @@ function SettingsForm({ settings }: { settings: PlatformSettings }) {
             <div className="flex-1">
               <TextField
                 label={t('admin:settings.brand.primaryColor')}
-                className="font-mono"
                 error={errors.primaryColor}
                 {...register('primaryColor')}
               />
@@ -115,7 +114,7 @@ function SettingsForm({ settings }: { settings: PlatformSettings }) {
       </Card>
 
       <Card role="region" aria-labelledby="settings-languages" className="space-y-4 p-5">
-        <h3 id="settings-languages" className="font-serif text-lg font-semibold">
+        <h3 id="settings-languages" className="text-lg font-semibold">
           {t('admin:settings.languages.title')}
         </h3>
         <fieldset className="space-y-3">
@@ -152,7 +151,7 @@ function SettingsForm({ settings }: { settings: PlatformSettings }) {
 
       <Card role="region" aria-labelledby="settings-email" className="space-y-4 p-5">
         <div className="space-y-1">
-          <h3 id="settings-email" className="font-serif text-lg font-semibold">
+          <h3 id="settings-email" className="text-lg font-semibold">
             {t('admin:settings.email.title')}
           </h3>
           <p className="text-sm text-muted-foreground">{t('admin:settings.email.description')}</p>
@@ -160,7 +159,6 @@ function SettingsForm({ settings }: { settings: PlatformSettings }) {
         <div className="grid gap-4 sm:grid-cols-2">
           <TextField
             label={t('admin:settings.email.host')}
-            className="font-mono"
             error={errors.host}
             {...register('host')}
           />
@@ -221,7 +219,7 @@ export function AdminSettings() {
 
   return (
     <section aria-labelledby="admin-settings-heading" className="space-y-4">
-      <h2 id="admin-settings-heading" className="font-serif text-xl font-semibold">
+      <h2 id="admin-settings-heading" className="text-xl font-semibold">
         {t('settings.title')}
       </h2>
       {body}

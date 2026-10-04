@@ -71,7 +71,7 @@ function ProfileSection() {
     <Card className="p-5">
       <form onSubmit={onSubmit} noValidate className="space-y-4">
         <div className="space-y-1">
-          <h2 className="font-serif text-xl font-semibold">{t('settings.profile.title')}</h2>
+          <h2 className="text-xl font-semibold">{t('settings.profile.title')}</h2>
           <p className="text-sm text-muted-foreground">{t('settings.profile.description')}</p>
         </div>
         {formError ? (
@@ -131,7 +131,7 @@ function ThemeSection() {
   return (
     <Card className="p-5">
       <fieldset className="space-y-4">
-        <legend className="font-serif text-xl font-semibold">{t('settings.theme.title')}</legend>
+        <legend className="text-xl font-semibold">{t('settings.theme.title')}</legend>
         <p className="text-sm text-muted-foreground">{t('settings.theme.description')}</p>
         <div className="grid gap-2 sm:grid-cols-3">
           {THEME_OPTIONS.map(({ value, icon: Icon }) => (
@@ -184,7 +184,7 @@ function PasswordSection() {
     <Card className="p-5">
       <form onSubmit={onSubmit} noValidate className="space-y-4">
         <div className="space-y-1">
-          <h2 className="font-serif text-xl font-semibold">{t('settings.password.title')}</h2>
+          <h2 className="text-xl font-semibold">{t('settings.password.title')}</h2>
           <p className="text-sm text-muted-foreground">{t('settings.password.description')}</p>
         </div>
         {formError ? (
@@ -232,7 +232,7 @@ export function Settings() {
   return (
     <div className="mx-auto max-w-2xl space-y-6">
       <div className="space-y-1">
-        <h1 className="font-serif text-2xl font-semibold sm:text-3xl">{t('settings.title')}</h1>
+        <h1 className="text-2xl font-semibold sm:text-3xl">{t('settings.title')}</h1>
         <p className="text-muted-foreground">{t('settings.subtitle')}</p>
       </div>
       <ProfileSection />

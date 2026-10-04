@@ -90,7 +90,7 @@ export function InviteUserDialog({
                 readOnly
                 value={inviteLink}
                 aria-label={t('admin:users.invite.linkLabel')}
-                className="font-mono text-xs"
+                className="text-xs"
                 onFocus={(event) => event.target.select()}
               />
               <Button variant="outline" onClick={() => void copyLink()}>

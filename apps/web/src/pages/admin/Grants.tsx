@@ -215,7 +215,7 @@ export function AdminGrants() {
 
   return (
     <section aria-labelledby="admin-grants-heading" className="space-y-4">
-      <h2 id="admin-grants-heading" className="font-serif text-xl font-semibold">
+      <h2 id="admin-grants-heading" className="text-xl font-semibold">
         {t('admin:grants.title')}
       </h2>
 

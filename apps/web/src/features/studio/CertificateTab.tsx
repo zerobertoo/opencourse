@@ -89,7 +89,7 @@ export function CertificateTab({ course }: { course: CourseDetail }) {
       </form>
 
       <section aria-labelledby="certificate-preview-heading" className="space-y-3">
-        <h2 id="certificate-preview-heading" className="font-serif text-xl font-semibold">
+        <h2 id="certificate-preview-heading" className="text-xl font-semibold">
           {t('studio:certificate.previewTitle')}
         </h2>
         {values.enabled ? (

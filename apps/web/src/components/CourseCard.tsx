@@ -32,7 +32,7 @@ export function CourseCard({
       <CourseCover imageUrl={course.coverImageUrl} className="aspect-video w-full" />
       <div className="flex flex-1 flex-col gap-3 p-4">
         <div className="flex items-start justify-between gap-2">
-          <h3 className="font-serif text-lg font-semibold leading-snug">
+          <h3 className="text-lg font-semibold leading-snug">
             {/* the whole card is clickable through the stretched link */}
             <Link
               to={`/courses/${course.slug}`}

@@ -43,7 +43,7 @@ export function ResetPassword() {
     return (
       <div className="space-y-4 text-center" role="status">
         <CircleCheck className="mx-auto size-8 text-primary" aria-hidden="true" />
-        <h1 className="font-serif text-2xl font-semibold">{t('reset.doneTitle')}</h1>
+        <h1 className="text-2xl font-semibold">{t('reset.doneTitle')}</h1>
         <p className="text-sm text-muted-foreground">{t('reset.doneDescription')}</p>
         <Button asChild className="w-full">
           <Link to="/login">{t('reset.goToLogin')}</Link>
@@ -65,7 +65,7 @@ export function ResetPassword() {
   return (
     <div className="space-y-6">
       <div className="space-y-1">
-        <h1 className="font-serif text-2xl font-semibold">{t('reset.title')}</h1>
+        <h1 className="text-2xl font-semibold">{t('reset.title')}</h1>
         <p className="text-sm text-muted-foreground">{t('reset.subtitle')}</p>
       </div>
       <form onSubmit={onSubmit} noValidate className="space-y-4">

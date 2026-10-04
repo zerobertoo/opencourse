@@ -190,7 +190,7 @@ export function LessonPanel({
         <div className="flex items-start gap-3">
           <LessonTypeIcon type={lesson.type} className="mt-1.5 size-5 shrink-0 text-primary" />
           <div className="min-w-0 flex-1">
-            <h2 className="truncate font-serif text-xl font-semibold">
+            <h2 className="truncate text-xl font-semibold">
               {title || t('studio:content.untitled')}
             </h2>
             <p className="text-sm text-muted-foreground">
@@ -266,7 +266,7 @@ export function LessonPanel({
                   <TextAreaField
                     label={contentLabel}
                     hint={t('studio:lesson.markdownHint')}
-                    className="min-h-64 font-mono"
+                    className="min-h-64"
                     {...register(`translations.${locale}.content`)}
                   />
                 </MarkdownEditor>

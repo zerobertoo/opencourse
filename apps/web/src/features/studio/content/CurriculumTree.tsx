@@ -216,7 +216,7 @@ function ModuleCard({
             attributes={attributes}
             listeners={listeners}
           />
-          <h3 className="min-w-0 flex-1 truncate font-serif text-base font-semibold">{title}</h3>
+          <h3 className="min-w-0 flex-1 truncate text-base font-semibold">{title}</h3>
           <span className="shrink-0 font-mono text-xs text-muted-foreground">
             {t('studio:content.lessonCount', { count: lessonIds.length })}
           </span>
@@ -420,7 +420,7 @@ export function CurriculumTree({
   return (
     <section aria-labelledby="curriculum-heading" className="space-y-3">
       <div className="flex items-center justify-between gap-2">
-        <h2 id="curriculum-heading" className="font-serif text-xl font-semibold">
+        <h2 id="curriculum-heading" className="text-xl font-semibold">
           {t('studio:content.curriculum')}
         </h2>
         <Button variant="outline" size="sm" onClick={onAddModule}>

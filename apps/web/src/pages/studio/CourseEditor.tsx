@@ -84,7 +84,7 @@ export function CourseEditor() {
         </Button>
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div className="min-w-0 space-y-2">
-            <h1 className="font-serif text-2xl font-semibold sm:text-3xl">
+            <h1 className="text-2xl font-semibold sm:text-3xl">
               {title || t('studio:content.untitled')}
             </h1>
             <CourseStatusBadge status={course.status} />

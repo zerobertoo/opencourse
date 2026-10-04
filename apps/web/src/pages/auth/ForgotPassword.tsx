@@ -38,7 +38,7 @@ export function ForgotPassword() {
     return (
       <div className="space-y-4 text-center" role="status">
         <MailCheck className="mx-auto size-8 text-primary" aria-hidden="true" />
-        <h1 className="font-serif text-2xl font-semibold">{t('forgot.sentTitle')}</h1>
+        <h1 className="text-2xl font-semibold">{t('forgot.sentTitle')}</h1>
         <p className="text-sm text-muted-foreground">
           {t('forgot.sentDescription', { email: sentTo })}
         </p>
@@ -56,7 +56,7 @@ export function ForgotPassword() {
   return (
     <div className="space-y-6">
       <div className="space-y-1">
-        <h1 className="font-serif text-2xl font-semibold">{t('forgot.title')}</h1>
+        <h1 className="text-2xl font-semibold">{t('forgot.title')}</h1>
         <p className="text-sm text-muted-foreground">{t('forgot.subtitle')}</p>
       </div>
       <form onSubmit={onSubmit} noValidate className="space-y-4">

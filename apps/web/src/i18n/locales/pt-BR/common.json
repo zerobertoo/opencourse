@@ -56,7 +56,7 @@
     "title": "Guia de componentes",
     "intro": "Página de verificação do design system, dos temas e da internacionalização.",
     "typography": "Tipografia",
-    "headingSample": "Títulos em fonte serifada",
+    "headingSample": "Títulos em sans-serif limpa",
     "bodySample": "O texto corrido usa sans serif, com bastante espaço em branco.",
     "monoSample": "Números, durações e rótulos usam monoespaçada: 12:45",
     "buttons": "Botões",

@@ -107,7 +107,7 @@ export function CoursePage() {
           className="aspect-[3/1] max-h-64 w-full rounded-xl"
         />
         <div className="space-y-3">
-          <h1 className="font-serif text-2xl font-semibold sm:text-4xl">{content.title}</h1>
+          <h1 className="text-2xl font-semibold sm:text-4xl">{content.title}</h1>
           <p className="max-w-3xl text-muted-foreground">{content.description}</p>
           <dl className="flex flex-wrap gap-x-6 gap-y-2 text-sm">
             <div className="flex gap-1.5">
@@ -170,7 +170,7 @@ export function CoursePage() {
 
       {content.learningOutcomes.length > 0 ? (
         <section aria-labelledby="outcomes-heading" className="space-y-3">
-          <h2 id="outcomes-heading" className="font-serif text-xl font-semibold">
+          <h2 id="outcomes-heading" className="text-xl font-semibold">
             {t('course.outcomesTitle')}
           </h2>
           <ul className="grid gap-2 sm:grid-cols-2">
@@ -185,7 +185,7 @@ export function CoursePage() {
       ) : null}
 
       <section aria-labelledby="curriculum-heading" className="space-y-3">
-        <h2 id="curriculum-heading" className="font-serif text-xl font-semibold">
+        <h2 id="curriculum-heading" className="text-xl font-semibold">
           {t('course.curriculumTitle')}
         </h2>
         {courseQuery.data.sequentialOrder ? (

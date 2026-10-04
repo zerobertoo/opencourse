@@ -177,7 +177,7 @@ export function StudentsTab({ course }: { course: CourseDetail }) {
     <div className="space-y-8">
       <section aria-labelledby="students-heading" className="space-y-3">
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <h2 id="students-heading" className="font-serif text-xl font-semibold">
+          <h2 id="students-heading" className="text-xl font-semibold">
             {t('studio:students.title')}
           </h2>
           <div className="flex flex-wrap gap-2">
@@ -195,7 +195,7 @@ export function StudentsTab({ course }: { course: CourseDetail }) {
       </section>
 
       <section aria-labelledby="invites-heading" className="space-y-3">
-        <h2 id="invites-heading" className="font-serif text-xl font-semibold">
+        <h2 id="invites-heading" className="text-xl font-semibold">
           {t('studio:students.invites.title')}
         </h2>
         <InvitesSection courseId={course.id} timeZone={user?.timeZone} />

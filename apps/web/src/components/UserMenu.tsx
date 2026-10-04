@@ -52,7 +52,7 @@ export function UserMenu() {
         <Button variant="ghost" size="icon" aria-label={t('userMenu.open', { name: user.name })}>
           <span
             aria-hidden="true"
-            className="grid size-8 place-items-center rounded-full bg-accent font-mono text-xs font-semibold text-accent-foreground"
+            className="grid size-8 place-items-center rounded-full bg-accent text-xs font-semibold text-accent-foreground"
           >
             {getInitials(user.name)}
           </span>

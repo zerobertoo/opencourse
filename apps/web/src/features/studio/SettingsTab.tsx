@@ -38,7 +38,7 @@ export function SettingsTab({ course }: { course: CourseDetail }) {
     <div className="max-w-3xl space-y-6">
       <Card className="space-y-4 p-5">
         <div className="flex flex-wrap items-center justify-between gap-2">
-          <h2 className="font-serif text-xl font-semibold">
+          <h2 className="text-xl font-semibold">
             {t('studio:settings.visibility.title')}
           </h2>
           <CourseStatusBadge status={course.status} />
@@ -93,7 +93,7 @@ export function SettingsTab({ course }: { course: CourseDetail }) {
       </Card>
 
       <Card className="space-y-4 p-5">
-        <h2 className="font-serif text-xl font-semibold">{t('studio:settings.order.title')}</h2>
+        <h2 className="text-xl font-semibold">{t('studio:settings.order.title')}</h2>
         <CheckboxField
           label={t('studio:settings.order.sequential')}
           hint={t('studio:settings.order.sequentialHint')}
@@ -109,7 +109,7 @@ export function SettingsTab({ course }: { course: CourseDetail }) {
       </Card>
 
       <Card className="space-y-4 p-5">
-        <h2 className="font-serif text-xl font-semibold">{t('studio:settings.archive.title')}</h2>
+        <h2 className="text-xl font-semibold">{t('studio:settings.archive.title')}</h2>
         <p className="text-sm text-muted-foreground">
           {isArchived
             ? t('studio:settings.archive.archivedDescription')

@@ -56,7 +56,7 @@
     "title": "Component guide",
     "intro": "Verification page for the design system, themes and internationalization.",
     "typography": "Typography",
-    "headingSample": "Headings use a serif typeface",
+    "headingSample": "Headings use a clean sans-serif typeface",
     "bodySample": "Body text uses a sans serif, with plenty of white space.",
     "monoSample": "Numbers, durations and labels use monospace: 12:45",
     "buttons": "Buttons",

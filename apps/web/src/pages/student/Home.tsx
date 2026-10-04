@@ -38,7 +38,7 @@ function ContinueLearningSection({ timeZone }: { timeZone: string }) {
 
   return (
     <section aria-labelledby="continue-heading" className="space-y-3">
-      <h2 id="continue-heading" className="font-serif text-xl font-semibold">
+      <h2 id="continue-heading" className="text-xl font-semibold">
         {t('home.continueTitle')}
       </h2>
       <Card className="flex flex-col overflow-hidden sm:flex-row">
@@ -49,7 +49,7 @@ function ContinueLearningSection({ timeZone }: { timeZone: string }) {
         <div className="flex flex-1 flex-col gap-4 p-4 sm:p-5">
           <div className="space-y-1">
             <p className="text-sm text-muted-foreground">{courseContent.title}</p>
-            <p className="font-serif text-xl font-semibold leading-snug">{lessonContent.title}</p>
+            <p className="text-xl font-semibold leading-snug">{lessonContent.title}</p>
             {lesson.type === 'video' && videoPositionSeconds > 0 ? (
               <p className="font-mono text-xs text-muted-foreground">
                 {t('home.resumeAt', { time: formatClock(videoPositionSeconds) })}
@@ -135,7 +135,7 @@ function MyCoursesSection({ timeZone }: { timeZone: string }) {
 
   return (
     <section aria-labelledby="courses-heading" className="space-y-3">
-      <h2 id="courses-heading" className="font-serif text-xl font-semibold">
+      <h2 id="courses-heading" className="text-xl font-semibold">
         {t('home.myCoursesTitle')}
       </h2>
       {body}
@@ -196,7 +196,7 @@ function RecentCertificatesSection({ timeZone }: { timeZone: string }) {
   return (
     <section aria-labelledby="certificates-heading" className="space-y-3">
       <div className="flex items-center justify-between gap-2">
-        <h2 id="certificates-heading" className="font-serif text-xl font-semibold">
+        <h2 id="certificates-heading" className="text-xl font-semibold">
           {t('home.recentCertificatesTitle')}
         </h2>
         <Link
@@ -220,7 +220,7 @@ export function Home() {
 
   return (
     <div className="space-y-10">
-      <h1 className="font-serif text-2xl font-semibold sm:text-3xl">
+      <h1 className="text-2xl font-semibold sm:text-3xl">
         {t('home.greeting', { name: firstName })}
       </h1>
       <ContinueLearningSection timeZone={user.timeZone} />

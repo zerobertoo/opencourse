@@ -221,7 +221,7 @@ export function InviteDialog({
                 readOnly
                 value={inviteLink}
                 aria-label={t('studio:students.invite.linkLabel')}
-                className="font-mono text-xs"
+                className="text-xs"
                 onFocus={(event) => event.target.select()}
               />
               <Button variant="outline" onClick={() => void copyLink()}>

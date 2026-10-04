@@ -25,7 +25,7 @@ function StateFrame({
   return (
     <div className="mx-auto flex max-w-md flex-col items-center gap-3 px-4 py-12 text-center">
       <div className="rounded-full bg-muted p-3 text-muted-foreground">{icon}</div>
-      <h2 className="font-serif text-xl font-semibold">{title}</h2>
+      <h2 className="text-xl font-semibold">{title}</h2>
       {description ? <p className="text-sm text-muted-foreground">{description}</p> : null}
       {action ? <Button onClick={action.onClick}>{action.label}</Button> : null}
       {children}

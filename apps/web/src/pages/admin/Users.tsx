@@ -178,7 +178,7 @@ export function AdminUsers() {
   return (
     <section aria-labelledby="admin-users-heading" className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h2 id="admin-users-heading" className="font-serif text-xl font-semibold">
+        <h2 id="admin-users-heading" className="text-xl font-semibold">
           {t('admin:users.title')}
         </h2>
         <Button onClick={() => setInviting(true)}>

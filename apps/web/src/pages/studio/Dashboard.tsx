@@ -162,7 +162,7 @@ export function StudioDashboard() {
     <div className="space-y-8">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="space-y-1">
-          <h1 className="font-serif text-2xl font-semibold sm:text-3xl">
+          <h1 className="text-2xl font-semibold sm:text-3xl">
             {t('studio:dashboard.title')}
           </h1>
           <p className="text-muted-foreground">{t('studio:dashboard.subtitle')}</p>
@@ -177,7 +177,7 @@ export function StudioDashboard() {
 
       <section aria-labelledby="studio-courses-heading" className="space-y-3">
         <div className="flex items-center justify-between gap-2">
-          <h2 id="studio-courses-heading" className="font-serif text-xl font-semibold">
+          <h2 id="studio-courses-heading" className="text-xl font-semibold">
             {t('studio:dashboard.coursesTitle')}
           </h2>
           <Link

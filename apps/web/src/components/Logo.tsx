@@ -10,7 +10,7 @@ export function Logo({ showName = true }: { showName?: boolean }) {
   const logoUrl = data?.brand.logoUrl;
 
   return (
-    <span className="inline-flex items-center gap-2 font-serif text-lg font-semibold">
+    <span className="inline-flex items-center gap-2 text-lg font-semibold">
       {logoUrl ? (
         <img
           src={logoUrl}

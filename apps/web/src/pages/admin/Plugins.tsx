@@ -18,7 +18,7 @@ export function AdminPlugins() {
   return (
     <section aria-labelledby="admin-plugins-heading" className="space-y-4">
       <div className="space-y-1">
-        <h2 id="admin-plugins-heading" className="font-serif text-xl font-semibold">
+        <h2 id="admin-plugins-heading" className="text-xl font-semibold">
           {t('plugins.title')}
         </h2>
         <p className="text-sm text-muted-foreground">{t('plugins.description')}</p>
@@ -32,7 +32,7 @@ export function AdminPlugins() {
               </span>
               <div className="min-w-0 space-y-1">
                 <div className="flex flex-wrap items-center gap-2">
-                  <h3 className="font-serif text-base font-semibold">
+                  <h3 className="text-base font-semibold">
                     {t(`plugins.items.${id}.name`)}
                   </h3>
                   <Badge>{t('plugins.comingSoon')}</Badge>

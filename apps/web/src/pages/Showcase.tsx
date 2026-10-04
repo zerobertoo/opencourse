@@ -11,7 +11,7 @@ const SAMPLE_DATE = new Date('2026-03-15T15:30:00Z');
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <section className="space-y-4">
-      <h2 className="font-serif text-2xl font-semibold">{title}</h2>
+      <h2 className="text-2xl font-semibold">{title}</h2>
       {children}
     </section>
   );
@@ -26,13 +26,13 @@ export function Showcase() {
   return (
     <div className="space-y-12">
       <header className="space-y-2">
-        <h1 className="font-serif text-4xl font-semibold">{t('showcase.title')}</h1>
+        <h1 className="text-4xl font-semibold">{t('showcase.title')}</h1>
         <p className="text-muted-foreground">{t('showcase.intro')}</p>
       </header>
 
       <Section title={t('showcase.typography')}>
         <div className="space-y-2 rounded-xl border bg-surface p-6">
-          <p className="font-serif text-2xl">{t('showcase.headingSample')}</p>
+          <p className="text-2xl font-semibold">{t('showcase.headingSample')}</p>
           <p>{t('showcase.bodySample')}</p>
           <p className="font-mono text-sm text-muted-foreground">{t('showcase.monoSample')}</p>
         </div>

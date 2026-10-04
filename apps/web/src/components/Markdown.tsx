@@ -19,9 +19,9 @@ function styled<Tag extends keyof React.JSX.IntrinsicElements>(
 
 // Raw HTML is not rendered by react-markdown, so lesson content cannot inject markup.
 const components: Components = {
-  h1: styled('h2', 'mt-6 font-serif text-2xl font-semibold first:mt-0'),
-  h2: styled('h2', 'mt-6 font-serif text-xl font-semibold first:mt-0'),
-  h3: styled('h3', 'mt-5 font-serif text-lg font-semibold first:mt-0'),
+  h1: styled('h2', 'mt-6 text-2xl font-semibold first:mt-0'),
+  h2: styled('h2', 'mt-6 text-xl font-semibold first:mt-0'),
+  h3: styled('h3', 'mt-5 text-lg font-semibold first:mt-0'),
   p: styled('p', 'mt-3 leading-relaxed first:mt-0'),
   ul: styled('ul', 'mt-3 list-disc space-y-1 ps-6 first:mt-0'),
   ol: styled('ol', 'mt-3 list-decimal space-y-1 ps-6 first:mt-0'),
