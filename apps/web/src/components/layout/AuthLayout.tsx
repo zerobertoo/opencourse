@@ -11,10 +11,10 @@ export function AuthLayout() {
   return (
     <div className="min-h-dvh">
       <header className="mx-auto flex h-16 max-w-5xl items-center justify-between gap-2 px-4">
-        <Link to="/" aria-label={t('app.name')}>
+        <Link to="/" aria-label={t('app.name')} className="min-w-0">
           <Logo />
         </Link>
-        <div className="flex items-center gap-1">
+        <div className="flex shrink-0 items-center gap-1">
           <LanguageSwitcher />
           <ThemeToggle />
         </div>

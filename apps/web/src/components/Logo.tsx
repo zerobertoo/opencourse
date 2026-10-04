@@ -10,7 +10,7 @@ export function Logo({ showName = true }: { showName?: boolean }) {
   const logoUrl = data?.brand.logoUrl;
 
   return (
-    <span className="inline-flex items-center gap-2 text-lg font-semibold">
+    <span className="inline-flex min-w-0 items-center gap-2 text-lg font-semibold">
       {logoUrl ? (
         <img
           src={logoUrl}
@@ -23,7 +23,7 @@ export function Logo({ showName = true }: { showName?: boolean }) {
           <BookOpen className="size-4" aria-hidden="true" />
         </span>
       )}
-      <span className={showName ? undefined : 'sr-only'}>{name}</span>
+      <span className={showName ? 'truncate' : 'sr-only'}>{name}</span>
     </span>
   );
 }
