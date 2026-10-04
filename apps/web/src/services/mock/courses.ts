@@ -1,4 +1,4 @@
-import type { CourseDetail } from '@opencourse/shared';
+import { getPublishIssues, type CourseDetail } from '@opencourse/shared';
 import type { CourseService } from '../courses';
 import { ServiceError } from '../errors';
 import type { MockContext } from './context';
@@ -65,6 +65,12 @@ export function createMockCourseService(context: MockContext): CourseService {
           instructorId: user.id,
           defaultLocale: input.defaultLocale,
           sequentialOrder: false,
+          certificateTemplate: {
+            enabled: true,
+            signatoryName: user.name,
+            signatoryRole: '',
+            message: '',
+          },
           createdAt: timestamp,
           updatedAt: timestamp,
           translations: [
@@ -89,18 +95,34 @@ export function createMockCourseService(context: MockContext): CourseService {
           throw new ServiceError('forbidden', 'Only the course instructor or an admin can edit it');
         }
 
+        // validate the resulting course before touching the stored one
+        const next = clone(course);
+        if (input.status !== undefined) next.status = input.status;
+        if (input.sequentialOrder !== undefined) next.sequentialOrder = input.sequentialOrder;
+        if (input.defaultLocale !== undefined) next.defaultLocale = input.defaultLocale;
+        if (input.certificateTemplate !== undefined) {
+          next.certificateTemplate = {
+            ...input.certificateTemplate,
+            signatoryName: input.certificateTemplate.signatoryName.trim(),
+            signatoryRole: input.certificateTemplate.signatoryRole.trim(),
+            message: input.certificateTemplate.message.trim(),
+          };
+        }
+        for (const translation of input.translations ?? []) {
+          const index = next.translations.findIndex((item) => item.locale === translation.locale);
+          if (index >= 0) next.translations[index] = clone(translation);
+          else next.translations.push(clone(translation));
+        }
+        if (
+          next.status === 'published' &&
+          course.status !== 'published' &&
+          getPublishIssues(next).length > 0
+        ) {
+          throw new ServiceError('validation', 'The course is not ready to be published');
+        }
+
         store.mutate(() => {
-          if (input.status !== undefined) course.status = input.status;
-          if (input.sequentialOrder !== undefined) course.sequentialOrder = input.sequentialOrder;
-          if (input.defaultLocale !== undefined) course.defaultLocale = input.defaultLocale;
-          for (const translation of input.translations ?? []) {
-            const index = course.translations.findIndex(
-              (item) => item.locale === translation.locale,
-            );
-            if (index >= 0) course.translations[index] = clone(translation);
-            else course.translations.push(clone(translation));
-          }
-          course.updatedAt = context.now().toISOString();
+          Object.assign(course, next, { updatedAt: context.now().toISOString() });
         });
         return clone(course);
       }),

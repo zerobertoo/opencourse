@@ -29,6 +29,7 @@ export function Certificates() {
 
   const download = (certificate: CertificateDetails) => {
     const courseTitle = localizeCourse(certificate.course, locale).title;
+    const template = certificate.course.certificateTemplate;
     const blob = buildCertificatePdf({
       heading: t('certificates.heading'),
       intro: t('certificates.intro'),
@@ -37,6 +38,9 @@ export function Certificates() {
       courseTitle,
       issuedLine: t('certificates.issuedOn', { date: issuedOn(certificate) }),
       codeLine: t('certificates.code', { code: certificate.code }),
+      message: template.message || undefined,
+      signatoryLine:
+        [template.signatoryName, template.signatoryRole].filter(Boolean).join(', ') || undefined,
     });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
@@ -82,6 +86,9 @@ export function Certificates() {
                   courseTitle={courseTitle}
                   issuedOn={issuedOn(certificate)}
                   code={certificate.code}
+                  message={certificate.course.certificateTemplate.message}
+                  signatoryName={certificate.course.certificateTemplate.signatoryName}
+                  signatoryRole={certificate.course.certificateTemplate.signatoryRole}
                 />
                 <div className="mt-auto flex flex-col gap-2 sm:flex-row">
                   <Button
@@ -130,6 +137,9 @@ export function Certificates() {
                 courseTitle={localizeCourse(previewing.course, locale).title}
                 issuedOn={issuedOn(previewing)}
                 code={previewing.code}
+                message={previewing.course.certificateTemplate.message}
+                signatoryName={previewing.course.certificateTemplate.signatoryName}
+                signatoryRole={previewing.course.certificateTemplate.signatoryRole}
               />
               <Button className="mt-4 w-full sm:w-auto" onClick={() => download(previewing)}>
                 <Download aria-hidden="true" />

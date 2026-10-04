@@ -122,3 +122,8 @@ export function courseTranslations(
 }
 
 export type CourseBase = Omit<CourseDetail, 'modules'>;
+
+/** Certificate template signed by the course instructor. */
+export function certificateTemplate(signatoryName: string): CourseDetail['certificateTemplate'] {
+  return { enabled: true, signatoryName, signatoryRole: 'Instrutor', message: '' };
+}

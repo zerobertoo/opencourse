@@ -1,4 +1,5 @@
 import {
+  BookOpen,
   GraduationCap,
   LayoutDashboard,
   Menu,
@@ -10,6 +11,8 @@ import {
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { NavLink, Outlet } from 'react-router-dom';
+import type { Role } from '@opencourse/shared';
+import { useAuth } from '@/auth/AuthContext';
 import { LanguageSwitcher } from '@/components/LanguageSwitcher';
 import { Logo } from '@/components/Logo';
 import { ThemeToggle } from '@/components/ThemeToggle';
@@ -18,14 +21,39 @@ import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
 const NAV_ITEMS = [
-  { to: '/studio', labelKey: 'nav.studio', icon: LayoutDashboard },
-  { to: '/admin', labelKey: 'nav.admin', icon: ShieldCheck },
-  { to: '/', labelKey: 'nav.student', icon: GraduationCap, end: true },
-] as const;
+  {
+    to: '/studio',
+    labelKey: 'nav.studio',
+    icon: LayoutDashboard,
+    end: true,
+    roles: ['instructor', 'admin'],
+  },
+  {
+    to: '/studio/courses',
+    labelKey: 'nav.studioCourses',
+    icon: BookOpen,
+    roles: ['instructor', 'admin'],
+  },
+  { to: '/admin', labelKey: 'nav.admin', icon: ShieldCheck, roles: ['admin'] },
+  {
+    to: '/',
+    labelKey: 'nav.student',
+    icon: GraduationCap,
+    end: true,
+    roles: ['instructor', 'admin'],
+  },
+] as const satisfies ReadonlyArray<{
+  to: string;
+  labelKey: string;
+  icon: React.ElementType;
+  end?: boolean;
+  roles: readonly Role[];
+}>;
 
 /** Instructor and admin layout: collapsible sidebar (drawer on mobile). */
 export function StaffLayout() {
   const { t } = useTranslation();
+  const { user } = useAuth();
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
 
@@ -66,7 +94,9 @@ export function StaffLayout() {
           </Button>
         </div>
         <nav aria-label={t('nav.mainNavigation')} className="flex-1 space-y-1 px-2 py-2">
-          {NAV_ITEMS.map(({ to, labelKey, icon: Icon, ...rest }) => (
+          {NAV_ITEMS.filter(
+            ({ roles }) => user !== null && (roles as readonly Role[]).includes(user.role),
+          ).map(({ to, labelKey, icon: Icon, ...rest }) => (
             <NavLink
               key={to}
               to={to}

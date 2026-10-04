@@ -1,4 +1,10 @@
-import type { CourseDetail, CourseStatus, CourseTranslation, Locale } from '@opencourse/shared';
+import type {
+  CertificateTemplate,
+  CourseDetail,
+  CourseStatus,
+  CourseTranslation,
+  Locale,
+} from '@opencourse/shared';
 
 export interface CourseFilters {
   status?: CourseStatus;
@@ -14,9 +20,11 @@ export interface CreateCourseInput {
 }
 
 export interface UpdateCourseInput {
+  /** Publishing throws `validation` while `getPublishIssues` reports problems. */
   status?: CourseStatus;
   sequentialOrder?: boolean;
   defaultLocale?: Locale;
+  certificateTemplate?: CertificateTemplate;
   /** Replaces the given translations by language; the others are kept. */
   translations?: CourseTranslation[];
 }

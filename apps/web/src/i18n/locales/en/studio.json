@@ -1,1 +1,395 @@
-{ "dashboard": { "title": "Instructor dashboard" } }
+{
+  "dashboard": {
+    "title": "Instructor dashboard",
+    "subtitle": "How your courses and students are doing.",
+    "metricsLabel": "Summary metrics",
+    "activeStudents": "Active students",
+    "activeStudentsHint": "Students with current access to your courses",
+    "publishedCourses": "Published courses",
+    "completionRate": "Completion rate",
+    "completionRateHint": "Students who finished a course out of all enrolled",
+    "coursesTitle": "Your courses",
+    "viewAll": "View all courses",
+    "emptyTitle": "You have no courses yet",
+    "emptyDescription": "Create your first course and start adding modules and lessons.",
+    "courseStats": "{students, plural, one {# student} other {# students}} · {rate} completed"
+  },
+  "courses": {
+    "title": "Courses",
+    "new": "New course",
+    "searchLabel": "Search courses",
+    "searchPlaceholder": "Search by title",
+    "statusLabel": "Filter by status",
+    "allStatuses": "All statuses",
+    "structure": "{modules, plural, one {# module} other {# modules}} · {lessons, plural, one {# lesson} other {# lessons}}",
+    "students": "{count, plural, one {# student} other {# students}}",
+    "updatedOn": "Updated on {date}",
+    "incompleteLabel": "Incomplete translations",
+    "incompleteIn": "{language} incomplete",
+    "emptyTitle": "No courses yet",
+    "emptyDescription": "Create a course to start building your curriculum.",
+    "noResultsTitle": "No courses found",
+    "noResultsDescription": "No course matches the current search and filters.",
+    "clearFilters": "Clear filters"
+  },
+  "newCourse": {
+    "title": "New course",
+    "description": "The course starts as a draft. You can add content and translations afterwards.",
+    "name": "Course title",
+    "summary": "Short description (optional)",
+    "summaryHint": "You can refine it later in the Details tab.",
+    "defaultLanguage": "Default language",
+    "defaultLanguageHint": "Students see this language whenever a translation is missing.",
+    "submit": "Create course",
+    "createdToast": "Course created."
+  },
+  "editor": {
+    "backToCourses": "Back to courses",
+    "viewAsStudent": "View as student",
+    "tabsLabel": "Course sections",
+    "tabs": {
+      "details": "Details",
+      "content": "Content",
+      "students": "Students",
+      "certificate": "Certificate",
+      "settings": "Settings"
+    },
+    "notFoundTitle": "Course not found",
+    "notFoundDescription": "This course does not exist or was removed."
+  },
+  "translation": {
+    "incompleteMarker": "Incomplete translation",
+    "incompleteTitle": "{language} translation is incomplete",
+    "incompleteHint": "Missing text is shown in {language} until it is translated.",
+    "incompleteDefaultHint": "This is the default language: fill in the missing text so every student can read the course.",
+    "coverage": "{translated} of {total} items translated",
+    "progressLabel": "Translation progress in {language}",
+    "goToContent": "Translate modules and lessons",
+    "complete": "Everything is translated into {language}."
+  },
+  "details": {
+    "defaultLanguage": "Course default language",
+    "defaultLanguageHint": "The fallback when a student's language has no translation.",
+    "languagesLabel": "Content languages",
+    "titleField": "Title",
+    "titleRequiredHint": "Required in the default language.",
+    "descriptionField": "Description",
+    "outcomesField": "What you will learn",
+    "outcomesHint": "One item per line.",
+    "save": "Save details",
+    "savedToast": "Details saved."
+  },
+  "content": {
+    "curriculum": "Curriculum",
+    "addModule": "Add module",
+    "addLesson": "Add lesson",
+    "addLessonTo": "Add lesson to {title}",
+    "dragHint": "Drag the handles to reorder modules and lessons, or use the menus and buttons.",
+    "modulesLabel": "Modules",
+    "lessonsOf": "Lessons of {title}",
+    "lessonCount": "{count, plural, =0 {No lessons} one {# lesson} other {# lessons}}",
+    "moduleActions": "Actions for module {title}",
+    "renameModule": "Rename",
+    "deleteModule": "Delete module",
+    "moveUp": "Move up",
+    "moveDown": "Move down",
+    "emptyModule": "No lessons in this module yet.",
+    "untitled": "Untitled",
+    "emptyTitle": "This course has no content yet",
+    "emptyDescription": "Start with a module, then add lessons to it.",
+    "selectTitle": "Select a lesson",
+    "selectDescription": "Pick a lesson in the curriculum to edit its content, video, materials or quiz.",
+    "moduleCreatedToast": "Module created.",
+    "moduleRenamedToast": "Module renamed.",
+    "moduleDeletedToast": "Module deleted.",
+    "lessonCreatedToast": "Lesson created.",
+    "newModule": {
+      "title": "New module",
+      "description": "Name the module in {language}. You can translate it afterwards.",
+      "name": "Module title",
+      "submit": "Create module"
+    },
+    "renameModuleDialog": {
+      "title": "Rename module",
+      "description": "Titles per language. Leave a language empty to translate later.",
+      "titleIn": "Title in {language}",
+      "submit": "Save titles"
+    },
+    "deleteModuleDialog": {
+      "title": "Delete this module?",
+      "description": "\"{title}\" and its {count, plural, =0 {empty list of lessons} one {# lesson} other {# lessons}} will be deleted, along with the students' progress on them. This cannot be undone."
+    },
+    "newLesson": {
+      "title": "New lesson",
+      "description": "Choose the type and name the lesson in {language}.",
+      "type": "Lesson type",
+      "typeHint": {
+        "video": "Upload a video or link one",
+        "text": "Written content in Markdown",
+        "file": "Downloadable materials",
+        "quiz": "Questions with a minimum score"
+      },
+      "name": "Lesson title",
+      "submit": "Create lesson"
+    },
+    "unsavedDialog": {
+      "title": "Discard unsaved changes?",
+      "description": "The lesson you are editing has changes that were not saved.",
+      "confirm": "Discard changes"
+    }
+  },
+  "dnd": {
+    "handle": "Drag to reorder: {title}",
+    "instructions": "To pick up an item press space or enter, move it with the arrow keys, then press space or enter again to drop it. Press escape to cancel.",
+    "pickedUp": "Picked up {title}.",
+    "movedOver": "{title} is over {target}.",
+    "dropped": "{title} was dropped on {target}.",
+    "droppedOutside": "{title} was dropped. Nothing changed.",
+    "cancelled": "Moving {title} was cancelled."
+  },
+  "lesson": {
+    "backToCurriculum": "Back to curriculum",
+    "module": "Module",
+    "delete": "Delete lesson",
+    "deleteTitle": "Delete this lesson?",
+    "deleteDescription": "\"{title}\" will be deleted, along with the students' progress and notes on it. This cannot be undone.",
+    "deletedToast": "Lesson deleted.",
+    "languagesLabel": "Lesson languages",
+    "titleField": "Title",
+    "bodyField": "Lesson text",
+    "descriptionField": "Description",
+    "descriptionHint": "Shown with the lesson. Supports Markdown.",
+    "markdownHint": "Markdown is supported.",
+    "editorModeLabel": "Editor mode",
+    "write": "Write",
+    "preview": "Preview",
+    "previewEmpty": "Nothing to preview yet.",
+    "duration": "Duration",
+    "durationHint": "Minutes, or m:ss (for example 12 or 5:30).",
+    "save": "Save lesson",
+    "savedToast": "Lesson saved."
+  },
+  "video": {
+    "title": "Video",
+    "description": "Upload a video or link one from an external provider.",
+    "statusLabel": "Status",
+    "status": {
+      "none": "No video",
+      "uploading": "Uploading",
+      "processing": "Processing",
+      "ready": "Ready",
+      "error": "Error"
+    },
+    "provider": {
+      "local": "Uploaded to this platform",
+      "external": "External link"
+    },
+    "upload": "Upload video",
+    "remove": "Remove video",
+    "removed": "Video removed.",
+    "uploadStarted": "Upload received. The video is being processed.",
+    "demoNote": "In this demo no file is sent anywhere: a sample video stands in for your upload.",
+    "externalUrl": "External video link",
+    "useLink": "Use link",
+    "linkSaved": "Video link saved.",
+    "captionsTitle": "Captions",
+    "captionsDescription": "One WebVTT (.vtt) file per language.",
+    "captionAdded": "Added",
+    "captionMissing": "Missing",
+    "captionUpload": "Upload {language} captions",
+    "captionRemove": "Remove {language} captions",
+    "captionsSaved": "Captions saved."
+  },
+  "materials": {
+    "title": "Materials",
+    "titleFileLesson": "Files",
+    "description": "Downloads students find in the lesson.",
+    "empty": "No files yet.",
+    "add": "Add files",
+    "remove": "Remove {name}",
+    "saved": "Materials saved.",
+    "limitNote": "Demo limit: files up to {limit}."
+  },
+  "upload": {
+    "tooLarge": "This file is too large for the demo. The limit is {limit}."
+  },
+  "quiz": {
+    "title": "Quiz",
+    "description": "Multiple-choice questions with a single correct answer each.",
+    "passingScore": "Minimum score to pass (%)",
+    "passingScoreHint": "Students need at least this percentage of correct answers.",
+    "languagesLabel": "Quiz languages",
+    "questionsLabel": "Questions",
+    "questionNumber": "Question {number}",
+    "dragQuestion": "Drag to reorder question {number}",
+    "moveQuestionUp": "Move question {number} up",
+    "moveQuestionDown": "Move question {number} down",
+    "removeQuestion": "Remove question {number}",
+    "prompt": "Question",
+    "options": "Options",
+    "optionsHint": "Select the radio button of the correct option.",
+    "markCorrect": "Mark option {number} as correct",
+    "optionText": "Option {number}",
+    "removeOption": "Remove option {number}",
+    "addOption": "Add option",
+    "explanation": "Explanation",
+    "explanationHint": "Shown to the student after answering.",
+    "addQuestion": "Add question",
+    "empty": "No questions yet.",
+    "save": "Save quiz",
+    "discard": "Discard changes",
+    "savedToast": "Quiz saved.",
+    "issuesTitle": "Fix before publishing",
+    "issues": {
+      "noQuestions": "Add at least one question.",
+      "missingPrompt": "Question {number} has no text in the default language.",
+      "tooFewOptions": "Question {number} needs at least two options.",
+      "missingOptionText": "Question {number} has an empty option in the default language.",
+      "noCorrectOption": "Question {number} has no correct option selected.",
+      "multipleCorrectOptions": "Question {number} has more than one correct option."
+    },
+    "dnd": {
+      "instructions": "To pick up a question press space or enter, move it with the arrow keys, then press space or enter again to drop it. Press escape to cancel.",
+      "pickedUp": "Picked up question {number}.",
+      "movedOver": "Over question {number}.",
+      "dropped": "Dropped on question {number}.",
+      "cancelled": "Moving question {number} was cancelled."
+    }
+  },
+  "students": {
+    "title": "Students",
+    "listLabel": "Students with access",
+    "grantAccess": "Grant access",
+    "inviteStudent": "Invite student",
+    "emptyTitle": "No students yet",
+    "emptyDescription": "Grant access to someone who already has an account, or send an invite.",
+    "status": {
+      "active": "Active",
+      "expired": "Expired",
+      "revoked": "Revoked"
+    },
+    "source": {
+      "manual": "Granted manually",
+      "invite": "Joined by invite"
+    },
+    "accessUntil": "Access until {date}",
+    "lifetime": "Lifetime access",
+    "progressLabel": "Course progress of {name}",
+    "lessonsCompleted": "{completed}/{total} lessons",
+    "lastActivity": "Last activity on {date}",
+    "noActivity": "No activity yet",
+    "revoke": "Revoke access",
+    "revokeFor": "Revoke access of {name}",
+    "revokeDialog": {
+      "title": "Revoke access?",
+      "description": "{name} will immediately lose access to this course. Their progress is kept."
+    },
+    "revokedToast": "Access of {name} revoked.",
+    "grant": {
+      "title": "Grant access",
+      "description": "Give a student access to this course.",
+      "student": "Student",
+      "studentPlaceholder": "Select a student",
+      "loadError": "We could not load the students. Close and try again.",
+      "access": "Access duration",
+      "accessOption": {
+        "lifetime": "Lifetime",
+        "until": "Until a date"
+      },
+      "expiresOn": "Access ends on",
+      "submit": "Grant access",
+      "successToast": "Access granted."
+    },
+    "invite": {
+      "title": "Invite student",
+      "description": "The invite creates the account and grants access to this course.",
+      "email": "Student e-mail",
+      "validity": "Invite validity",
+      "validityOption": "{count, plural, one {# day} other {# days}}",
+      "submit": "Create invite",
+      "successToast": "Invite created.",
+      "linkReady": "Invite created. Share this link with the student:",
+      "linkLabel": "Invite link",
+      "copy": "Copy link",
+      "copied": "Copied",
+      "copyFailed": "Could not copy the link. Select it and copy manually.",
+      "mockNote": "In this demo no e-mail is sent, so share the link yourself.",
+      "done": "Done"
+    },
+    "invites": {
+      "title": "Invites",
+      "empty": "No invites for this course.",
+      "expires": "Expires on {date}",
+      "status": {
+        "pending": "Pending",
+        "accepted": "Accepted",
+        "expired": "Expired",
+        "revoked": "Revoked"
+      }
+    }
+  },
+  "certificate": {
+    "enabled": "Issue a certificate on completion",
+    "enabledHint": "Students receive it automatically after completing every lesson.",
+    "signatoryName": "Signed by",
+    "signatoryRole": "Role of the signatory",
+    "message": "Custom message (optional)",
+    "messageHint": "Shown on the certificate. Up to {max} characters.",
+    "save": "Save template",
+    "savedToast": "Certificate template saved.",
+    "previewTitle": "Preview",
+    "previewNote": "The holder name, date and code are filled in when the certificate is issued.",
+    "sampleHolder": "Student name",
+    "disabledNotice": "Certificates are turned off for this course, so there is nothing to preview."
+  },
+  "settings": {
+    "visibility": {
+      "title": "Visibility",
+      "description": {
+        "draft": "Only you can see this course. Publish it when it is ready.",
+        "published": "The course is published: students with access can take it.",
+        "archived": "The course is archived and hidden. Restore it to edit and publish again."
+      },
+      "checklistTitle": "Before publishing",
+      "ready": "Everything is ready to publish.",
+      "issues": {
+        "missingTitle": "Add a title in the default language.",
+        "noLessons": "Add at least one lesson.",
+        "untitledItems": "Give every module and lesson a title in the default language.",
+        "invalidQuiz": "Fix the quizzes that have problems.",
+        "videoNotReady": "Every video lesson needs a video that is ready."
+      },
+      "publish": "Publish course",
+      "publishedToast": "Course published.",
+      "unpublish": "Unpublish (back to draft)"
+    },
+    "order": {
+      "title": "Lesson order",
+      "sequential": "Sequential lessons",
+      "sequentialHint": "A lesson only unlocks after the previous one is completed.",
+      "savedToast": "Lesson order setting saved."
+    },
+    "archive": {
+      "title": "Archive",
+      "description": "Archiving hides the course. Nothing is deleted and you can restore it any time.",
+      "archivedDescription": "This course is archived. Restoring it brings it back as a draft.",
+      "action": "Archive course",
+      "restore": "Restore as draft",
+      "restoredToast": "Course restored as a draft."
+    },
+    "confirm": {
+      "unpublish": {
+        "title": "Unpublish this course?",
+        "description": "It goes back to draft. Students keep their progress, but cannot open the course until it is published again.",
+        "action": "Unpublish",
+        "toast": "Course is a draft again."
+      },
+      "archive": {
+        "title": "Archive this course?",
+        "description": "The course is hidden from students. You can restore it later.",
+        "action": "Archive",
+        "toast": "Course archived."
+      }
+    }
+  }
+}

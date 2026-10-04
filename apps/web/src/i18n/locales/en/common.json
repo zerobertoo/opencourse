@@ -15,7 +15,8 @@
     "skipToContent": "Skip to content",
     "home": "Home",
     "certificates": "Certificates",
-    "settings": "Settings"
+    "settings": "Settings",
+    "studioCourses": "Courses"
   },
   "search": {
     "label": "Search",
@@ -92,12 +93,22 @@
     "required": "Fill in this field.",
     "email": "Enter a valid e-mail.",
     "passwordLength": "The password must have at least 8 characters.",
-    "passwordMismatch": "The passwords do not match."
+    "passwordMismatch": "The passwords do not match.",
+    "duration": "Use minutes or m:ss, for example 12 or 5:30.",
+    "url": "Enter a valid link starting with http:// or https://.",
+    "messageTooLong": "The message is too long.",
+    "dateRequired": "Choose a date.",
+    "dateFuture": "Choose a date in the future."
   },
   "lessonTypes": {
     "video": "Video",
     "text": "Text",
     "file": "Files",
     "quiz": "Quiz"
+  },
+  "courseStatus": {
+    "draft": "Draft",
+    "published": "Published",
+    "archived": "Archived"
   }
 }

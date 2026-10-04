@@ -81,11 +81,13 @@ function LessonBody({
   switch (lesson.type) {
     case 'video': {
       const { video } = lesson;
-      if (video.status !== 'ready' || !video.playbackUrl) {
+      if (video?.status !== 'ready' || !video.playbackUrl) {
+        // no video yet reads as "unavailable", same as a ready video without a source
+        const status = video?.status ?? 'ready';
         return (
           <EmptyState
-            title={t(`video.status.${video.status}.title`)}
-            description={t(`video.status.${video.status}.description`)}
+            title={t(`video.status.${status}.title`)}
+            description={t(`video.status.${status}.description`)}
           />
         );
       }

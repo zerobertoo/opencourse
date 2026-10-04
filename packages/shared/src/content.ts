@@ -82,6 +82,77 @@ export function getIncompleteLocales(course: CourseDetail, locales: readonly Loc
   return locales.filter((locale) => !getTranslationCoverage(course, locale).isComplete);
 }
 
+// ---------- Authoring checks ----------
+
+export type PublishIssue =
+  | 'missingTitle'
+  | 'noLessons'
+  | 'untitledItems'
+  | 'invalidQuiz'
+  | 'videoNotReady';
+
+/** True when the translation for `locale` exists and has text. */
+function hasTextIn(translations: readonly { locale: Locale }[], locale: Locale): boolean {
+  return translations.some((item) => item.locale === locale && hasText(item));
+}
+
+/** What still blocks a course from being published; an empty list means it is ready. */
+export function getPublishIssues(course: CourseDetail): PublishIssue[] {
+  const issues = new Set<PublishIssue>();
+  const locale = course.defaultLocale;
+
+  if (!hasTextIn(course.translations, locale)) issues.add('missingTitle');
+  if (flattenLessons(course).length === 0) issues.add('noLessons');
+
+  for (const courseModule of course.modules) {
+    if (!hasTextIn(courseModule.translations, locale)) issues.add('untitledItems');
+    for (const lesson of courseModule.lessons) {
+      if (!hasTextIn(lesson.translations, locale)) issues.add('untitledItems');
+      if (lesson.type === 'video' && lesson.video?.status !== 'ready') issues.add('videoNotReady');
+      if (lesson.type === 'quiz' && getQuizIssues(lesson.quiz, locale).length > 0) {
+        issues.add('invalidQuiz');
+      }
+    }
+  }
+  return [...issues];
+}
+
+export type QuizIssueCode =
+  | 'noQuestions'
+  | 'missingPrompt'
+  | 'tooFewOptions'
+  | 'missingOptionText'
+  | 'noCorrectOption'
+  | 'multipleCorrectOptions';
+
+export interface QuizIssue {
+  code: QuizIssueCode;
+  /** Question the issue belongs to; null for quiz-wide issues. */
+  questionId: string | null;
+}
+
+/**
+ * What makes a quiz unplayable in the course default language: a question needs a prompt, at
+ * least two options with text and exactly one correct option.
+ */
+export function getQuizIssues(quiz: Quiz, defaultLocale: Locale): QuizIssue[] {
+  if (quiz.questions.length === 0) return [{ code: 'noQuestions', questionId: null }];
+
+  const issues: QuizIssue[] = [];
+  for (const question of quiz.questions) {
+    const add = (code: QuizIssueCode) => issues.push({ code, questionId: question.id });
+    if (!hasTextIn(question.translations, defaultLocale)) add('missingPrompt');
+    if (question.options.length < 2) add('tooFewOptions');
+    if (question.options.some((option) => !hasTextIn(option.translations, defaultLocale))) {
+      add('missingOptionText');
+    }
+    const correctCount = question.options.filter((option) => option.isCorrect).length;
+    if (correctCount === 0) add('noCorrectOption');
+    if (correctCount > 1) add('multipleCorrectOptions');
+  }
+  return issues;
+}
+
 // ---------- Curriculum and progress ----------
 
 /** Course lessons in study order (module, then lesson). */

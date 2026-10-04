@@ -7,6 +7,10 @@ export interface CertificatePdfContent {
   courseTitle: string;
   issuedLine: string;
   codeLine: string;
+  /** Custom message from the course certificate template. */
+  message?: string;
+  /** Signatory name and role, already joined (for example "Rafael Teixeira, Instrutor"). */
+  signatoryLine?: string;
 }
 
 const PAGE_WIDTH = 842;
@@ -40,6 +44,8 @@ export function buildCertificatePdf(content: CertificatePdfContent): Blob {
     centeredLine('F1', 28, 335, content.holderName),
     centeredLine('F2', 14, 290, content.completion),
     centeredLine('F1', 24, 250, content.courseTitle),
+    ...(content.message ? [centeredLine('F2', 13, 205, content.message)] : []),
+    ...(content.signatoryLine ? [centeredLine('F1', 14, 175, content.signatoryLine)] : []),
     centeredLine('F2', 12, 150, content.issuedLine),
     centeredLine('F3', 12, 125, content.codeLine),
   ].join('\n');

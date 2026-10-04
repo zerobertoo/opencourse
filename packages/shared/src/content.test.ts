@@ -4,6 +4,8 @@ import {
   flattenLessons,
   getCourseDurationSeconds,
   getIncompleteLocales,
+  getPublishIssues,
+  getQuizIssues,
   getTranslationCoverage,
   getUnlockedLessonIds,
   resolveTranslation,
@@ -37,6 +39,7 @@ function buildCourse(overrides: Partial<CourseDetail> = {}): CourseDetail {
     instructorId: 'u1',
     defaultLocale: 'pt-BR',
     sequentialOrder: false,
+    certificateTemplate: { enabled: true, signatoryName: '', signatoryRole: '', message: '' },
     createdAt: '2026-01-01T00:00:00.000Z',
     updatedAt: '2026-01-01T00:00:00.000Z',
     translations: [
@@ -246,5 +249,84 @@ describe('scoreQuiz', () => {
 
   it('never passes a quiz without questions', () => {
     expect(scoreQuiz({ passingScore: 0, questions: [] }, {}).passed).toBe(false);
+  });
+});
+
+describe('getPublishIssues', () => {
+  it('accepts a course with a default-language title and a titled lesson', () => {
+    const course = buildCourse({
+      modules: buildCourse().modules.filter((courseModule) => courseModule.id === 'm1'),
+    });
+    expect(getPublishIssues(course)).toEqual([]);
+  });
+
+  it('reports a missing title, no lessons and untitled modules', () => {
+    const course = buildCourse({
+      translations: [{ locale: 'pt-BR', title: '  ', description: '', learningOutcomes: [] }],
+      modules: [{ id: 'm1', courseId: 'c1', order: 0, translations: [], lessons: [] }],
+    });
+    expect(getPublishIssues(course).sort()).toEqual(['missingTitle', 'noLessons', 'untitledItems']);
+  });
+
+  it('reports videos that are not ready and invalid quizzes', () => {
+    const base = buildCourse();
+    const lessonBase = base.modules[1]!.lessons[0]!;
+    const course = buildCourse({
+      modules: [
+        {
+          ...base.modules[1]!,
+          lessons: [
+            { ...lessonBase, id: 'v1', type: 'video', video: null, captions: [] },
+            { ...lessonBase, id: 'q1', type: 'quiz', quiz: { passingScore: 70, questions: [] } },
+          ],
+        },
+      ],
+    });
+    expect(getPublishIssues(course).sort()).toEqual(['invalidQuiz', 'videoNotReady']);
+  });
+});
+
+describe('getQuizIssues', () => {
+  const option = (id: string, isCorrect: boolean, text: string) => ({
+    id,
+    isCorrect,
+    translations: [{ locale: 'pt-BR' as const, text }],
+  });
+  const question = (id: string, prompt: string, options: ReturnType<typeof option>[]) => ({
+    id,
+    translations: [{ locale: 'pt-BR' as const, prompt, explanation: '' }],
+    options,
+  });
+
+  it('accepts a question with a prompt, two filled options and one correct answer', () => {
+    const quiz: Quiz = {
+      passingScore: 70,
+      questions: [question('q1', 'Pergunta?', [option('a', true, 'Sim'), option('b', false, 'Não')])],
+    };
+    expect(getQuizIssues(quiz, 'pt-BR')).toEqual([]);
+  });
+
+  it('requires at least one question', () => {
+    expect(getQuizIssues({ passingScore: 70, questions: [] }, 'pt-BR')).toEqual([
+      { code: 'noQuestions', questionId: null },
+    ]);
+  });
+
+  it('reports every problem of a question in the default language', () => {
+    const quiz: Quiz = {
+      passingScore: 70,
+      questions: [
+        question('q1', '', [option('a', false, 'Sim')]),
+        question('q2', 'Ok?', [option('a', true, 'Sim'), option('b', true, '')]),
+      ],
+    };
+    const codes = getQuizIssues(quiz, 'pt-BR').map((issue) => `${issue.questionId}:${issue.code}`);
+    expect(codes).toEqual([
+      'q1:missingPrompt',
+      'q1:tooFewOptions',
+      'q1:noCorrectOption',
+      'q2:missingOptionText',
+      'q2:multipleCorrectOptions',
+    ]);
   });
 });

@@ -12,6 +12,9 @@ import { ResetPassword } from '@/pages/auth/ResetPassword';
 import { SignUp } from '@/pages/auth/SignUp';
 import { NotFound } from '@/pages/NotFound';
 import { Showcase } from '@/pages/Showcase';
+import { CourseEditor } from '@/pages/studio/CourseEditor';
+import { StudioCourses } from '@/pages/studio/Courses';
+import { StudioDashboard } from '@/pages/studio/Dashboard';
 import { Certificates } from '@/pages/student/Certificates';
 import { CoursePage } from '@/pages/student/CoursePage';
 import { Home } from '@/pages/student/Home';
@@ -45,10 +48,11 @@ export function App() {
         <Route element={<RequireAuth />}>
           <Route element={<StaffLayout />}>
             <Route element={<RequireRole roles={['instructor', 'admin']} />}>
-              <Route
-                path="studio"
-                element={<UnderConstruction titleKey="studio:dashboard.title" />}
-              />
+              <Route path="studio">
+                <Route index element={<StudioDashboard />} />
+                <Route path="courses" element={<StudioCourses />} />
+                <Route path="courses/:courseId/:tab?" element={<CourseEditor />} />
+              </Route>
             </Route>
             <Route element={<RequireRole roles={['admin']} />}>
               <Route

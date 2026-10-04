@@ -30,6 +30,16 @@ export const courseTranslationSchema = z.object({
 });
 export type CourseTranslation = z.infer<typeof courseTranslationSchema>;
 
+/** Certificate template of a course: who signs it and an optional custom message. */
+export const certificateTemplateSchema = z.object({
+  /** When false, completing the course does not issue a certificate. */
+  enabled: z.boolean(),
+  signatoryName: z.string(),
+  signatoryRole: z.string(),
+  message: z.string(),
+});
+export type CertificateTemplate = z.infer<typeof certificateTemplateSchema>;
+
 export const courseSchema = z.object({
   id: idSchema,
   slug: z.string().min(1),
@@ -39,6 +49,7 @@ export const courseSchema = z.object({
   defaultLocale: localeSchema,
   /** When true, the next lesson only unlocks after the previous one is completed. */
   sequentialOrder: z.boolean(),
+  certificateTemplate: certificateTemplateSchema,
   createdAt: isoDateSchema,
   updatedAt: isoDateSchema,
   translations: z.array(courseTranslationSchema),
@@ -115,7 +126,8 @@ const lessonBaseSchema = z.object({
 export const lessonSchema = z.discriminatedUnion('type', [
   lessonBaseSchema.extend({
     type: z.literal('video'),
-    video: videoAssetSchema,
+    /** Null until the instructor adds a video. */
+    video: videoAssetSchema.nullable(),
     captions: z.array(captionSchema),
   }),
   lessonBaseSchema.extend({ type: z.literal('text') }),

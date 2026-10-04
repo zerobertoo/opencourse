@@ -7,6 +7,10 @@ interface CertificatePreviewProps {
   courseTitle: string;
   issuedOn: string;
   code: string;
+  /** Optional custom message from the course certificate template. */
+  message?: string;
+  signatoryName?: string;
+  signatoryRole?: string;
   className?: string;
 }
 
@@ -16,6 +20,9 @@ export function CertificatePreview({
   courseTitle,
   issuedOn,
   code,
+  message,
+  signatoryName,
+  signatoryRole,
   className,
 }: CertificatePreviewProps) {
   const { t } = useTranslation('student');
@@ -28,6 +35,15 @@ export function CertificatePreview({
         <p className="font-serif text-xl font-semibold">{holderName}</p>
         <p className="text-xs text-muted-foreground">{t('certificates.completion')}</p>
         <p className="font-serif text-base font-semibold leading-snug">{courseTitle}</p>
+        {message ? <p className="max-w-prose text-xs italic">{message}</p> : null}
+        {signatoryName ? (
+          <p className="mt-2 text-xs">
+            <span className="block font-serif text-sm font-semibold">{signatoryName}</span>
+            {signatoryRole ? (
+              <span className="block text-muted-foreground">{signatoryRole}</span>
+            ) : null}
+          </p>
+        ) : null}
         <p className="mt-2 text-xs text-muted-foreground">
           {t('certificates.issuedOn', { date: issuedOn })}
         </p>

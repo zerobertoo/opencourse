@@ -10,6 +10,8 @@ export interface MockOptions {
   latency?: { min: number; max: number };
   /** Forces failures to exercise error states: receives the operation name (e.g. `courses.list`). */
   failOn?: (operation: string) => boolean;
+  /** How long a local video upload stays in `processing`, in milliseconds. Default: 2500. */
+  videoProcessingMs?: number;
   /** Injectable clock. */
   now?: () => Date;
   /** Injectable randomness, from 0 to 1. */
@@ -20,6 +22,7 @@ export interface MockContext {
   store: MockStore;
   now(): Date;
   random(): number;
+  videoProcessingMs: number;
   /** Runs an operation applying simulated latency and failures. */
   run<T>(operation: string, action: () => T): Promise<T>;
   getSessionUserId(): string | null;
@@ -68,6 +71,7 @@ export function createMockContext(options: MockOptions = {}): MockContext {
     store,
     now,
     random,
+    videoProcessingMs: options.videoProcessingMs ?? 2500,
     async run<T>(operation: string, action: () => T): Promise<T> {
       const delay = latency.min + random() * Math.max(0, latency.max - latency.min);
       if (delay > 0) await new Promise((resolve) => setTimeout(resolve, delay));

@@ -100,6 +100,45 @@ describe('mock course service', () => {
     });
   });
 
+  describe('publishing', () => {
+    it('refuses to publish a draft that is not ready and leaves it untouched', async () => {
+      const { services } = await createServicesSignedInAs('rafael');
+      const draft = await services.courses.create({ title: 'Rascunho', defaultLocale: 'pt-BR' });
+
+      await expect(
+        services.courses.update(draft.id, { status: 'published' }),
+      ).rejects.toMatchObject({
+        code: 'validation',
+      });
+      expect((await services.courses.getById(draft.id)).status).toBe('draft');
+    });
+
+    it('publishes once the course has a titled lesson, in the same call that fixes it', async () => {
+      const { services } = await createServicesSignedInAs('rafael');
+      const draft = await services.courses.create({ title: 'Rascunho', defaultLocale: 'pt-BR' });
+      const { moduleId } = await services.curriculum.createModule({
+        courseId: draft.id,
+        title: 'Módulo',
+        locale: 'pt-BR',
+      });
+      await services.curriculum.createLesson({
+        moduleId,
+        type: 'text',
+        title: 'Aula',
+        locale: 'pt-BR',
+      });
+
+      const published = await services.courses.update(draft.id, { status: 'published' });
+      expect(published.status).toBe('published');
+    });
+
+    it('does not re-check courses that are already published', async () => {
+      const { services } = await createServicesSignedInAs('rafael');
+      const updated = await services.courses.update('course-sql', { sequentialOrder: true });
+      expect(updated.status).toBe('published');
+    });
+  });
+
   describe('update', () => {
     it('lets the owner change status, sequential order and translations by locale', async () => {
       const { services } = await createServicesSignedInAs('rafael');
@@ -132,6 +171,24 @@ describe('mock course service', () => {
       expect(replaced.translations.find((t) => t.locale === 'en')?.title).toBe('Revised title');
     });
 
+    it('stores the certificate template, trimming its text', async () => {
+      const { services } = await createServicesSignedInAs('rafael');
+      const updated = await services.courses.update('course-sql', {
+        certificateTemplate: {
+          enabled: false,
+          signatoryName: '  Rafael T.  ',
+          signatoryRole: ' Instrutor ',
+          message: ' Parabéns! ',
+        },
+      });
+      expect(updated.certificateTemplate).toEqual({
+        enabled: false,
+        signatoryName: 'Rafael T.',
+        signatoryRole: 'Instrutor',
+        message: 'Parabéns!',
+      });
+    });
+
     it('allows admins and blocks other instructors and students', async () => {
       const id = 'course-javascript';
 
@@ -150,5 +207,25 @@ describe('mock course service', () => {
         code: 'forbidden',
       });
     });
+  });
+});
+
+describe('student visibility of unpublished courses', () => {
+  it('hides a course from students with a grant once it is archived', async () => {
+    const { services } = createTestServices();
+    await services.auth.signIn('lucas@opencourse.example', 'x');
+    expect(await services.enrollments.canAccess('course-sql')).toBe(true);
+    expect((await services.enrollments.listMyCourses()).map((e) => e.course.id)).toContain(
+      'course-sql',
+    );
+
+    await services.auth.signIn('rafael@opencourse.example', 'x');
+    await services.courses.update('course-sql', { status: 'archived' });
+
+    await services.auth.signIn('lucas@opencourse.example', 'x');
+    expect(await services.enrollments.canAccess('course-sql')).toBe(false);
+    expect((await services.enrollments.listMyCourses()).map((e) => e.course.id)).not.toContain(
+      'course-sql',
+    );
   });
 });

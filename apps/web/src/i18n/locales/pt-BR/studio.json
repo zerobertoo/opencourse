@@ -1,1 +1,395 @@
-{ "dashboard": { "title": "Painel do instrutor" } }
+{
+  "dashboard": {
+    "title": "Painel do instrutor",
+    "subtitle": "Como estão seus cursos e alunos.",
+    "metricsLabel": "Métricas gerais",
+    "activeStudents": "Alunos ativos",
+    "activeStudentsHint": "Alunos com acesso vigente aos seus cursos",
+    "publishedCourses": "Cursos publicados",
+    "completionRate": "Taxa de conclusão",
+    "completionRateHint": "Alunos que terminaram o curso entre todos os matriculados",
+    "coursesTitle": "Seus cursos",
+    "viewAll": "Ver todos os cursos",
+    "emptyTitle": "Você ainda não tem cursos",
+    "emptyDescription": "Crie seu primeiro curso e comece a adicionar módulos e aulas.",
+    "courseStats": "{students, plural, one {# aluno} other {# alunos}} · {rate} concluíram"
+  },
+  "courses": {
+    "title": "Cursos",
+    "new": "Novo curso",
+    "searchLabel": "Buscar cursos",
+    "searchPlaceholder": "Buscar pelo título",
+    "statusLabel": "Filtrar por status",
+    "allStatuses": "Todos os status",
+    "structure": "{modules, plural, one {# módulo} other {# módulos}} · {lessons, plural, one {# aula} other {# aulas}}",
+    "students": "{count, plural, one {# aluno} other {# alunos}}",
+    "updatedOn": "Atualizado em {date}",
+    "incompleteLabel": "Traduções incompletas",
+    "incompleteIn": "{language} incompleto",
+    "emptyTitle": "Nenhum curso ainda",
+    "emptyDescription": "Crie um curso para começar a montar seu conteúdo.",
+    "noResultsTitle": "Nenhum curso encontrado",
+    "noResultsDescription": "Nenhum curso corresponde à busca e aos filtros atuais.",
+    "clearFilters": "Limpar filtros"
+  },
+  "newCourse": {
+    "title": "Novo curso",
+    "description": "O curso começa como rascunho. Depois você adiciona conteúdo e traduções.",
+    "name": "Título do curso",
+    "summary": "Descrição curta (opcional)",
+    "summaryHint": "Você pode refinar depois, na aba Detalhes.",
+    "defaultLanguage": "Idioma padrão",
+    "defaultLanguageHint": "Os alunos veem este idioma sempre que faltar uma tradução.",
+    "submit": "Criar curso",
+    "createdToast": "Curso criado."
+  },
+  "editor": {
+    "backToCourses": "Voltar para os cursos",
+    "viewAsStudent": "Ver como aluno",
+    "tabsLabel": "Seções do curso",
+    "tabs": {
+      "details": "Detalhes",
+      "content": "Conteúdo",
+      "students": "Alunos",
+      "certificate": "Certificado",
+      "settings": "Configurações"
+    },
+    "notFoundTitle": "Curso não encontrado",
+    "notFoundDescription": "Este curso não existe ou foi removido."
+  },
+  "translation": {
+    "incompleteMarker": "Tradução incompleta",
+    "incompleteTitle": "A tradução para {language} está incompleta",
+    "incompleteHint": "O texto que falta aparece em {language} até ser traduzido.",
+    "incompleteDefaultHint": "Este é o idioma padrão: preencha o que falta para que todos os alunos consigam ler o curso.",
+    "coverage": "{translated} de {total} itens traduzidos",
+    "progressLabel": "Progresso da tradução em {language}",
+    "goToContent": "Traduzir módulos e aulas",
+    "complete": "Tudo está traduzido para {language}."
+  },
+  "details": {
+    "defaultLanguage": "Idioma padrão do curso",
+    "defaultLanguageHint": "É o idioma usado quando o idioma do aluno não tem tradução.",
+    "languagesLabel": "Idiomas do conteúdo",
+    "titleField": "Título",
+    "titleRequiredHint": "Obrigatório no idioma padrão.",
+    "descriptionField": "Descrição",
+    "outcomesField": "O que você vai aprender",
+    "outcomesHint": "Um item por linha.",
+    "save": "Salvar detalhes",
+    "savedToast": "Detalhes salvos."
+  },
+  "content": {
+    "curriculum": "Currículo",
+    "addModule": "Adicionar módulo",
+    "addLesson": "Adicionar aula",
+    "addLessonTo": "Adicionar aula em {title}",
+    "dragHint": "Arraste as alças para reordenar módulos e aulas, ou use os menus e botões.",
+    "modulesLabel": "Módulos",
+    "lessonsOf": "Aulas de {title}",
+    "lessonCount": "{count, plural, =0 {Nenhuma aula} one {# aula} other {# aulas}}",
+    "moduleActions": "Ações do módulo {title}",
+    "renameModule": "Renomear",
+    "deleteModule": "Excluir módulo",
+    "moveUp": "Mover para cima",
+    "moveDown": "Mover para baixo",
+    "emptyModule": "Este módulo ainda não tem aulas.",
+    "untitled": "Sem título",
+    "emptyTitle": "Este curso ainda não tem conteúdo",
+    "emptyDescription": "Comece por um módulo e depois adicione aulas a ele.",
+    "selectTitle": "Selecione uma aula",
+    "selectDescription": "Escolha uma aula no currículo para editar o conteúdo, o vídeo, os materiais ou o quiz.",
+    "moduleCreatedToast": "Módulo criado.",
+    "moduleRenamedToast": "Módulo renomeado.",
+    "moduleDeletedToast": "Módulo excluído.",
+    "lessonCreatedToast": "Aula criada.",
+    "newModule": {
+      "title": "Novo módulo",
+      "description": "Dê um nome ao módulo em {language}. Você pode traduzir depois.",
+      "name": "Título do módulo",
+      "submit": "Criar módulo"
+    },
+    "renameModuleDialog": {
+      "title": "Renomear módulo",
+      "description": "Títulos por idioma. Deixe um idioma vazio para traduzir depois.",
+      "titleIn": "Título em {language}",
+      "submit": "Salvar títulos"
+    },
+    "deleteModuleDialog": {
+      "title": "Excluir este módulo?",
+      "description": "\"{title}\" e {count, plural, =0 {sua lista de aulas vazia} one {a aula dele} other {as # aulas dele}} serão excluídos, junto com o progresso dos alunos nelas. Essa ação não pode ser desfeita."
+    },
+    "newLesson": {
+      "title": "Nova aula",
+      "description": "Escolha o tipo e dê um nome à aula em {language}.",
+      "type": "Tipo de aula",
+      "typeHint": {
+        "video": "Envie um vídeo ou use um link",
+        "text": "Conteúdo escrito em Markdown",
+        "file": "Materiais para baixar",
+        "quiz": "Perguntas com nota mínima"
+      },
+      "name": "Título da aula",
+      "submit": "Criar aula"
+    },
+    "unsavedDialog": {
+      "title": "Descartar alterações não salvas?",
+      "description": "A aula que você está editando tem alterações que não foram salvas.",
+      "confirm": "Descartar alterações"
+    }
+  },
+  "dnd": {
+    "handle": "Arrastar para reordenar: {title}",
+    "instructions": "Para pegar um item, pressione espaço ou enter, mova-o com as setas e pressione espaço ou enter de novo para soltar. Pressione esc para cancelar.",
+    "pickedUp": "{title} foi pego.",
+    "movedOver": "{title} está sobre {target}.",
+    "dropped": "{title} foi solto sobre {target}.",
+    "droppedOutside": "{title} foi solto. Nada mudou.",
+    "cancelled": "A movimentação de {title} foi cancelada."
+  },
+  "lesson": {
+    "backToCurriculum": "Voltar ao currículo",
+    "module": "Módulo",
+    "delete": "Excluir aula",
+    "deleteTitle": "Excluir esta aula?",
+    "deleteDescription": "\"{title}\" será excluída, junto com o progresso e as notas dos alunos nela. Essa ação não pode ser desfeita.",
+    "deletedToast": "Aula excluída.",
+    "languagesLabel": "Idiomas da aula",
+    "titleField": "Título",
+    "bodyField": "Texto da aula",
+    "descriptionField": "Descrição",
+    "descriptionHint": "Aparece junto com a aula. Aceita Markdown.",
+    "markdownHint": "Markdown é aceito.",
+    "editorModeLabel": "Modo do editor",
+    "write": "Escrever",
+    "preview": "Pré-visualizar",
+    "previewEmpty": "Ainda não há nada para pré-visualizar.",
+    "duration": "Duração",
+    "durationHint": "Minutos, ou m:ss (por exemplo 12 ou 5:30).",
+    "save": "Salvar aula",
+    "savedToast": "Aula salva."
+  },
+  "video": {
+    "title": "Vídeo",
+    "description": "Envie um vídeo ou use o link de um provedor externo.",
+    "statusLabel": "Status",
+    "status": {
+      "none": "Sem vídeo",
+      "uploading": "Enviando",
+      "processing": "Processando",
+      "ready": "Pronto",
+      "error": "Erro"
+    },
+    "provider": {
+      "local": "Enviado para esta plataforma",
+      "external": "Link externo"
+    },
+    "upload": "Enviar vídeo",
+    "remove": "Remover vídeo",
+    "removed": "Vídeo removido.",
+    "uploadStarted": "Envio recebido. O vídeo está sendo processado.",
+    "demoNote": "Nesta demonstração nenhum arquivo é enviado: um vídeo de exemplo substitui o seu.",
+    "externalUrl": "Link do vídeo externo",
+    "useLink": "Usar link",
+    "linkSaved": "Link do vídeo salvo.",
+    "captionsTitle": "Legendas",
+    "captionsDescription": "Um arquivo WebVTT (.vtt) por idioma.",
+    "captionAdded": "Adicionada",
+    "captionMissing": "Ausente",
+    "captionUpload": "Enviar legenda em {language}",
+    "captionRemove": "Remover legenda em {language}",
+    "captionsSaved": "Legendas salvas."
+  },
+  "materials": {
+    "title": "Materiais",
+    "titleFileLesson": "Arquivos",
+    "description": "Downloads que os alunos encontram na aula.",
+    "empty": "Nenhum arquivo ainda.",
+    "add": "Adicionar arquivos",
+    "remove": "Remover {name}",
+    "saved": "Materiais salvos.",
+    "limitNote": "Limite da demonstração: arquivos de até {limit}."
+  },
+  "upload": {
+    "tooLarge": "Este arquivo é grande demais para a demonstração. O limite é {limit}."
+  },
+  "quiz": {
+    "title": "Quiz",
+    "description": "Perguntas de múltipla escolha com uma única resposta correta.",
+    "passingScore": "Nota mínima para passar (%)",
+    "passingScoreHint": "O aluno precisa de pelo menos essa porcentagem de acertos.",
+    "languagesLabel": "Idiomas do quiz",
+    "questionsLabel": "Perguntas",
+    "questionNumber": "Pergunta {number}",
+    "dragQuestion": "Arrastar para reordenar a pergunta {number}",
+    "moveQuestionUp": "Mover a pergunta {number} para cima",
+    "moveQuestionDown": "Mover a pergunta {number} para baixo",
+    "removeQuestion": "Remover a pergunta {number}",
+    "prompt": "Pergunta",
+    "options": "Opções",
+    "optionsHint": "Marque o botão da opção correta.",
+    "markCorrect": "Marcar a opção {number} como correta",
+    "optionText": "Opção {number}",
+    "removeOption": "Remover a opção {number}",
+    "addOption": "Adicionar opção",
+    "explanation": "Explicação",
+    "explanationHint": "Aparece para o aluno depois que ele responde.",
+    "addQuestion": "Adicionar pergunta",
+    "empty": "Nenhuma pergunta ainda.",
+    "save": "Salvar quiz",
+    "discard": "Descartar alterações",
+    "savedToast": "Quiz salvo.",
+    "issuesTitle": "Corrija antes de publicar",
+    "issues": {
+      "noQuestions": "Adicione pelo menos uma pergunta.",
+      "missingPrompt": "A pergunta {number} não tem texto no idioma padrão.",
+      "tooFewOptions": "A pergunta {number} precisa de pelo menos duas opções.",
+      "missingOptionText": "A pergunta {number} tem uma opção vazia no idioma padrão.",
+      "noCorrectOption": "A pergunta {number} não tem opção correta marcada.",
+      "multipleCorrectOptions": "A pergunta {number} tem mais de uma opção correta."
+    },
+    "dnd": {
+      "instructions": "Para pegar uma pergunta, pressione espaço ou enter, mova-a com as setas e pressione espaço ou enter de novo para soltar. Pressione esc para cancelar.",
+      "pickedUp": "Pergunta {number} pega.",
+      "movedOver": "Sobre a pergunta {number}.",
+      "dropped": "Solta sobre a pergunta {number}.",
+      "cancelled": "A movimentação da pergunta {number} foi cancelada."
+    }
+  },
+  "students": {
+    "title": "Alunos",
+    "listLabel": "Alunos com acesso",
+    "grantAccess": "Conceder acesso",
+    "inviteStudent": "Convidar aluno",
+    "emptyTitle": "Nenhum aluno ainda",
+    "emptyDescription": "Conceda acesso a quem já tem conta ou envie um convite.",
+    "status": {
+      "active": "Ativo",
+      "expired": "Expirado",
+      "revoked": "Revogado"
+    },
+    "source": {
+      "manual": "Concedido manualmente",
+      "invite": "Entrou por convite"
+    },
+    "accessUntil": "Acesso até {date}",
+    "lifetime": "Acesso vitalício",
+    "progressLabel": "Progresso de {name} no curso",
+    "lessonsCompleted": "{completed}/{total} aulas",
+    "lastActivity": "Última atividade em {date}",
+    "noActivity": "Sem atividade ainda",
+    "revoke": "Revogar acesso",
+    "revokeFor": "Revogar o acesso de {name}",
+    "revokeDialog": {
+      "title": "Revogar o acesso?",
+      "description": "{name} perde o acesso a este curso imediatamente. O progresso é mantido."
+    },
+    "revokedToast": "Acesso de {name} revogado.",
+    "grant": {
+      "title": "Conceder acesso",
+      "description": "Dê a um aluno acesso a este curso.",
+      "student": "Aluno",
+      "studentPlaceholder": "Selecione um aluno",
+      "loadError": "Não foi possível carregar os alunos. Feche e tente de novo.",
+      "access": "Duração do acesso",
+      "accessOption": {
+        "lifetime": "Vitalício",
+        "until": "Até uma data"
+      },
+      "expiresOn": "O acesso termina em",
+      "submit": "Conceder acesso",
+      "successToast": "Acesso concedido."
+    },
+    "invite": {
+      "title": "Convidar aluno",
+      "description": "O convite cria a conta e concede acesso a este curso.",
+      "email": "E-mail do aluno",
+      "validity": "Validade do convite",
+      "validityOption": "{count, plural, one {# dia} other {# dias}}",
+      "submit": "Criar convite",
+      "successToast": "Convite criado.",
+      "linkReady": "Convite criado. Envie este link ao aluno:",
+      "linkLabel": "Link do convite",
+      "copy": "Copiar link",
+      "copied": "Copiado",
+      "copyFailed": "Não foi possível copiar o link. Selecione e copie manualmente.",
+      "mockNote": "Nesta demonstração nenhum e-mail é enviado, então compartilhe o link você mesmo.",
+      "done": "Concluir"
+    },
+    "invites": {
+      "title": "Convites",
+      "empty": "Nenhum convite para este curso.",
+      "expires": "Expira em {date}",
+      "status": {
+        "pending": "Pendente",
+        "accepted": "Aceito",
+        "expired": "Expirado",
+        "revoked": "Revogado"
+      }
+    }
+  },
+  "certificate": {
+    "enabled": "Emitir certificado na conclusão",
+    "enabledHint": "O aluno recebe automaticamente ao concluir todas as aulas.",
+    "signatoryName": "Assinado por",
+    "signatoryRole": "Cargo de quem assina",
+    "message": "Mensagem personalizada (opcional)",
+    "messageHint": "Aparece no certificado. Até {max} caracteres.",
+    "save": "Salvar modelo",
+    "savedToast": "Modelo de certificado salvo.",
+    "previewTitle": "Pré-visualização",
+    "previewNote": "O nome do aluno, a data e o código são preenchidos quando o certificado é emitido.",
+    "sampleHolder": "Nome do aluno",
+    "disabledNotice": "Os certificados estão desativados neste curso, então não há o que pré-visualizar."
+  },
+  "settings": {
+    "visibility": {
+      "title": "Visibilidade",
+      "description": {
+        "draft": "Só você vê este curso. Publique quando estiver pronto.",
+        "published": "O curso está publicado: alunos com acesso podem fazê-lo.",
+        "archived": "O curso está arquivado e oculto. Restaure para editar e publicar de novo."
+      },
+      "checklistTitle": "Antes de publicar",
+      "ready": "Tudo pronto para publicar.",
+      "issues": {
+        "missingTitle": "Adicione um título no idioma padrão.",
+        "noLessons": "Adicione pelo menos uma aula.",
+        "untitledItems": "Dê um título no idioma padrão a todos os módulos e aulas.",
+        "invalidQuiz": "Corrija os quizzes que têm problemas.",
+        "videoNotReady": "Toda aula em vídeo precisa de um vídeo pronto."
+      },
+      "publish": "Publicar curso",
+      "publishedToast": "Curso publicado.",
+      "unpublish": "Despublicar (voltar a rascunho)"
+    },
+    "order": {
+      "title": "Ordem das aulas",
+      "sequential": "Aulas em sequência",
+      "sequentialHint": "Uma aula só é liberada depois que a anterior for concluída.",
+      "savedToast": "Ordem das aulas atualizada."
+    },
+    "archive": {
+      "title": "Arquivar",
+      "description": "Arquivar oculta o curso. Nada é excluído e você pode restaurar quando quiser.",
+      "archivedDescription": "Este curso está arquivado. Ao restaurar, ele volta como rascunho.",
+      "action": "Arquivar curso",
+      "restore": "Restaurar como rascunho",
+      "restoredToast": "Curso restaurado como rascunho."
+    },
+    "confirm": {
+      "unpublish": {
+        "title": "Despublicar este curso?",
+        "description": "Ele volta a ser rascunho. Os alunos mantêm o progresso, mas não conseguem abrir o curso até ele ser publicado de novo.",
+        "action": "Despublicar",
+        "toast": "O curso voltou a ser rascunho."
+      },
+      "archive": {
+        "title": "Arquivar este curso?",
+        "description": "O curso fica oculto para os alunos. Você pode restaurá-lo depois.",
+        "action": "Arquivar",
+        "toast": "Curso arquivado."
+      }
+    }
+  }
+}

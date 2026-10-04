@@ -3,6 +3,7 @@ import {
   flattenLessons,
   summarizeCourseProgress,
   type CourseDetail,
+  type CourseModuleWithLessons,
   type Grant,
   type Lesson,
   type User,
@@ -34,6 +35,18 @@ export function findLesson(
   throw new ServiceError('not_found', `Lesson not found: ${lessonId}`);
 }
 
+/** Finds a module and the course it belongs to. */
+export function findModule(
+  db: MockDatabase,
+  moduleId: string,
+): { course: CourseDetail; courseModule: CourseModuleWithLessons } {
+  for (const course of db.courses) {
+    const courseModule = course.modules.find((candidate) => candidate.id === moduleId);
+    if (courseModule) return { course, courseModule };
+  }
+  throw new ServiceError('not_found', `Module not found: ${moduleId}`);
+}
+
 /** Grant with its effective status (past-due ones show up as `expired`). */
 export function withEffectiveStatus(grant: Grant, now: Date): Grant {
   return { ...grant, status: computeGrantStatus(grant, now) };
@@ -51,7 +64,10 @@ export function findActiveGrant(
     .find((grant) => grant.status === 'active');
 }
 
-/** The course instructor and admins always have access; students need an active grant. */
+/**
+ * The course instructor and admins always have access; students need an active grant and a
+ * published course (drafts and archived courses are hidden from them).
+ */
 export function canReadCourse(
   db: MockDatabase,
   user: User,
@@ -60,7 +76,9 @@ export function canReadCourse(
 ): boolean {
   if (user.role === 'admin') return true;
   if (user.role === 'instructor' && course.instructorId === user.id) return true;
-  return findActiveGrant(db, user.id, course.id, now) !== undefined;
+  return (
+    course.status === 'published' && findActiveGrant(db, user.id, course.id, now) !== undefined
+  );
 }
 
 /** The course owner instructor or an admin can manage access and students. */
@@ -120,6 +138,7 @@ export function issueCertificateIfComplete(
   course: CourseDetail,
 ): void {
   const db = context.store.db;
+  if (!course.certificateTemplate.enabled) return;
   const summary = summarizeUserCourse(db, userId, course);
   const alreadyIssued = db.certificates.some(
     (certificate) => certificate.userId === userId && certificate.courseId === course.id,

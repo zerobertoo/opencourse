@@ -14,3 +14,16 @@ export function splitHoursMinutes(totalSeconds: number): { hours: number; minute
   const totalMinutes = totalSeconds > 0 ? Math.max(1, Math.round(totalSeconds / 60)) : 0;
   return { hours: Math.floor(totalMinutes / 60), minutes: totalMinutes % 60 };
 }
+
+/**
+ * Parses a duration typed by a person into seconds: `5:12`, `1:05:09`, or a plain number of
+ * minutes (`12`). Returns null for anything else.
+ */
+export function parseClock(value: string): number | null {
+  const text = value.trim();
+  if (/^\d{1,4}$/.test(text)) return Number(text) * 60;
+  const match = /^(?:(\d{1,3}):)?([0-5]?\d):([0-5]\d)$/.exec(text);
+  if (!match) return null;
+  const [, hours, minutes, seconds] = match;
+  return Number(hours ?? 0) * 3600 + Number(minutes) * 60 + Number(seconds);
+}

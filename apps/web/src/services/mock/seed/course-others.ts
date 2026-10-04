@@ -1,6 +1,7 @@
 import type { CourseDetail } from '@opencourse/shared';
 import {
   attachment,
+  certificateTemplate,
   courseModule,
   courseTranslations,
   fileLesson,
@@ -21,6 +22,7 @@ export function buildSqlCourse(createdAt: string): CourseDetail {
     instructorId: 'user-rafael',
     defaultLocale: 'pt-BR',
     sequentialOrder: false,
+    certificateTemplate: certificateTemplate('Rafael Teixeira'),
     createdAt,
     updatedAt: createdAt,
     translations: courseTranslations({
@@ -133,6 +135,7 @@ export function buildPhotographyCourse(createdAt: string): CourseDetail {
     instructorId: 'user-beatriz',
     defaultLocale: 'pt-BR',
     sequentialOrder: false,
+    certificateTemplate: certificateTemplate('Beatriz Nogueira'),
     createdAt,
     updatedAt: createdAt,
     translations: courseTranslations({
@@ -195,6 +198,7 @@ export function buildTimeManagementCourse(createdAt: string): CourseDetail {
     instructorId: 'user-rafael',
     defaultLocale: 'pt-BR',
     sequentialOrder: false,
+    certificateTemplate: certificateTemplate('Rafael Teixeira'),
     createdAt,
     updatedAt: createdAt,
     translations: courseTranslations({
