@@ -97,7 +97,10 @@ export type LessonTranslation = z.infer<typeof lessonTranslationSchema>;
 
 export const videoAssetSchema = z.object({
   provider: z.enum(['local', 'external']),
+  /** Identifier at the external provider (embed id or URL); null for the local adapter. */
+  externalId: z.string().nullable(),
   status: z.enum(['uploading', 'processing', 'ready', 'error']),
+  /** Resolved by the service (signed and expiring on the local adapter); null until ready. */
   playbackUrl: z.string().nullable(),
 });
 export type VideoAsset = z.infer<typeof videoAssetSchema>;
@@ -153,9 +156,10 @@ export const courseDetailSchema = courseSchema.extend({
 });
 export type CourseDetail = z.infer<typeof courseDetailSchema>;
 
-// ---------- Acesso (grants) ----------
+// ---------- Access (grants) ----------
 
-export const grantSourceSchema = z.enum(['manual', 'invite']);
+/** `plugin` is reserved for integrations that create grants through the API or domain events. */
+export const grantSourceSchema = z.enum(['manual', 'invite', 'plugin']);
 export type GrantSource = z.infer<typeof grantSourceSchema>;
 
 export const grantStatusSchema = z.enum(['active', 'revoked', 'expired']);
@@ -177,12 +181,15 @@ export type Grant = z.infer<typeof grantSchema>;
 export const inviteStatusSchema = z.enum(['pending', 'accepted', 'expired', 'revoked']);
 export type InviteStatus = z.infer<typeof inviteStatusSchema>;
 
+/**
+ * An invite as listed to instructors and admins. The secret token never travels in this shape:
+ * the acceptance link is only returned once, when the invite is created.
+ */
 export const inviteSchema = z.object({
   id: idSchema,
   email: z.email(),
   /** When set, accepting the invite grants access to this course. */
   courseId: idSchema.nullable(),
-  token: z.string().min(1),
   createdById: idSchema,
   createdAt: isoDateSchema,
   expiresAt: isoDateSchema,
@@ -190,8 +197,9 @@ export const inviteSchema = z.object({
 });
 export type Invite = z.infer<typeof inviteSchema>;
 
-// ---------- Progresso e certificados ----------
+// ---------- Progress and certificates ----------
 
+/** Identified by the (userId, lessonId) pair: one record per student and lesson. */
 export const progressSchema = z.object({
   userId: idSchema,
   lessonId: idSchema,
@@ -213,7 +221,7 @@ export const quizAttemptSchema = z.object({
 });
 export type QuizAttempt = z.infer<typeof quizAttemptSchema>;
 
-/** A student's personal note on a lesson. */
+/** A student's personal note on a lesson, identified by the (userId, lessonId) pair. */
 export const lessonNoteSchema = z.object({
   userId: idSchema,
   lessonId: idSchema,
@@ -234,6 +242,9 @@ export type Certificate = z.infer<typeof certificateSchema>;
 
 // ---------- Instance settings ----------
 
+export const videoAdapterSchema = z.enum(['local', 'bunny', 'vimeo', 'cloudflare']);
+export type VideoAdapter = z.infer<typeof videoAdapterSchema>;
+
 export const platformSettingsSchema = z.object({
   brand: z.object({
     name: z.string().min(1),
@@ -242,6 +253,8 @@ export const platformSettingsSchema = z.object({
   }),
   enabledLocales: z.array(localeSchema).min(1),
   defaultLocale: localeSchema,
+  /** Video adapter used for new uploads. */
+  videoAdapter: videoAdapterSchema,
   email: z.object({
     host: z.string(),
     port: z.number().int().min(1).max(65535),

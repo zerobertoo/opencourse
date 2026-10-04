@@ -1,5 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { SUPPORTED_LOCALES, type PlatformSettings } from '@opencourse/shared';
+import { SUPPORTED_LOCALES, videoAdapterSchema, type PlatformSettings } from '@opencourse/shared';
 import { useState } from 'react';
 import { useForm, useWatch } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
@@ -21,6 +21,7 @@ function toFormValues(settings: PlatformSettings): PlatformSettingsFormValues {
     primaryColor: settings.brand.primaryColor,
     enabledLocales: settings.enabledLocales,
     defaultLocale: settings.defaultLocale,
+    videoAdapter: settings.videoAdapter,
     host: settings.email.host,
     port: String(settings.email.port),
     username: settings.email.username,
@@ -38,6 +39,7 @@ function toSettingsPatch(values: PlatformSettingsFormValues): PlatformSettings {
     },
     enabledLocales: values.enabledLocales,
     defaultLocale: values.defaultLocale,
+    videoAdapter: values.videoAdapter,
     email: {
       host: values.host,
       port: Number(values.port),
@@ -143,6 +145,28 @@ function SettingsForm({ settings }: { settings: PlatformSettings }) {
             {SUPPORTED_LOCALES.map((locale) => (
               <option key={locale} value={locale}>
                 {t(`common:language.${locale}`)}
+              </option>
+            ))}
+          </SelectField>
+        </div>
+      </Card>
+
+      <Card role="region" aria-labelledby="settings-video" className="space-y-4 p-5">
+        <div className="space-y-1">
+          <h3 id="settings-video" className="text-lg font-semibold">
+            {t('admin:settings.video.title')}
+          </h3>
+          <p className="text-sm text-muted-foreground">{t('admin:settings.video.description')}</p>
+        </div>
+        <div className="max-w-sm">
+          <SelectField
+            label={t('admin:settings.video.adapter')}
+            error={errors.videoAdapter}
+            {...register('videoAdapter')}
+          >
+            {videoAdapterSchema.options.map((adapter) => (
+              <option key={adapter} value={adapter}>
+                {t(`admin:settings.video.adapters.${adapter}`)}
               </option>
             ))}
           </SelectField>

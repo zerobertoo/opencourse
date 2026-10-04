@@ -186,12 +186,12 @@ export function InviteDialog({
   const onSubmit = handleSubmit(async (values) => {
     setFormError(null);
     try {
-      const invite = await createInvite.mutateAsync({
+      const { acceptUrl } = await createInvite.mutateAsync({
         email: values.email,
         courseId,
         expiresAt: daysFromNowIso(Number(values.validityDays)),
       });
-      setInviteLink(`${window.location.origin}/invite/${invite.token}`);
+      setInviteLink(acceptUrl);
       toast.success(t('studio:students.invite.successToast'));
     } catch (error) {
       setFormError(describeError(error));

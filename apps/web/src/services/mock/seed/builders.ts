@@ -52,7 +52,12 @@ export function videoLesson(common: LessonCommon & { captions?: Locale[] }): Les
   return (context) => ({
     ...lessonBase(common, context),
     type: 'video',
-    video: { provider: 'local', status: 'ready', playbackUrl: '/media/sample-lesson.mp4' },
+    video: {
+      provider: 'local',
+      externalId: null,
+      status: 'ready',
+      playbackUrl: '/media/sample-lesson.mp4',
+    },
     captions: (common.captions ?? ['pt-BR']).map((locale) => ({
       locale,
       url: `/media/captions/${common.id}.${locale}.vtt`,

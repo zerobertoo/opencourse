@@ -2,6 +2,7 @@ import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tansta
 import { SUPPORTED_LOCALES, type CourseDetail, type Locale } from '@opencourse/shared';
 import { useMemo } from 'react';
 import type {
+  AttachmentUpload,
   CourseFilters,
   CreateCourseInput,
   CreateGrantInput,
@@ -166,6 +167,16 @@ export function useCurriculumMutations(courseId: string) {
     }),
     deleteLesson: useMutation({
       mutationFn: (lessonId: string) => curriculum.deleteLesson(lessonId),
+      onSuccess: sync,
+    }),
+    addAttachments: useMutation({
+      mutationFn: ({ lessonId, files }: { lessonId: string; files: AttachmentUpload[] }) =>
+        curriculum.addLessonAttachments(lessonId, files),
+      onSuccess: sync,
+    }),
+    removeAttachment: useMutation({
+      mutationFn: ({ lessonId, attachmentId }: { lessonId: string; attachmentId: string }) =>
+        curriculum.removeLessonAttachment(lessonId, attachmentId),
       onSuccess: sync,
     }),
     setVideo: useMutation({

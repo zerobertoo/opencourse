@@ -1,10 +1,10 @@
-import type { Invite, Role, User } from '@opencourse/shared';
+import type { Role, User } from '@opencourse/shared';
 import type { AuthService } from '../auth';
 import { ServiceError } from '../errors';
 import type { MockContext } from './context';
 import { findUserById } from './helpers';
 import { DEMO_USER_IDS } from './seed';
-import { clone } from './store';
+import { clone, toPublicInvite, type StoredInvite } from './store';
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const MIN_PASSWORD_LENGTH = 8;
@@ -37,7 +37,7 @@ function assertValidPassword(password: string): void {
 }
 
 /** Invite with effective status: a pending invite past its expiry date counts as expired. */
-function effectiveInvite(invite: Invite, now: Date): Invite {
+function effectiveInvite(invite: StoredInvite, now: Date): StoredInvite {
   const isExpired = invite.status === 'pending' && new Date(invite.expiresAt) <= now;
   return isExpired ? { ...invite, status: 'expired' } : invite;
 }
@@ -136,7 +136,7 @@ export function createMockAuthService(context: MockContext): AuthService {
         if (effective.status !== 'pending') {
           throw new ServiceError('conflict', `Invite is ${effective.status}`);
         }
-        return clone(effective);
+        return clone(toPublicInvite(effective));
       }),
 
     acceptInvite: (token, input) =>

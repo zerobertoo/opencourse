@@ -80,7 +80,7 @@ describe('mock curriculum service', () => {
       });
     });
 
-    it('updates translations by locale, duration and attachments', async () => {
+    it('updates translations by locale and duration, and adds and removes attachments', async () => {
       const { services, courseId } = await setup();
       const { moduleId } = await services.curriculum.createModule({
         courseId,
@@ -96,12 +96,18 @@ describe('mock curriculum service', () => {
       const updated = await services.curriculum.updateLesson(lessonId, {
         translations: [{ locale: 'en', title: 'Text', content: '# Hello' }],
         durationSeconds: 300,
-        attachments: [{ id: 'att-1', name: 'a.pdf', sizeBytes: 10, url: '/a.pdf' }],
       });
+      const withFile = await services.curriculum.addLessonAttachments(lessonId, [
+        { name: 'a.pdf', sizeBytes: 10, url: '/a.pdf' },
+      ]);
       const lesson = flattenLessons(updated)[0]!;
       expect(lesson.translations.map((t) => t.locale)).toEqual(['pt-BR', 'en']);
       expect(lesson).toMatchObject({ durationSeconds: 300 });
-      expect(lesson.attachments).toHaveLength(1);
+      const [attachment] = flattenLessons(withFile)[0]!.attachments;
+      expect(attachment).toMatchObject({ name: 'a.pdf', sizeBytes: 10 });
+      expect(attachment!.id).not.toBe('');
+      const withoutFile = await services.curriculum.removeLessonAttachment(lessonId, attachment!.id);
+      expect(flattenLessons(withoutFile)[0]!.attachments).toHaveLength(0);
     });
 
     it('rejects fields that do not apply to the lesson type and invalid values', async () => {

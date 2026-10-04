@@ -270,7 +270,8 @@
     },
     "source": {
       "manual": "Concedido manualmente",
-      "invite": "Entrou por convite"
+      "invite": "Entrou por convite",
+      "plugin": "Concedido por uma integração"
     },
     "accessUntil": "Acesso até {date}",
     "lifetime": "Acesso vitalício",

@@ -1,7 +1,6 @@
 import type {
   Caption,
   CourseDetail,
-  FileAttachment,
   LessonTranslation,
   LessonType,
   Locale,
@@ -26,11 +25,18 @@ export interface CreateLessonInput {
   locale: Locale;
 }
 
+/** A file being attached to a lesson; the service assigns the attachment id. */
+export interface AttachmentUpload {
+  name: string;
+  sizeBytes: number;
+  /** Where the content is reachable (a data URL in the mock; a real API would upload the file). */
+  url: string;
+}
+
 export interface UpdateLessonInput {
   /** Replaces the given translations by language; the others are kept. */
   translations?: LessonTranslation[];
   durationSeconds?: number;
-  attachments?: FileAttachment[];
   /** Video lessons only. */
   captions?: Caption[];
   /** Quiz lessons only. */
@@ -56,6 +62,8 @@ export interface CurriculumService {
   /** Throws `validation` when a field does not apply to the lesson type. */
   updateLesson(lessonId: string, input: UpdateLessonInput): Promise<CourseDetail>;
   deleteLesson(lessonId: string): Promise<CourseDetail>;
+  addLessonAttachments(lessonId: string, files: AttachmentUpload[]): Promise<CourseDetail>;
+  removeLessonAttachment(lessonId: string, attachmentId: string): Promise<CourseDetail>;
   /** Starts the video upload (status `processing`) or links an external one (`ready`). */
   setLessonVideo(lessonId: string, source: LessonVideoSource): Promise<CourseDetail>;
   removeLessonVideo(lessonId: string): Promise<CourseDetail>;

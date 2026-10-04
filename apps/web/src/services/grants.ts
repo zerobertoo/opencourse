@@ -20,6 +20,13 @@ export interface CreateInviteInput {
   expiresAt?: string;
 }
 
+/** Result of creating an invite: the invite itself and the one-time link to hand to the invitee. */
+export interface CreatedInvite {
+  invite: Invite;
+  /** Absolute URL of the acceptance page. Only returned here; listings never expose the token. */
+  acceptUrl: string;
+}
+
 export interface GrantService {
   /** Already normalized status: expired grants show up as `expired`. */
   list(filters?: GrantFilters): Promise<Grant[]>;
@@ -28,6 +35,6 @@ export interface GrantService {
   revoke(grantId: string): Promise<Grant>;
   /** Sets the new expiry (null for lifetime) and reactivates expired grants. */
   extend(grantId: string, expiresAt: string | null): Promise<Grant>;
-  createInvite(input: CreateInviteInput): Promise<Invite>;
+  createInvite(input: CreateInviteInput): Promise<CreatedInvite>;
   listInvites(filters?: { courseId?: string }): Promise<Invite[]>;
 }

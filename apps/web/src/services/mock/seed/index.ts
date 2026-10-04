@@ -1,5 +1,5 @@
-import type { Certificate, Grant, Invite, Progress, QuizAttempt, User } from '@opencourse/shared';
-import type { MockDatabase } from '../store';
+import type { Certificate, Grant, Progress, QuizAttempt, User } from '@opencourse/shared';
+import type { MockDatabase, StoredInvite } from '../store';
 import { buildDesignCourse } from './course-design';
 import { buildJavascriptCourse } from './course-javascript';
 import { buildPhotographyCourse, buildSqlCourse, buildTimeManagementCourse } from './course-others';
@@ -115,7 +115,7 @@ function buildGrants(daysFromNow: (days: number) => string): Grant[] {
   ];
 }
 
-function buildInvites(daysFromNow: (days: number) => string): Invite[] {
+function buildInvites(daysFromNow: (days: number) => string): StoredInvite[] {
   return [
     {
       id: 'invite-1',
@@ -283,6 +283,7 @@ export function createSeedDatabase(now: Date): MockDatabase {
       brand: { name: 'OpenCourse', logoUrl: null, primaryColor: '#2f6f5e' },
       enabledLocales: ['pt-BR', 'en'],
       defaultLocale: 'pt-BR',
+      videoAdapter: 'local',
       email: {
         host: 'localhost',
         port: 1025,

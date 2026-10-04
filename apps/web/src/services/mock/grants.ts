@@ -9,7 +9,7 @@ import {
   findUserById,
   withEffectiveStatus,
 } from './helpers';
-import { clone } from './store';
+import { clone, toPublicInvite, type StoredInvite } from './store';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 const DEFAULT_INVITE_VALIDITY_DAYS = 14;
@@ -131,7 +131,7 @@ export function createMockGrantService(context: MockContext): GrantService {
           new Date(now.getTime() + DEFAULT_INVITE_VALIDITY_DAYS * DAY_MS).toISOString();
         assertFutureOrNull(expiresAt, now);
 
-        const invite: Invite = {
+        const invite: StoredInvite = {
           id: store.nextId('invite'),
           email,
           courseId: input.courseId ?? null,
@@ -142,7 +142,10 @@ export function createMockGrantService(context: MockContext): GrantService {
           status: 'pending',
         };
         store.mutate((db) => db.invites.push(invite));
-        return clone(invite);
+        return {
+          invite: clone(toPublicInvite(invite)),
+          acceptUrl: `${window.location.origin}/invite/${invite.token}`,
+        };
       }),
 
     listInvites: (filters = {}) =>
@@ -156,9 +159,11 @@ export function createMockGrantService(context: MockContext): GrantService {
             return true;
           })
           .map((invite): Invite =>
-            invite.status === 'pending' && new Date(invite.expiresAt) <= now
-              ? { ...invite, status: 'expired' }
-              : invite,
+            toPublicInvite(
+              invite.status === 'pending' && new Date(invite.expiresAt) <= now
+                ? { ...invite, status: 'expired' }
+                : invite,
+            ),
           )
           .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
         return clone(invites);

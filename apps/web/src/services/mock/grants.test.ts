@@ -208,7 +208,7 @@ describe('mock grant service', () => {
   describe('invites', () => {
     it('creates an invite valid for 14 days by default, tied to a course', async () => {
       const { services } = await createServicesSignedInAs('rafael');
-      const invite = await services.grants.createInvite({
+      const { invite, acceptUrl } = await services.grants.createInvite({
         email: '  Nova.Pessoa@Exemplo.dev ',
         courseId: 'course-javascript',
       });
@@ -219,23 +219,24 @@ describe('mock grant service', () => {
         createdById: 'user-rafael',
         expiresAt: inDays(14),
       });
-      expect(invite.token.length).toBeGreaterThan(8);
+      expect(acceptUrl).toMatch(/\/invite\/.{8,}$/);
+      expect(invite).not.toHaveProperty('token');
 
       const another = await services.grants.createInvite({ email: 'outra@exemplo.dev' });
-      expect(another.token).not.toBe(invite.token);
-      expect(another.courseId).toBeNull();
+      expect(another.acceptUrl).not.toBe(acceptUrl);
+      expect(another.invite.courseId).toBeNull();
     });
 
     it('creates an invite that can be accepted by the new user', async () => {
       const instructor = await createServicesSignedInAs('rafael');
-      const invite = await instructor.services.grants.createInvite({
+      const { acceptUrl } = await instructor.services.grants.createInvite({
         email: 'recem.chegado@exemplo.dev',
         courseId: 'course-javascript',
       });
 
       const guest = createTestServices({ storage: instructor.storage }).services;
       await guest.auth.signOut();
-      await guest.auth.acceptInvite(invite.token, {
+      await guest.auth.acceptInvite(acceptUrl.split('/invite/')[1]!, {
         name: 'Recém Chegado',
         password: 'senha-segura',
       });
@@ -265,9 +266,9 @@ describe('mock grant service', () => {
     it('lists invites with the effective status and scoped to the instructor', async () => {
       const instructor = (await createServicesSignedInAs('rafael')).services;
       const mine = await instructor.grants.listInvites();
-      expect(mine.map((invite) => [invite.token, invite.status]).sort()).toEqual([
-        ['demo-convite-sql', 'pending'],
-        ['demo-convite-vencido', 'expired'],
+      expect(mine.map((invite) => [invite.id, invite.status]).sort()).toEqual([
+        ['invite-1', 'pending'],
+        ['invite-3', 'expired'],
       ]);
       expect(await instructor.grants.listInvites({ courseId: 'course-sql' })).toHaveLength(1);
 

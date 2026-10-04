@@ -1,5 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import type { Caption, FileAttachment, Lesson, Locale } from '@opencourse/shared';
+import type { Caption, Lesson, Locale } from '@opencourse/shared';
 import { FileText, Trash2, Upload, Video } from 'lucide-react';
 import { useId, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
@@ -15,6 +15,7 @@ import { FileTooLargeError, MOCK_UPLOAD_LIMIT_BYTES, readFileAsDataUrl } from '@
 import { formatFileSize } from '@/lib/fileSize';
 import { externalVideoSchema, type ExternalVideoValues } from '@/lib/schemas';
 import { useServiceErrorMessage } from '@/lib/serviceError';
+import type { AttachmentUpload } from '@/services';
 
 const URL_PLACEHOLDER = 'https://';
 
@@ -312,12 +313,13 @@ export function VideoSection({
 /** Downloadable materials of a lesson (the content of a file lesson). */
 export function MaterialsSection({ courseId, lesson }: { courseId: string; lesson: Lesson }) {
   const { t, i18n } = useTranslation(['studio', 'common']);
-  const { updateLesson } = useCurriculumMutations(courseId);
+  const { addAttachments, removeAttachment } = useCurriculumMutations(courseId);
   const describeUploadError = useUploadErrorMessage();
+  const isSaving = addAttachments.isPending || removeAttachment.isPending;
 
-  const save = async (attachments: FileAttachment[]) => {
+  const removeFile = async (attachmentId: string) => {
     try {
-      await updateLesson.mutateAsync({ lessonId: lesson.id, input: { attachments } });
+      await removeAttachment.mutateAsync({ lessonId: lesson.id, attachmentId });
       toast.success(t('studio:materials.saved'));
     } catch (error) {
       toast.error(describeUploadError(error));
@@ -326,20 +328,19 @@ export function MaterialsSection({ courseId, lesson }: { courseId: string; lesso
 
   const addFiles = async (files: File[]) => {
     try {
-      const added = await Promise.all(
-        files.map(async (file, index): Promise<FileAttachment> => ({
-          id: `att-${Date.now().toString(36)}-${index}`,
+      const uploads = await Promise.all(
+        files.map(async (file): Promise<AttachmentUpload> => ({
           name: file.name,
           sizeBytes: file.size,
           url: await readFileAsDataUrl(file),
         })),
       );
-      await save([...lesson.attachments, ...added]);
+      await addAttachments.mutateAsync({ lessonId: lesson.id, files: uploads });
+      toast.success(t('studio:materials.saved'));
     } catch (error) {
       toast.error(describeUploadError(error));
     }
   };
-
   return (
     <PanelSection
       title={
@@ -365,9 +366,9 @@ export function MaterialsSection({ courseId, lesson }: { courseId: string; lesso
                 variant="ghost"
                 size="sm"
                 aria-label={t('studio:materials.remove', { name: attachment.name })}
-                disabled={updateLesson.isPending}
+                disabled={isSaving}
                 onClick={() =>
-                  void save(lesson.attachments.filter((item) => item.id !== attachment.id))
+                  void removeFile(attachment.id)
                 }
               >
                 <Trash2 aria-hidden="true" />
@@ -381,7 +382,7 @@ export function MaterialsSection({ courseId, lesson }: { courseId: string; lesso
           label={t('studio:materials.add')}
           accept="*/*"
           multiple
-          disabled={updateLesson.isPending}
+          disabled={isSaving}
           onFiles={(files) => void addFiles(files)}
         />
         <p className="text-xs text-muted-foreground">

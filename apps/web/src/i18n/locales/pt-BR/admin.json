@@ -92,7 +92,8 @@
     },
     "source": {
       "manual": "Concedido manualmente",
-      "invite": "Entrou por convite"
+      "invite": "Entrou por convite",
+      "plugin": "Concedido por uma integração"
     },
     "accessUntil": "Acesso até {date}",
     "lifetime": "Acesso vitalício",
@@ -140,6 +141,17 @@
       "enabled": "Idiomas habilitados",
       "default": "Idioma padrão",
       "defaultHint": "Usado para novos usuários e sempre que uma tradução estiver faltando."
+    },
+    "video": {
+      "title": "Vídeo",
+      "description": "Onde os novos vídeos são armazenados e transmitidos. Nesta demonstração nada é enviado.",
+      "adapter": "Adaptador de vídeo",
+      "adapters": {
+        "local": "Armazenamento local (HLS)",
+        "bunny": "Bunny Stream",
+        "vimeo": "Vimeo",
+        "cloudflare": "Cloudflare Stream"
+      }
     },
     "email": {
       "title": "E-mail transacional",

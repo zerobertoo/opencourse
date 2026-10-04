@@ -92,7 +92,8 @@
     },
     "source": {
       "manual": "Granted manually",
-      "invite": "Joined by invite"
+      "invite": "Joined by invite",
+      "plugin": "Granted by an integration"
     },
     "accessUntil": "Access until {date}",
     "lifetime": "Lifetime access",
@@ -140,6 +141,17 @@
       "enabled": "Enabled languages",
       "default": "Default language",
       "defaultHint": "Used for new users and whenever a translation is missing."
+    },
+    "video": {
+      "title": "Video",
+      "description": "Where new video uploads are stored and streamed from. In this demo nothing is uploaded.",
+      "adapter": "Video adapter",
+      "adapters": {
+        "local": "Local storage (HLS)",
+        "bunny": "Bunny Stream",
+        "vimeo": "Vimeo",
+        "cloudflare": "Cloudflare Stream"
+      }
     },
     "email": {
       "title": "Transactional e-mail",

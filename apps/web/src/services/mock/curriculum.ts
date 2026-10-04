@@ -82,7 +82,12 @@ export function createMockCurriculumService(context: MockContext): CurriculumSer
       const { lesson } = findLesson(store.db, lessonId);
       if (lesson.type !== 'video' || lesson.video?.status !== 'processing') return;
       store.mutate(() => {
-        lesson.video = { provider: 'local', status: 'ready', playbackUrl: SAMPLE_VIDEO_URL };
+        lesson.video = {
+          provider: 'local',
+          externalId: null,
+          status: 'ready',
+          playbackUrl: SAMPLE_VIDEO_URL,
+        };
       });
     } catch {
       // the lesson was deleted while its video was processing
@@ -104,17 +109,9 @@ export function createMockCurriculumService(context: MockContext): CurriculumSer
     }
     const quiz = input.quiz === undefined ? undefined : quizSchema.safeParse(input.quiz);
     if (quiz && !quiz.success) throw new ServiceError('validation', 'Invalid quiz');
-    const attachments =
-      input.attachments === undefined
-        ? undefined
-        : z.array(fileAttachmentSchema).safeParse(input.attachments);
-    if (attachments && !attachments.success) {
-      throw new ServiceError('validation', 'Invalid attachments');
-    }
 
     if (input.translations) mergeByLocale(lesson.translations, input.translations);
     if (input.durationSeconds !== undefined) lesson.durationSeconds = input.durationSeconds;
-    if (attachments?.success) lesson.attachments = attachments.data;
     if (input.captions !== undefined && lesson.type === 'video') {
       lesson.captions = clone(input.captions);
     }
@@ -198,6 +195,31 @@ export function createMockCurriculumService(context: MockContext): CurriculumSer
         return changeCourse(course, () => applyLessonUpdate(lesson, input));
       }),
 
+    addLessonAttachments: (lessonId, files) =>
+      context.run('curriculum.addLessonAttachments', () => {
+        const { course, lesson } = findLesson(store.db, lessonId);
+        requireManager(course);
+        const added = files.map((file) => ({
+          id: store.nextId('attachment'),
+          name: file.name,
+          sizeBytes: file.sizeBytes,
+          url: file.url,
+        }));
+        if (!z.array(fileAttachmentSchema).safeParse(added).success) {
+          throw new ServiceError('validation', 'Invalid attachments');
+        }
+        return changeCourse(course, () => lesson.attachments.push(...added));
+      }),
+
+    removeLessonAttachment: (lessonId, attachmentId) =>
+      context.run('curriculum.removeLessonAttachment', () => {
+        const { course, lesson } = findLesson(store.db, lessonId);
+        requireManager(course);
+        return changeCourse(course, () => {
+          lesson.attachments = lesson.attachments.filter((item) => item.id !== attachmentId);
+        });
+      }),
+
     deleteLesson: (lessonId) =>
       context.run('curriculum.deleteLesson', () => {
         const { course, lesson } = findLesson(store.db, lessonId);
@@ -229,7 +251,12 @@ export function createMockCurriculumService(context: MockContext): CurriculumSer
           }
           uploadTokens.delete(lessonId);
           return changeCourse(course, () => {
-            lesson.video = { provider: 'external', status: 'ready', playbackUrl: url.toString() };
+            lesson.video = {
+              provider: 'external',
+              externalId: url.toString(),
+              status: 'ready',
+              playbackUrl: url.toString(),
+            };
           });
         }
 
@@ -241,8 +268,8 @@ export function createMockCurriculumService(context: MockContext): CurriculumSer
         const instant = context.videoProcessingMs <= 0;
         const updated = changeCourse(course, () => {
           lesson.video = instant
-            ? { provider: 'local', status: 'ready', playbackUrl: SAMPLE_VIDEO_URL }
-            : { provider: 'local', status: 'processing', playbackUrl: null };
+            ? { provider: 'local', externalId: null, status: 'ready', playbackUrl: SAMPLE_VIDEO_URL }
+            : { provider: 'local', externalId: null, status: 'processing', playbackUrl: null };
         });
         if (instant) uploadTokens.delete(lessonId);
         else setTimeout(() => finishProcessing(lessonId, token), context.videoProcessingMs);

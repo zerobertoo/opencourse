@@ -56,11 +56,11 @@ export function InviteUserDialog({
   const onSubmit = handleSubmit(async (values) => {
     setFormError(null);
     try {
-      const created = await invite.mutateAsync({
+      const { acceptUrl } = await invite.mutateAsync({
         email: values.email,
         expiresAt: daysFromNowIso(Number(values.validityDays)),
       });
-      setInviteLink(`${window.location.origin}/invite/${created.token}`);
+      setInviteLink(acceptUrl);
       toast.success(t('admin:users.invite.successToast'));
     } catch (error) {
       setFormError(describeError(error));

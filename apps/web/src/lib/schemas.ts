@@ -1,6 +1,7 @@
 import {
   lessonTypeSchema,
   localeSchema,
+  videoAdapterSchema,
   roleSchema,
   SUPPORTED_LOCALES,
   type Locale,
@@ -244,6 +245,7 @@ export const platformSettingsFormSchema = z
       .array(localeSchema, 'validation.localeRequired')
       .min(1, 'validation.localeRequired'),
     defaultLocale: localeSchema,
+    videoAdapter: videoAdapterSchema,
     host: z.string().trim(),
     // Kept as text so the field can be emptied while typing; converted on submit.
     port: z
