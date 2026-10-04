@@ -6,7 +6,11 @@ export const Tabs = TabsPrimitive.Root;
 export function TabsList({ className, ...props }: React.ComponentProps<typeof TabsPrimitive.List>) {
   return (
     <TabsPrimitive.List
-      className={cn('flex gap-1 overflow-x-auto border-b', className)}
+      // the hairline is an inset shadow so the row can clip its own overflow without losing it
+      className={cn(
+        'scrollbar-themed flex gap-1 overflow-x-auto overflow-y-hidden shadow-[inset_0_-1px_0_var(--border)]',
+        className,
+      )}
       {...props}
     />
   );
@@ -19,7 +23,7 @@ export function TabsTrigger({
   return (
     <TabsPrimitive.Trigger
       className={cn(
-        '-mb-px shrink-0 border-b-2 border-transparent px-4 py-2.5 text-sm font-medium text-muted-foreground hover:text-foreground data-[state=active]:border-primary data-[state=active]:text-foreground',
+        'shrink-0 border-b-2 border-transparent px-4 py-2.5 text-sm font-medium text-muted-foreground hover:text-foreground data-[state=active]:border-primary data-[state=active]:text-foreground',
         className,
       )}
       {...props}

@@ -41,7 +41,7 @@ function SearchForm({ className }: { className?: string }) {
         defaultValue={params.get('q') ?? ''}
         aria-label={t('search.label')}
         placeholder={t('search.placeholder')}
-        className="h-10 w-full rounded-md border bg-surface ps-9 pe-3 text-sm"
+        className="h-10 w-full rounded-md border bg-surface ps-9 pe-3 text-sm placeholder:text-muted-foreground"
       />
     </form>
   );
