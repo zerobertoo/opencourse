@@ -104,6 +104,7 @@ export function CoursePage() {
       <header className="space-y-5">
         <CourseCover
           imageUrl={courseQuery.data.coverImageUrl}
+          seed={courseQuery.data.id}
           className="aspect-[3/1] max-h-64 w-full rounded-xl"
         />
         <div className="space-y-3">

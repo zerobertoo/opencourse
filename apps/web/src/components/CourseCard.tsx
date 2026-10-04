@@ -29,7 +29,11 @@ export function CourseCard({
 
   return (
     <Card className="group relative flex w-full flex-col overflow-hidden transition-shadow focus-within:ring-2 focus-within:ring-ring hover:shadow-md">
-      <CourseCover imageUrl={course.coverImageUrl} className="aspect-video w-full" />
+      <CourseCover
+        imageUrl={course.coverImageUrl}
+        seed={course.id}
+        className="aspect-video w-full"
+      />
       <div className="flex flex-1 flex-col gap-3 p-4">
         <div className="flex items-start justify-between gap-2">
           <h3 className="text-lg font-semibold leading-snug">

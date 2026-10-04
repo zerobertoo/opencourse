@@ -56,6 +56,7 @@ function HeroSection({ timeZone }: { timeZone: string }) {
     >
       <CourseCover
         imageUrl={course.coverImageUrl}
+        seed={course.id}
         className="aspect-video w-full md:order-last md:aspect-auto md:min-h-80"
       />
       <div className="flex flex-col justify-center gap-6 p-5 sm:p-8 lg:p-10">

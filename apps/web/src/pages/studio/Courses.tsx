@@ -36,7 +36,11 @@ function StudioCourseCard({
 
   return (
     <Card className="group relative flex w-full flex-col overflow-hidden transition-shadow focus-within:ring-2 focus-within:ring-ring hover:shadow-md">
-      <CourseCover imageUrl={course.coverImageUrl} className="aspect-video w-full" />
+      <CourseCover
+        imageUrl={course.coverImageUrl}
+        seed={course.id}
+        className="aspect-video w-full"
+      />
       <div className="flex flex-1 flex-col gap-3 p-4">
         <div className="flex items-start justify-between gap-2">
           <h3 className="text-lg font-semibold leading-snug">
@@ -151,9 +155,7 @@ export function StudioCourses() {
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="text-2xl font-semibold sm:text-3xl">
-          {t('studio:courses.title')}
-        </h1>
+        <h1 className="text-2xl font-semibold sm:text-3xl">{t('studio:courses.title')}</h1>
         <Button onClick={() => setCreating(true)}>
           <Plus aria-hidden="true" />
           {t('studio:courses.new')}
