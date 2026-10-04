@@ -81,3 +81,12 @@ describe('design tokens', () => {
     });
   });
 });
+
+describe('form control borders (WCAG 1.4.11)', () => {
+  describe.each([':root', '.dark'])('%s', (selector) => {
+    const tokens = readTokens(selector);
+    it.each(['background', 'surface'])('input border is at least 3:1 on %s', (surface) => {
+      expect(contrast(tokens.input!, tokens[surface]!)).toBeGreaterThanOrEqual(3);
+    });
+  });
+});

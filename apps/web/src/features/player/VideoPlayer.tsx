@@ -160,7 +160,7 @@ export function VideoPlayer({
   return (
     <div
       ref={containerRef}
-      className="overflow-hidden rounded-xl border bg-black text-white"
+      className="overflow-hidden rounded-xl border bg-player text-player-foreground"
       role="group"
       aria-label={t('video.playerLabel', { title })}
     >
@@ -226,7 +226,7 @@ export function VideoPlayer({
         {isBuffering ? (
           <div
             role="status"
-            className="pointer-events-none absolute inset-0 grid place-items-center bg-black/30 [&_svg]:size-8"
+            className="pointer-events-none absolute inset-0 grid place-items-center bg-scrim/30 [&_svg]:size-8"
           >
             <Spinner />
             <span className="sr-only">{t('video.buffering')}</span>
@@ -234,12 +234,12 @@ export function VideoPlayer({
         ) : null}
       </div>
 
-      <div className="space-y-2 bg-neutral-900 px-3 py-2">
+      <div className="space-y-2 bg-player-surface px-3 py-2">
         <div className="flex items-center gap-3">
           <Button
             variant="ghost"
             size="icon"
-            className="shrink-0 text-white hover:bg-white/10"
+            className="shrink-0 text-player-foreground hover:bg-player-foreground/10"
             aria-label={isPlaying ? t('video.pause') : t('video.play')}
             onClick={togglePlay}
           >
@@ -267,7 +267,7 @@ export function VideoPlayer({
           <Button
             variant="ghost"
             size="icon"
-            className="text-white hover:bg-white/10"
+            className="text-player-foreground hover:bg-player-foreground/10"
             aria-label={isMuted ? t('video.unmute') : t('video.mute')}
             aria-pressed={isMuted}
             onClick={toggleMute}
@@ -277,7 +277,7 @@ export function VideoPlayer({
           <label className="flex items-center gap-1.5 text-xs">
             <span className="sr-only sm:not-sr-only">{t('video.speed')}</span>
             <Select
-              className="h-9 w-auto border-white/20 bg-neutral-800 py-0 text-xs text-white"
+              className="h-9 w-auto border-player-foreground/20 bg-player-control py-0 text-xs text-player-foreground"
               value={rate}
               onChange={(event) => {
                 const next = Number(event.target.value);
@@ -296,7 +296,7 @@ export function VideoPlayer({
             <label className="flex items-center gap-1.5 text-xs">
               <span className="sr-only sm:not-sr-only">{t('captions.label')}</span>
               <Select
-                className="h-9 w-auto border-white/20 bg-neutral-800 py-0 text-xs text-white"
+                className="h-9 w-auto border-player-foreground/20 bg-player-control py-0 text-xs text-player-foreground"
                 value={captionLocale}
                 onChange={(event) => setCaptionLocale(event.target.value as Locale | '')}
               >
@@ -313,7 +313,7 @@ export function VideoPlayer({
             <Button
               variant="ghost"
               size="icon"
-              className="ms-auto text-white hover:bg-white/10"
+              className="ms-auto text-player-foreground hover:bg-player-foreground/10"
               aria-label={isFullscreen ? t('video.exitFullscreen') : t('video.fullscreen')}
               onClick={toggleFullscreen}
             >

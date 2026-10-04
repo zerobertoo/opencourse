@@ -2,7 +2,7 @@ import { forwardRef } from 'react';
 import { cn } from '@/lib/utils';
 
 const fieldClassName =
-  'w-full rounded-md border bg-surface px-3 text-sm text-surface-foreground placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-60 aria-[invalid=true]:border-destructive';
+  'w-full rounded-md border border-input bg-surface px-3 text-sm text-surface-foreground placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-60 aria-[invalid=true]:border-destructive';
 
 export const Input = forwardRef<HTMLInputElement, React.InputHTMLAttributes<HTMLInputElement>>(
   ({ className, ...props }, ref) => (

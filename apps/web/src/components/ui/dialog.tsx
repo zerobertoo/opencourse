@@ -13,7 +13,7 @@ export function DialogContent({
   const { t } = useTranslation();
   return (
     <DialogPrimitive.Portal>
-      <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-black/50" />
+      <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-scrim/50" />
       <DialogPrimitive.Content
         className={cn(
           'fixed start-1/2 top-1/2 z-50 max-h-[calc(100dvh-2rem)] w-[calc(100%-2rem)] max-w-2xl -translate-x-1/2 -translate-y-1/2 overflow-y-auto rounded-xl border bg-surface p-5 text-surface-foreground shadow-lg rtl:translate-x-1/2 sm:p-6',

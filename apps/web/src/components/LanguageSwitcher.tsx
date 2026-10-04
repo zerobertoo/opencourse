@@ -16,7 +16,7 @@ export function LanguageSwitcher() {
       <select
         value={i18n.resolvedLanguage}
         onChange={(event) => void i18n.changeLanguage(event.target.value)}
-        className="h-10 appearance-none rounded-md border bg-surface ps-8 pe-3 text-sm text-surface-foreground"
+        className="h-10 appearance-none rounded-md border border-input bg-surface ps-8 pe-3 text-sm text-surface-foreground"
       >
         {SUPPORTED_LOCALES.map((locale) => (
           <option key={locale} value={locale}>

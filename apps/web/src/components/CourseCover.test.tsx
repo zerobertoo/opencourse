@@ -1,6 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
-import { CourseCover, generateCoverShapes } from './CourseCover';
+import { CourseCover } from './CourseCover';
+import { generateCoverShapes } from './coverShapes';
 
 describe('generateCoverShapes', () => {
   it('is deterministic for a seed and differs between seeds', () => {
