@@ -13,7 +13,7 @@ function normalizeEmail(email: string): string {
   return email.trim().toLowerCase();
 }
 
-/** "maria.silva@x.com" vira "Maria Silva". */
+/** "maria.silva@x.com" becomes "Maria Silva". */
 function nameFromEmail(email: string): string {
   const local = email.split('@')[0] ?? email;
   return local
@@ -36,7 +36,7 @@ function assertValidPassword(password: string): void {
   }
 }
 
-/** Convite com status efetivo: pendente com validade vencida conta como expirado. */
+/** Invite with effective status: a pending invite past its expiry date counts as expired. */
 function effectiveInvite(invite: Invite, now: Date): Invite {
   const isExpired = invite.status === 'pending' && new Date(invite.expiresAt) <= now;
   return isExpired ? { ...invite, status: 'expired' } : invite;
@@ -80,7 +80,7 @@ export function createMockAuthService(context: MockContext): AuthService {
         const normalized = normalizeEmail(email);
         assertValidEmail(normalized);
         if (password.length === 0) throw new ServiceError('validation', 'Password is required');
-        // o mock aceita qualquer credencial: e-mail desconhecido vira um aluno novo
+        // the mock accepts any credentials: an unknown e-mail becomes a new student
         const existing = store.db.users.find((user) => user.email === normalized);
         return startSession(existing ?? createStudent(nameFromEmail(normalized), normalized));
       }),
@@ -106,7 +106,17 @@ export function createMockAuthService(context: MockContext): AuthService {
         context.setSessionUserId(null);
       }),
 
-    // nunca revela se o e-mail existe
+    changePassword: (currentPassword, newPassword) =>
+      context.run('auth.changePassword', () => {
+        context.requireUser();
+        // the mock does not store passwords: it only validates the format
+        if (currentPassword.length === 0) {
+          throw new ServiceError('validation', 'Current password is required');
+        }
+        assertValidPassword(newPassword);
+      }),
+
+    // never reveals whether the e-mail exists
     requestPasswordReset: (email) =>
       context.run('auth.requestPasswordReset', () => {
         assertValidEmail(normalizeEmail(email));

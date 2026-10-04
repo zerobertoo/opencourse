@@ -6,9 +6,9 @@ import reactRefresh from 'eslint-plugin-react-refresh';
 import jsxA11y from 'eslint-plugin-jsx-a11y';
 import prettier from 'eslint-config-prettier';
 
-// classes Tailwind físicas que quebram o suporte futuro a RTL
-const PHYSICAL_CLASS_PATTERN =
-  '(^|\s)-?(m|p)[lr]-|(^|\s)-?(left|right)-|(^|\s)text-(left|right)(\s|$)|(^|\s)(border|rounded)-[lr](-|\s|$)|(^|\s)(rounded)-(t|b)[lr](-|\s|$)';
+// physical Tailwind classes that would break future RTL support
+// (String.raw keeps the `\s` escapes: in a plain string they would silently become "s")
+const PHYSICAL_CLASS_PATTERN = String.raw`(^|\s)-?(m|p)[lr]-|(^|\s)-?(left|right)-|(^|\s)text-(left|right)(\s|$)|(^|\s)(border|rounded)-[lr](-|\s|$)|(^|\s)(rounded)-(t|b)[lr](-|\s|$)`;
 
 export default tseslint.config(
   { ignores: ['**/dist/**', '**/node_modules/**', '**/.turbo/**', 'docs/**'] },
@@ -35,22 +35,22 @@ export default tseslint.config(
         {
           selector: `Literal[value=/${PHYSICAL_CLASS_PATTERN}/]`,
           message:
-            'Use propriedades lógicas (ms-, me-, ps-, pe-, start-, end-, text-start, text-end) para suportar RTL.',
+            'Use logical properties (ms-, me-, ps-, pe-, start-, end-, text-start, text-end) to support RTL.',
         },
         {
           selector: 'JSXText[value=/[A-Za-z0-9À-ÿ]/]',
-          message: 'Nenhuma string fixa na interface: use react-i18next.',
+          message: 'No hard-coded UI strings: use react-i18next.',
         },
         {
           selector:
             'JSXAttribute[name.name=/^(aria-label|aria-description|title|placeholder|alt)$/] > Literal',
-          message: 'Nenhuma string fixa na interface: use react-i18next.',
+          message: 'No hard-coded UI strings: use react-i18next.',
         },
       ],
     },
   },
   {
-    // componentes só conhecem as interfaces de `@/services`, nunca a implementação mock
+    // components only know the `@/services` interfaces, never the mock implementation
     files: ['apps/web/src/**/*.{ts,tsx}'],
     ignores: ['apps/web/src/services/**', 'apps/web/src/test/**', '**/*.test.{ts,tsx}'],
     rules: {
@@ -61,7 +61,7 @@ export default tseslint.config(
             {
               regex: '(^|/)services/mock(/|$)',
               message:
-                'Acesse dados somente por "@/services"; a implementação mock é detalhe interno.',
+                'Access data only through "@/services"; the mock implementation is an internal detail.',
             },
           ],
         },
@@ -69,7 +69,7 @@ export default tseslint.config(
     },
   },
   {
-    // testes e arquivos de configuração podem usar strings literais
+    // tests and config files may use literal strings
     files: ['**/*.test.{ts,tsx}', 'apps/web/src/test/**'],
     rules: { 'no-restricted-syntax': 'off' },
   },

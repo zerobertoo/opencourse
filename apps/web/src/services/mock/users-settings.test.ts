@@ -79,7 +79,7 @@ describe('mock user service', () => {
         code: 'forbidden',
       });
 
-      // a sessão é compartilhada pelo storage: o signOut acima encerrou a do admin
+      // the session is shared through the storage: the signOut above ended the admin session
       await admin.services.auth.signInAs('admin');
       await admin.services.users.setActive('user-camila', true);
       const restored = createTestServices({ storage: admin.storage }).services;

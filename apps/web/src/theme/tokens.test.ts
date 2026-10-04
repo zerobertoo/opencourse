@@ -4,7 +4,7 @@ import { describe, expect, it } from 'vitest';
 
 const css = readFileSync(path.resolve(__dirname, '../index.css'), 'utf8');
 
-/** Lê as variáveis de um bloco (`:root` ou `.dark`) do CSS de tokens. */
+/** Reads the variables of a block (`:root` or `.dark`) from the tokens CSS. */
 function readTokens(selector: string): Record<string, string> {
   const block =
     css.match(new RegExp(`${selector.replace('.', '\\.')}\\s*\\{([^}]*)\\}`))?.[1] ?? '';

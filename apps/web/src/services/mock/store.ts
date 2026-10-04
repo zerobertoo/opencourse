@@ -3,16 +3,17 @@ import type {
   CourseDetail,
   Grant,
   Invite,
+  LessonNote,
   PlatformSettings,
   Progress,
   QuizAttempt,
   User,
 } from '@opencourse/shared';
 
-/** Subconjunto de `Storage` usado pelo mock (permite injetar um fake nos testes). */
+/** Subset of `Storage` used by the mock (lets tests inject a fake). */
 export type MockStorage = Pick<Storage, 'getItem' | 'setItem' | 'removeItem'>;
 
-/** Estado em memória de toda a plataforma mockada. */
+/** In-memory state of the whole mock platform. */
 export interface MockDatabase {
   users: User[];
   courses: CourseDetail[];
@@ -20,17 +21,18 @@ export interface MockDatabase {
   invites: Invite[];
   progress: Progress[];
   quizAttempts: QuizAttempt[];
+  notes: LessonNote[];
   certificates: Certificate[];
   settings: PlatformSettings;
-  /** Contadores por prefixo, para gerar ids novos e estáveis. */
+  /** Counters by prefix, used to generate new stable ids. */
   counters: Record<string, number>;
 }
 
 /**
- * Versão do formato e do seed. Ao mudar o seed ou o formato, incremente: o estado salvo
- * na sessão com outra versão é descartado e o seed é recriado.
+ * Version of the format and the seed. When the seed or the format changes, bump it: state saved
+ * in the session with another version is discarded and the seed is recreated.
  */
-export const MOCK_DB_VERSION = 1;
+export const MOCK_DB_VERSION = 2;
 
 export const DB_STORAGE_KEY = 'opencourse.mock.db';
 export const SESSION_STORAGE_KEY = 'opencourse.mock.session';
@@ -40,12 +42,12 @@ interface PersistedDatabase {
   data: MockDatabase;
 }
 
-/** Copia profunda: nada que sai dos services pode apontar para o estado interno. */
+/** Deep copy: nothing leaving the services may point to the internal state. */
 export function clone<T>(value: T): T {
   return JSON.parse(JSON.stringify(value)) as T;
 }
 
-/** Banco em memória persistido no storage da sessão. */
+/** In-memory database persisted in the session storage. */
 export class MockStore {
   private database: MockDatabase;
 
@@ -56,26 +58,26 @@ export class MockStore {
     this.database = this.load() ?? this.reseed();
   }
 
-  /** Estado interno. Uso exclusivo das implementações mock: clone antes de devolver. */
+  /** Internal state. For mock implementations only: clone before returning. */
   get db(): MockDatabase {
     return this.database;
   }
 
-  /** Aplica uma alteração e persiste o resultado. */
+  /** Applies a change and persists the result. */
   mutate<T>(change: (database: MockDatabase) => T): T {
     const result = change(this.database);
     this.persist();
     return result;
   }
 
-  /** Gera um id novo no formato `prefixo_n`. */
+  /** Generates a new id in the `prefix_n` format. */
   nextId(prefix: string): string {
     const next = (this.database.counters[prefix] ?? 0) + 1;
     this.database.counters[prefix] = next;
     return `${prefix}_${next}`;
   }
 
-  /** Restaura os dados originais. */
+  /** Restores the original data. */
   reset(): void {
     this.reseed();
   }
@@ -93,7 +95,7 @@ export class MockStore {
       const parsed = JSON.parse(raw) as PersistedDatabase;
       return parsed.version === MOCK_DB_VERSION ? parsed.data : null;
     } catch {
-      // storage indisponível ou conteúdo corrompido: recria o seed
+      // storage unavailable or corrupted content: recreate the seed
       return null;
     }
   }
@@ -103,7 +105,7 @@ export class MockStore {
       const payload: PersistedDatabase = { version: MOCK_DB_VERSION, data: this.database };
       this.storage?.setItem(DB_STORAGE_KEY, JSON.stringify(payload));
     } catch {
-      // cota excedida ou storage bloqueado: o estado segue só em memória
+      // quota exceeded or storage blocked: the state stays in memory only
     }
   }
 }

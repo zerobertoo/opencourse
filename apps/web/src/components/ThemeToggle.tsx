@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { useTheme } from '@/theme/useTheme';
 
-/** Alterna entre tema claro e escuro. */
+/** Toggles between light and dark theme. */
 export function ThemeToggle() {
   const { t } = useTranslation();
   const { resolvedTheme, setPreference } = useTheme();

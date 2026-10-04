@@ -1,5 +1,8 @@
 {
-  "app": { "name": "OpenCourse", "tagline": "Sua plataforma de cursos" },
+  "app": {
+    "name": "OpenCourse",
+    "tagline": "Sua plataforma de cursos"
+  },
   "nav": {
     "studio": "Studio",
     "admin": "Administração",
@@ -9,10 +12,20 @@
     "collapseSidebar": "Recolher barra lateral",
     "expandSidebar": "Expandir barra lateral",
     "mainNavigation": "Navegação principal",
-    "skipToContent": "Ir para o conteúdo"
+    "skipToContent": "Ir para o conteúdo",
+    "home": "Início",
+    "certificates": "Certificados",
+    "settings": "Configurações"
   },
-  "search": { "label": "Buscar", "placeholder": "Buscar cursos e aulas" },
-  "language": { "label": "Idioma", "pt-BR": "Português (Brasil)", "en": "English" },
+  "search": {
+    "label": "Buscar",
+    "placeholder": "Buscar cursos e aulas"
+  },
+  "language": {
+    "label": "Idioma",
+    "pt-BR": "Português (Brasil)",
+    "en": "English"
+  },
   "theme": {
     "label": "Tema",
     "light": "Claro",
@@ -24,7 +37,8 @@
     "retry": "Tentar novamente",
     "cancel": "Cancelar",
     "confirm": "Confirmar",
-    "goHome": "Voltar ao início"
+    "goHome": "Voltar ao início",
+    "close": "Fechar"
   },
   "states": {
     "loading": "Carregando",
@@ -69,5 +83,21 @@
     "confirmAction": "Excluir",
     "toastTrigger": "Mostrar aviso",
     "toastMessage": "Ação concluída com sucesso."
+  },
+  "userMenu": {
+    "open": "Abrir menu da conta de {name}",
+    "signOut": "Sair"
+  },
+  "validation": {
+    "required": "Preencha este campo.",
+    "email": "Informe um e-mail válido.",
+    "passwordLength": "A senha precisa ter pelo menos 8 caracteres.",
+    "passwordMismatch": "As senhas não coincidem."
+  },
+  "lessonTypes": {
+    "video": "Vídeo",
+    "text": "Texto",
+    "file": "Arquivos",
+    "quiz": "Quiz"
   }
 }

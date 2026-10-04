@@ -8,7 +8,7 @@ function readStoredPreference(): ThemePreference {
     const stored = localStorage.getItem(STORAGE_KEY);
     if (stored === 'light' || stored === 'dark' || stored === 'system') return stored;
   } catch {
-    // storage indisponível: usa o padrão
+    // storage unavailable: use the default
   }
   return 'system';
 }
@@ -17,7 +17,7 @@ function systemPrefersDark() {
   return window.matchMedia('(prefers-color-scheme: dark)').matches;
 }
 
-/** Controla o tema claro/escuro aplicando a classe `dark` no `<html>`. */
+/** Controls the light/dark theme by applying the `dark` class on `<html>`. */
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [preference, setPreferenceState] = useState<ThemePreference>(readStoredPreference);
   const [systemDark, setSystemDark] = useState(systemPrefersDark);
@@ -40,7 +40,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     try {
       localStorage.setItem(STORAGE_KEY, next);
     } catch {
-      // ignora falha de persistência
+      // ignore persistence failures
     }
   }, []);
 

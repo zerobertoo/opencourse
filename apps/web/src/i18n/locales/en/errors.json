@@ -1,10 +1,19 @@
 {
   "notFound": {
     "title": "Page not found",
-    "description": "The address you opened does not exist or has been moved."
+    "description": "The address you opened does not exist or was moved."
   },
   "forbidden": {
     "title": "Access denied",
-    "description": "You do not have permission to view this page."
+    "description": "You do not have permission to see this page."
+  },
+  "service": {
+    "not_found": "We could not find what you were looking for.",
+    "unauthorized": "Your session has expired. Sign in again.",
+    "forbidden": "You do not have permission to do that.",
+    "validation": "Check the information you entered and try again.",
+    "conflict": "This action conflicts with the current state of the data.",
+    "unavailable": "The service is unavailable right now. Please try again.",
+    "unknown": "Something went wrong. Please try again."
   }
 }

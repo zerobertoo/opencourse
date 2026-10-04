@@ -1,6 +1,6 @@
 import { cn } from '@/lib/utils';
 
-/** Bloco de carregamento genérico. */
+/** Generic loading block. */
 export function Skeleton({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) {
   return (
     <div

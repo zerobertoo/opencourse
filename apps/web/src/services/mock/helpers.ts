@@ -34,7 +34,7 @@ export function findLesson(
   throw new ServiceError('not_found', `Lesson not found: ${lessonId}`);
 }
 
-/** Concessão com o status efetivo (vencidas aparecem como `expired`). */
+/** Grant with its effective status (past-due ones show up as `expired`). */
 export function withEffectiveStatus(grant: Grant, now: Date): Grant {
   return { ...grant, status: computeGrantStatus(grant, now) };
 }
@@ -51,7 +51,7 @@ export function findActiveGrant(
     .find((grant) => grant.status === 'active');
 }
 
-/** Instrutor do curso e admin sempre acessam; alunos precisam de uma concessão ativa. */
+/** The course instructor and admins always have access; students need an active grant. */
 export function canReadCourse(
   db: MockDatabase,
   user: User,
@@ -63,7 +63,7 @@ export function canReadCourse(
   return findActiveGrant(db, user.id, course.id, now) !== undefined;
 }
 
-/** Instrutor dono do curso ou admin podem administrar acessos e alunos. */
+/** The course owner instructor or an admin can manage access and students. */
 export function canManageCourse(user: User, course: CourseDetail): boolean {
   return user.role === 'admin' || (user.role === 'instructor' && user.id === course.instructorId);
 }
@@ -87,7 +87,7 @@ export function summarizeUserCourse(db: MockDatabase, userId: string, course: Co
   return summarizeCourseProgress(course, getCompletedLessonIds(db, userId, course));
 }
 
-/** Data da atividade mais recente do usuário no curso. */
+/** Date of the user's most recent activity in the course. */
 export function getLastActivityAt(
   db: MockDatabase,
   userId: string,
@@ -103,7 +103,7 @@ export function getLastActivityAt(
 
 const CODE_ALPHABET = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
 
-/** Código público de certificado no formato `OC-XXXX-XXXX`, sem caracteres ambíguos. */
+/** Public certificate code in the `OC-XXXX-XXXX` format, with no ambiguous characters. */
 export function generateCertificateCode(context: MockContext): string {
   const block = () =>
     Array.from(
@@ -113,7 +113,7 @@ export function generateCertificateCode(context: MockContext): string {
   return `OC-${block()}-${block()}`;
 }
 
-/** Emite o certificado quando o aluno conclui todas as aulas e ainda não possui um. */
+/** Issues the certificate when the student completes all lessons and does not have one yet. */
 export function issueCertificateIfComplete(
   context: MockContext,
   userId: string,

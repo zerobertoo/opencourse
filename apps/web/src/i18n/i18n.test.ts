@@ -2,7 +2,7 @@ import { SUPPORTED_LOCALES } from '@opencourse/shared';
 import { describe, expect, it } from 'vitest';
 import { NAMESPACES, resources } from './resources';
 
-/** Lista as chaves de um objeto aninhado no formato `a.b.c`. */
+/** Lists the keys of a nested object in the `a.b.c` format. */
 function flattenKeys(value: object, prefix = ''): string[] {
   return Object.entries(value).flatMap(([key, child]) =>
     typeof child === 'object' && child !== null
@@ -11,7 +11,7 @@ function flattenKeys(value: object, prefix = ''): string[] {
   );
 }
 
-/** Extrai os nomes dos argumentos ICU de nível superior (`{count, plural, ...}`), ignorando ramos. */
+/** Extracts the names of top-level ICU arguments (`{count, plural, ...}`), ignoring branches. */
 function icuArguments(message: string): string[] {
   const names: string[] = [];
   let depth = 0;

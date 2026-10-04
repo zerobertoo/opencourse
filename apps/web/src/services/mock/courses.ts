@@ -5,7 +5,7 @@ import type { MockContext } from './context';
 import { canManageCourse, findCourseById } from './helpers';
 import { clone } from './store';
 
-/** "Introdução a SQL!" vira "introducao-a-sql". */
+/** "Introdução a SQL!" becomes "introducao-a-sql". */
 function slugify(title: string): string {
   return title
     .normalize('NFD')

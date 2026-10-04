@@ -2,7 +2,7 @@ import { SUPPORTED_LOCALES } from '@opencourse/shared';
 import { Languages } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
-/** Seletor de idioma da interface; a troca acontece sem recarregar a página. */
+/** Interface language selector; switching happens without reloading the page. */
 export function LanguageSwitcher() {
   const { t, i18n } = useTranslation();
 

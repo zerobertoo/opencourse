@@ -17,7 +17,7 @@ function Section({ title, children }: { title: string; children: React.ReactNode
   );
 }
 
-/** Página de verificação do design system, dos temas e do i18n. */
+/** Verification page for the design system, the themes and i18n. */
 export function Showcase() {
   const { t } = useTranslation();
   const { formatDate, formatNumber, formatPercent } = useFormatters();

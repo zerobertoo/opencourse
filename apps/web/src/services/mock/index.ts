@@ -5,6 +5,7 @@ import { createMockContext, type MockContext, type MockOptions } from './context
 import { createMockCourseService } from './courses';
 import { createMockEnrollmentService } from './enrollments';
 import { createMockGrantService } from './grants';
+import { createMockNoteService } from './notes';
 import { createMockProgressService } from './progress';
 import { createMockSettingsService } from './settings';
 import { createMockUserService } from './users';
@@ -13,11 +14,11 @@ export type { MockOptions } from './context';
 export { DEMO_USER_IDS } from './seed';
 
 export interface MockServices extends Services {
-  /** Controles de desenvolvimento e testes; não fazem parte do contrato `Services`. */
+  /** Development and testing controls; not part of the `Services` contract. */
   mock: Pick<MockContext, 'store'>;
 }
 
-/** Cria todos os services mockados sobre um mesmo banco em memória. */
+/** Creates all mock services on top of a single in-memory database. */
 export function createMockServices(options: MockOptions = {}): MockServices {
   const context = createMockContext(options);
   return {
@@ -25,6 +26,7 @@ export function createMockServices(options: MockOptions = {}): MockServices {
     courses: createMockCourseService(context),
     enrollments: createMockEnrollmentService(context),
     progress: createMockProgressService(context),
+    notes: createMockNoteService(context),
     certificates: createMockCertificateService(context),
     users: createMockUserService(context),
     grants: createMockGrantService(context),

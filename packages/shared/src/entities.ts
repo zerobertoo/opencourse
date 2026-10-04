@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { idSchema, isoDateSchema, localeSchema, roleSchema } from './base';
 
-// ---------- Usuários ----------
+// ---------- Users ----------
 
 export const userSchema = z.object({
   id: idSchema,
@@ -16,7 +16,7 @@ export const userSchema = z.object({
 });
 export type User = z.infer<typeof userSchema>;
 
-// ---------- Cursos ----------
+// ---------- Courses ----------
 
 export const courseStatusSchema = z.enum(['draft', 'published', 'archived']);
 export type CourseStatus = z.infer<typeof courseStatusSchema>;
@@ -25,7 +25,7 @@ export const courseTranslationSchema = z.object({
   locale: localeSchema,
   title: z.string(),
   description: z.string(),
-  /** "O que você vai aprender". */
+  /** "What you will learn". */
   learningOutcomes: z.array(z.string()),
 });
 export type CourseTranslation = z.infer<typeof courseTranslationSchema>;
@@ -37,7 +37,7 @@ export const courseSchema = z.object({
   coverImageUrl: z.string().nullable(),
   instructorId: idSchema,
   defaultLocale: localeSchema,
-  /** Quando verdadeiro, a próxima aula só libera após concluir a anterior. */
+  /** When true, the next lesson only unlocks after the previous one is completed. */
   sequentialOrder: z.boolean(),
   createdAt: isoDateSchema,
   updatedAt: isoDateSchema,
@@ -59,19 +59,19 @@ export const quizQuestionSchema = z.object({
   translations: z.array(
     z.object({ locale: localeSchema, prompt: z.string(), explanation: z.string() }),
   ),
-  /** Múltipla escolha com uma única alternativa correta. */
+  /** Multiple choice with a single correct option. */
   options: z.array(quizOptionSchema).min(2),
 });
 export type QuizQuestion = z.infer<typeof quizQuestionSchema>;
 
 export const quizSchema = z.object({
-  /** Nota mínima para aprovação, de 0 a 100. */
+  /** Minimum passing score, from 0 to 100. */
   passingScore: z.number().int().min(0).max(100),
   questions: z.array(quizQuestionSchema),
 });
 export type Quiz = z.infer<typeof quizSchema>;
 
-// ---------- Aulas e módulos ----------
+// ---------- Lessons and modules ----------
 
 export const lessonTypeSchema = z.enum(['video', 'text', 'file', 'quiz']);
 export type LessonType = z.infer<typeof lessonTypeSchema>;
@@ -79,7 +79,7 @@ export type LessonType = z.infer<typeof lessonTypeSchema>;
 export const lessonTranslationSchema = z.object({
   locale: localeSchema,
   title: z.string(),
-  /** Markdown: corpo da aula de texto ou descrição das demais. */
+  /** Markdown: body of a text lesson or description of the other types. */
   content: z.string(),
 });
 export type LessonTranslation = z.infer<typeof lessonTranslationSchema>;
@@ -108,7 +108,7 @@ const lessonBaseSchema = z.object({
   order: z.number().int().nonnegative(),
   durationSeconds: z.number().int().nonnegative(),
   translations: z.array(lessonTranslationSchema),
-  /** Materiais para download exibidos na aba "Materiais" (e conteúdo da aula de arquivo). */
+  /** Downloadable materials shown in the "Materials" tab (and the content of a file lesson). */
   attachments: z.array(fileAttachmentSchema),
 });
 
@@ -135,7 +135,7 @@ export type CourseModule = z.infer<typeof moduleSchema>;
 export const moduleWithLessonsSchema = moduleSchema.extend({ lessons: z.array(lessonSchema) });
 export type CourseModuleWithLessons = z.infer<typeof moduleWithLessonsSchema>;
 
-/** Curso com currículo completo (módulos e aulas ordenáveis). */
+/** Course with its full curriculum (orderable modules and lessons). */
 export const courseDetailSchema = courseSchema.extend({
   modules: z.array(moduleWithLessonsSchema),
 });
@@ -149,7 +149,7 @@ export type GrantSource = z.infer<typeof grantSourceSchema>;
 export const grantStatusSchema = z.enum(['active', 'revoked', 'expired']);
 export type GrantStatus = z.infer<typeof grantStatusSchema>;
 
-/** Concessão de acesso a um curso. `expiresAt` nulo significa acesso vitalício. */
+/** Access grant to a course. A null `expiresAt` means lifetime access. */
 export const grantSchema = z.object({
   id: idSchema,
   userId: idSchema,
@@ -168,7 +168,7 @@ export type InviteStatus = z.infer<typeof inviteStatusSchema>;
 export const inviteSchema = z.object({
   id: idSchema,
   email: z.email(),
-  /** Quando informado, aceitar o convite concede acesso a este curso. */
+  /** When set, accepting the invite grants access to this course. */
   courseId: idSchema.nullable(),
   token: z.string().min(1),
   createdById: idSchema,
@@ -193,7 +193,7 @@ export const quizAttemptSchema = z.object({
   id: idSchema,
   userId: idSchema,
   lessonId: idSchema,
-  /** Pergunta -> alternativa escolhida. */
+  /** Question -> chosen option. */
   answers: z.record(z.string(), z.string()),
   score: z.number().int().min(0).max(100),
   passed: z.boolean(),
@@ -201,17 +201,26 @@ export const quizAttemptSchema = z.object({
 });
 export type QuizAttempt = z.infer<typeof quizAttemptSchema>;
 
+/** A student's personal note on a lesson. */
+export const lessonNoteSchema = z.object({
+  userId: idSchema,
+  lessonId: idSchema,
+  content: z.string(),
+  updatedAt: isoDateSchema,
+});
+export type LessonNote = z.infer<typeof lessonNoteSchema>;
+
 export const certificateSchema = z.object({
   id: idSchema,
   userId: idSchema,
   courseId: idSchema,
-  /** Código público para a página de verificação. */
+  /** Public code for the verification page. */
   code: z.string().min(1),
   issuedAt: isoDateSchema,
 });
 export type Certificate = z.infer<typeof certificateSchema>;
 
-// ---------- Configurações da instância ----------
+// ---------- Instance settings ----------
 
 export const platformSettingsSchema = z.object({
   brand: z.object({

@@ -140,7 +140,7 @@ describe('mock progress service', () => {
 
   it('blocks locked lessons in a sequential course until the previous ones are done', async () => {
     const { services } = await createServicesSignedInAs('lucas');
-    // Lucas concluiu as 2 primeiras do curso de design; a 3ª está liberada, a 7ª não
+    // Lucas completed the first 2 of the design course; the 3rd is unlocked, the 7th is not
     await expect(
       services.progress.setLessonCompleted('les-design-2-1', true),
     ).rejects.toMatchObject({
@@ -281,7 +281,7 @@ describe('mock certificate service', () => {
     const { services } = await createServicesSignedInAs('thiago');
     expect(await services.certificates.listMine()).toHaveLength(0);
 
-    // falta apenas o quiz final do curso de JavaScript
+    // only the final quiz of the JavaScript course is missing
     await services.progress.submitQuizAttempt('les-js-3-3', {
       'q-js-4': 'q-js-4-b',
       'q-js-5': 'q-js-5-b',
@@ -294,7 +294,7 @@ describe('mock certificate service', () => {
     expect(certificate?.code).toMatch(/^OC-[A-Z2-9]{4}-[A-Z2-9]{4}$/);
     expect((await services.certificates.verify(certificate!.code))?.id).toBe(certificate?.id);
 
-    // refazer a conclusão não emite outro
+    // redoing the completion does not issue another one
     await services.progress.setLessonCompleted('les-js-3-3', false);
     await services.progress.setLessonCompleted('les-js-3-3', true);
     expect(await services.certificates.listMine()).toHaveLength(1);
@@ -304,5 +304,46 @@ describe('mock certificate service', () => {
     const { services } = await createServicesSignedInAs('camila');
     await services.progress.setLessonCompleted('les-js-3-1', true);
     expect(await services.certificates.listMine()).toHaveLength(0);
+  });
+});
+
+describe('notes and password', () => {
+  it('saves, updates and removes a personal note per lesson', async () => {
+    const { services } = await createServicesSignedInAs('lucas');
+    expect(await services.notes.getLessonNote('les-js-2-1')).toBeNull();
+
+    await services.notes.saveLessonNote('les-js-2-1', 'Closures guardam o escopo');
+    expect((await services.notes.getLessonNote('les-js-2-1'))?.content).toBe(
+      'Closures guardam o escopo',
+    );
+
+    await services.notes.saveLessonNote('les-js-2-1', 'Texto novo');
+    expect((await services.notes.getLessonNote('les-js-2-1'))?.content).toBe('Texto novo');
+
+    expect(await services.notes.saveLessonNote('les-js-2-1', '   ')).toBeNull();
+    expect(await services.notes.getLessonNote('les-js-2-1')).toBeNull();
+  });
+
+  it('keeps notes private to the author and blocks lessons without access', async () => {
+    const { services } = await createServicesSignedInAs('lucas');
+    await services.notes.saveLessonNote('les-js-2-1', 'Só minha');
+    await services.auth.signIn('camila@opencourse.example', 'qualquer-senha');
+    expect(await services.notes.getLessonNote('les-js-2-1')).toBeNull();
+
+    // Camila has no active grant for the design course
+    await expect(services.notes.getLessonNote('les-design-1-1')).rejects.toMatchObject({
+      code: 'forbidden',
+    });
+  });
+
+  it('validates the password change', async () => {
+    const { services } = await createServicesSignedInAs('lucas');
+    await expect(services.auth.changePassword('', 'novasenha123')).rejects.toMatchObject({
+      code: 'validation',
+    });
+    await expect(services.auth.changePassword('atual', 'curta')).rejects.toMatchObject({
+      code: 'validation',
+    });
+    await expect(services.auth.changePassword('atual', 'novasenha123')).resolves.toBeUndefined();
   });
 });

@@ -7,6 +7,6 @@ export interface CertificateDetails extends Certificate {
 
 export interface CertificateService {
   listMine(): Promise<CertificateDetails[]>;
-  /** Verificação pública: não exige autenticação. Retorna nulo para código desconhecido. */
+  /** Public verification: does not require authentication. Returns null for an unknown code. */
   verify(code: string): Promise<CertificateDetails | null>;
 }

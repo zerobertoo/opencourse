@@ -1,1 +1,108 @@
-{ "lesson": { "title": "Aula" } }
+{
+  "lesson": {
+    "title": "Aula",
+    "notFoundTitle": "Aula não encontrada",
+    "notFoundDescription": "Esta aula não existe neste curso.",
+    "noAccessTitle": "Você não tem acesso a este curso",
+    "noAccessDescription": "Peça ao instrutor ou a um administrador para liberar o seu acesso.",
+    "lockedTitle": "Aula bloqueada",
+    "lockedDescription": "Conclua as aulas anteriores para liberar esta.",
+    "goToPending": "Ir para a próxima aula pendente",
+    "backToCourse": "Voltar ao curso",
+    "completed": "Concluída",
+    "fallbackNotice": "Esta aula ainda não foi traduzida e está sendo exibida em {language}.",
+    "previous": "Aula anterior",
+    "next": "Próxima aula",
+    "markComplete": "Marcar como concluída",
+    "markIncomplete": "Concluída (desmarcar)",
+    "passQuizToComplete": "Seja aprovado no quiz para concluir esta aula.",
+    "completedToast": "Aula concluída.",
+    "courseFinishedToast": "Curso concluído! Seu certificado foi emitido.",
+    "noDescription": "Esta aula não tem descrição."
+  },
+  "video": {
+    "playerLabel": "Player de vídeo: {title}",
+    "play": "Reproduzir",
+    "pause": "Pausar",
+    "seek": "Posição do vídeo",
+    "timeValue": "{current} / {total}",
+    "mute": "Silenciar",
+    "unmute": "Ativar som",
+    "speed": "Velocidade",
+    "rateOption": "{rate, number}×",
+    "fullscreen": "Tela cheia",
+    "exitFullscreen": "Sair da tela cheia",
+    "buffering": "Carregando vídeo",
+    "errorTitle": "Não foi possível reproduzir o vídeo",
+    "errorDescription": "Verifique sua conexão e tente novamente.",
+    "status": {
+      "uploading": {
+        "title": "Vídeo em envio",
+        "description": "O instrutor ainda está enviando este vídeo. Volte em instantes."
+      },
+      "processing": {
+        "title": "Vídeo em processamento",
+        "description": "Estamos preparando este vídeo para reprodução. Volte em instantes."
+      },
+      "ready": {
+        "title": "Vídeo indisponível",
+        "description": "Este vídeo não tem uma fonte de reprodução."
+      },
+      "error": {
+        "title": "Falha no processamento do vídeo",
+        "description": "Houve um problema ao preparar este vídeo. Avise o instrutor."
+      }
+    }
+  },
+  "captions": {
+    "label": "Legendas",
+    "off": "Desativadas",
+    "language": { "pt-BR": "Português", "en": "Inglês" }
+  },
+  "curriculum": {
+    "title": "Currículo",
+    "show": "Mostrar currículo",
+    "hide": "Ocultar currículo",
+    "completed": "Concluída",
+    "locked": "Bloqueada"
+  },
+  "tabs": {
+    "label": "Detalhes da aula",
+    "description": "Descrição",
+    "materials": "Materiais",
+    "notes": "Notas"
+  },
+  "materials": {
+    "emptyTitle": "Sem materiais",
+    "emptyDescription": "Esta aula não tem arquivos para baixar.",
+    "download": "Baixar",
+    "downloadFile": "Baixar {name}"
+  },
+  "notes": {
+    "label": "Suas notas sobre esta aula",
+    "placeholder": "Escreva aqui suas anotações. Só você as vê.",
+    "save": "Salvar nota",
+    "savedToast": "Nota salva.",
+    "lastSaved": "Salva em {date}",
+    "empty": "Você ainda não escreveu nada."
+  },
+  "quiz": {
+    "noQuestions": "Este quiz ainda não tem perguntas.",
+    "intro": "{count, plural, one {# pergunta} other {# perguntas}}. Nota mínima para aprovação: {passingScore}%.",
+    "passedToast": "Você foi aprovado no quiz.",
+    "passedTitle": "Aprovado!",
+    "failedTitle": "Ainda não foi desta vez",
+    "resultSummary": "Nota {score}%: {correct} de {total, plural, one {# pergunta certa} other {# perguntas certas}}.",
+    "failedHint": "Revise as explicações e tente de novo. Você precisa de {passingScore}% para ser aprovado.",
+    "correctOption": "Resposta correta",
+    "yourAnswer": "Sua resposta",
+    "explanation": "Explicação",
+    "retry": "Tentar de novo",
+    "submit": "Enviar respostas",
+    "answerAll": "Respondidas: {answered} de {total}.",
+    "attemptsTitle": "Tentativas anteriores",
+    "noAttempts": "Você ainda não fez este quiz.",
+    "statusPassed": "Aprovado",
+    "statusFailed": "Reprovado"
+  }
+}

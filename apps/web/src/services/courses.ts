@@ -3,7 +3,7 @@ import type { CourseDetail, CourseStatus, CourseTranslation, Locale } from '@ope
 export interface CourseFilters {
   status?: CourseStatus;
   instructorId?: string;
-  /** Busca em qualquer tradução do título do curso. */
+  /** Searches any translation of the course title. */
   search?: string;
 }
 
@@ -17,16 +17,16 @@ export interface UpdateCourseInput {
   status?: CourseStatus;
   sequentialOrder?: boolean;
   defaultLocale?: Locale;
-  /** Substitui as traduções informadas por idioma; as demais são mantidas. */
+  /** Replaces the given translations by language; the others are kept. */
   translations?: CourseTranslation[];
 }
 
 export interface CourseService {
   list(filters?: CourseFilters): Promise<CourseDetail[]>;
-  /** Lança `not_found` quando o curso não existe. */
+  /** Throws `not_found` when the course does not exist. */
   getBySlug(slug: string): Promise<CourseDetail>;
   getById(id: string): Promise<CourseDetail>;
-  /** Cria um rascunho para o instrutor autenticado. */
+  /** Creates a draft for the authenticated instructor. */
   create(input: CreateCourseInput): Promise<CourseDetail>;
   update(id: string, input: UpdateCourseInput): Promise<CourseDetail>;
 }

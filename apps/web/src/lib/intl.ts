@@ -8,9 +8,9 @@ export interface Formatters {
 }
 
 /**
- * Cria formatadores baseados em `Intl` para o idioma e o fuso informados.
+ * Creates `Intl`-based formatters for the given language and time zone.
  * @param locale idioma BCP 47 (ex.: `pt-BR`)
- * @param timeZone fuso IANA do usuário; quando ausente usa o do navegador
+ * @param timeZone the user's IANA time zone; defaults to the browser's
  */
 export function createFormatters(locale: string, timeZone?: string): Formatters {
   return {
@@ -24,7 +24,7 @@ export function createFormatters(locale: string, timeZone?: string): Formatters 
   };
 }
 
-/** Formatadores que acompanham o idioma ativo da interface. */
+/** Formatters that follow the active interface language. */
 export function useFormatters(timeZone?: string): Formatters {
   const { i18n } = useTranslation();
   return useMemo(() => createFormatters(i18n.language, timeZone), [i18n.language, timeZone]);

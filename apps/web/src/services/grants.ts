@@ -9,24 +9,24 @@ export interface GrantFilters {
 export interface CreateGrantInput {
   userId: string;
   courseId: string;
-  /** Nulo concede acesso vitalício. */
+  /** Null grants lifetime access. */
   expiresAt: string | null;
 }
 
 export interface CreateInviteInput {
   email: string;
   courseId?: string;
-  /** Validade do convite; por padrão 14 dias. */
+  /** Invite expiry; 14 days by default. */
   expiresAt?: string;
 }
 
 export interface GrantService {
-  /** Status já normalizado: concessões vencidas aparecem como `expired`. */
+  /** Already normalized status: expired grants show up as `expired`. */
   list(filters?: GrantFilters): Promise<Grant[]>;
-  /** Instrutor do curso ou admin. Lança `conflict` se já existir concessão ativa. */
+  /** Course instructor or admin. Throws `conflict` if an active grant already exists. */
   create(input: CreateGrantInput): Promise<Grant>;
   revoke(grantId: string): Promise<Grant>;
-  /** Define a nova validade (nulo para vitalício) e reativa concessões expiradas. */
+  /** Sets the new expiry (null for lifetime) and reactivates expired grants. */
   extend(grantId: string, expiresAt: string | null): Promise<Grant>;
   createInvite(input: CreateInviteInput): Promise<Invite>;
   listInvites(filters?: { courseId?: string }): Promise<Invite[]>;

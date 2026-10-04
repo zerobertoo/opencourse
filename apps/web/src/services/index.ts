@@ -2,8 +2,8 @@ import { createMockServices } from './mock';
 import type { Services } from './types';
 
 /**
- * Único ponto que decide qual implementação dos services a aplicação usa.
- * Para trocar o mock por uma API real, devolva aqui outra implementação de `Services`.
+ * The single place that decides which services implementation the app uses.
+ * To swap the mock for a real API, return another `Services` implementation here.
  */
 export const services: Services = createMockServices();
 
@@ -14,6 +14,7 @@ export type * from './certificates';
 export type * from './courses';
 export type * from './enrollments';
 export type * from './grants';
+export type * from './notes';
 export type * from './progress';
 export type * from './settings';
 export type * from './users';

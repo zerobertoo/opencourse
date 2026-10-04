@@ -22,7 +22,7 @@ import { clone } from './store';
 export function createMockEnrollmentService(context: MockContext): EnrollmentService {
   const { store } = context;
 
-  /** Cursos com concessão ativa do usuário, do mais recente para o mais antigo. */
+  /** Courses with an active grant for the user, from most recent to oldest. */
   function enrolledCourses(userId: string): EnrolledCourse[] {
     const db = store.db;
     const now = context.now();
@@ -99,7 +99,7 @@ export function createMockEnrollmentService(context: MockContext): EnrollmentSer
         const now = context.now();
         const students: CourseStudent[] = [];
         for (const grant of db.grants.filter((candidate) => candidate.courseId === courseId)) {
-          // um aluno com várias concessões aparece uma vez, com a mais relevante
+          // a student with several grants shows up once, with the most relevant one
           if (students.some((student) => student.user.id === grant.userId)) continue;
           const effective =
             findActiveGrant(db, grant.userId, courseId, now) ?? withEffectiveStatus(grant, now);

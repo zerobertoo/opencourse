@@ -13,6 +13,7 @@ import { NavLink, Outlet } from 'react-router-dom';
 import { LanguageSwitcher } from '@/components/LanguageSwitcher';
 import { Logo } from '@/components/Logo';
 import { ThemeToggle } from '@/components/ThemeToggle';
+import { UserMenu } from '@/components/UserMenu';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
@@ -22,7 +23,7 @@ const NAV_ITEMS = [
   { to: '/', labelKey: 'nav.student', icon: GraduationCap, end: true },
 ] as const;
 
-/** Layout de instrutor e admin: sidebar colapsável (gaveta no mobile). */
+/** Instructor and admin layout: collapsible sidebar (drawer on mobile). */
 export function StaffLayout() {
   const { t } = useTranslation();
   const [collapsed, setCollapsed] = useState(false);
@@ -113,6 +114,7 @@ export function StaffLayout() {
           <div className="ms-auto flex items-center gap-1">
             <LanguageSwitcher />
             <ThemeToggle />
+            <UserMenu />
           </div>
         </header>
         <main id="main-content" className="flex-1 px-4 py-8 md:px-8">

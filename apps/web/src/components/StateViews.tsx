@@ -33,20 +33,22 @@ function StateFrame({
   );
 }
 
-/** Estado vazio com chamada para ação. */
+/** Empty state with a call to action. */
 export function EmptyState(props: StateProps) {
   return <StateFrame icon={<Inbox className="size-6" aria-hidden="true" />} {...props} />;
 }
 
-/** Estado de erro com botão "tentar novamente". */
+/** Error state with a "try again" button. */
 export function ErrorState({
   title,
   description,
   onRetry,
+  retryLabel,
 }: {
   title?: string;
   description?: string;
   onRetry: () => void;
+  retryLabel?: string;
 }) {
   const { t } = useTranslation();
   return (
@@ -55,13 +57,13 @@ export function ErrorState({
         icon={<AlertTriangle className="size-6" aria-hidden="true" />}
         title={title ?? t('states.error.title')}
         description={description ?? t('states.error.description')}
-        action={{ label: t('actions.retry'), onClick: onRetry }}
+        action={{ label: retryLabel ?? t('actions.retry'), onClick: onRetry }}
       />
     </div>
   );
 }
 
-/** Esqueleto de carregamento de página inteira. */
+/** Full-page loading skeleton. */
 export function PageSkeleton() {
   const { t } = useTranslation();
   return (

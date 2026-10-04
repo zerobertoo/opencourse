@@ -1,7 +1,7 @@
 import { createMockServices, type MockOptions } from '@/services/mock';
 import type { MockStorage } from '@/services/mock/store';
 
-/** Relógio fixo dos testes: o seed e as regras de validade são calculados a partir dele. */
+/** Fixed clock for tests: the seed and the expiry rules are computed from it. */
 export const FIXED_NOW = new Date('2026-06-15T12:00:00.000Z');
 
 export function createMemoryStorage(): MockStorage {
@@ -13,7 +13,7 @@ export function createMemoryStorage(): MockStorage {
   };
 }
 
-/** Gerador pseudoaleatório determinístico (LCG) para códigos e tokens estáveis. */
+/** Deterministic pseudo-random generator (LCG) for stable codes and tokens. */
 function createSeededRandom(seed = 42): () => number {
   let state = seed;
   return () => {
@@ -22,7 +22,7 @@ function createSeededRandom(seed = 42): () => number {
   };
 }
 
-/** Services mockados sem latência, com relógio fixo e storage em memória. */
+/** Mock services with no latency, a fixed clock and in-memory storage. */
 export function createTestServices(options: MockOptions = {}) {
   const storage = options.storage ?? createMemoryStorage();
   const services = createMockServices({
@@ -35,7 +35,7 @@ export function createTestServices(options: MockOptions = {}) {
   return { services, storage };
 }
 
-/** Atalho: services já autenticados com o e-mail do usuário de seed informado. */
+/** Shortcut: services already signed in with the e-mail of the given seed user. */
 export async function createServicesSignedInAs(userSlug: string) {
   const context = createTestServices();
   await context.services.auth.signIn(`${userSlug}@opencourse.example`, 'qualquer-senha');

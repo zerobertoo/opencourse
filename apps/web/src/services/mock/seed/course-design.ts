@@ -12,7 +12,7 @@ import {
 
 const COURSE_ID = 'course-design';
 
-/** Curso com ordem sequencial e tradução parcial para inglês (só o início está traduzido). */
+/** Course with sequential order and a partial English translation (only the beginning is translated). */
 export function buildDesignCourse(createdAt: string): CourseDetail {
   return {
     id: COURSE_ID,

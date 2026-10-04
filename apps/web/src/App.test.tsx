@@ -1,20 +1,8 @@
-import { render, screen } from '@testing-library/react';
+import { screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { MemoryRouter } from 'react-router-dom';
 import { beforeEach, describe, expect, it } from 'vitest';
-import { App } from './App';
 import i18n from './i18n';
-import { ThemeProvider } from './theme/ThemeProvider';
-
-function renderAt(path: string) {
-  return render(
-    <ThemeProvider>
-      <MemoryRouter initialEntries={[path]}>
-        <App />
-      </MemoryRouter>
-    </ThemeProvider>,
-  );
-}
+import { renderApp } from './test/render';
 
 beforeEach(async () => {
   await i18n.changeLanguage('pt-BR');
@@ -23,7 +11,7 @@ beforeEach(async () => {
 describe('language switching', () => {
   it('renders in pt-BR and switches to English without reloading', async () => {
     const user = userEvent.setup();
-    renderAt('/');
+    await renderApp('/showcase');
 
     expect(
       screen.getByRole('heading', { level: 1, name: 'Guia de componentes' }),
@@ -40,7 +28,7 @@ describe('language switching', () => {
 
   it('applies ICU plural rules and Intl formatting per language', async () => {
     const user = userEvent.setup();
-    renderAt('/');
+    await renderApp('/showcase');
 
     expect(screen.getByText('1 aula')).toBeInTheDocument();
     expect(screen.getByText('12 aulas')).toBeInTheDocument();
@@ -56,7 +44,7 @@ describe('language switching', () => {
 describe('theme', () => {
   it('toggles the dark class and persists the preference', async () => {
     const user = userEvent.setup();
-    renderAt('/');
+    await renderApp('/showcase');
 
     await user.click(screen.getByRole('button', { name: 'Alternar para o tema escuro' }));
     expect(document.documentElement).toHaveClass('dark');
@@ -68,18 +56,19 @@ describe('theme', () => {
 });
 
 describe('layouts and routes', () => {
-  it('renders the student topbar with search, language and theme controls', () => {
-    renderAt('/');
-    expect(screen.getByRole('search')).toBeInTheDocument();
+  it('renders the student topbar with search, language and theme controls', async () => {
+    await renderApp('/', { signInAs: 'student' });
+    expect(await screen.findByRole('heading', { level: 1, name: /Olá, Lucas/ })).toBeVisible();
+    expect(screen.getAllByRole('search').length).toBeGreaterThan(0);
     expect(screen.getByRole('combobox', { name: 'Idioma' })).toBeInTheDocument();
   });
 
   it('renders the staff layout with a collapsible sidebar', async () => {
     const user = userEvent.setup();
-    renderAt('/studio');
+    await renderApp('/studio', { signInAs: 'instructor' });
 
     expect(
-      screen.getByRole('heading', { level: 1, name: 'Painel do instrutor' }),
+      await screen.findByRole('heading', { level: 1, name: 'Painel do instrutor' }),
     ).toBeInTheDocument();
     const toggle = screen.getByRole('button', { name: 'Recolher barra lateral' });
     expect(toggle).toHaveAttribute('aria-expanded', 'true');
@@ -91,8 +80,25 @@ describe('layouts and routes', () => {
     );
   });
 
-  it('shows the 404 page for unknown routes', () => {
-    renderAt('/nao-existe');
+  it('shows the 404 page for unknown routes', async () => {
+    await renderApp('/nao-existe');
     expect(screen.getByRole('heading', { name: 'Página não encontrada' })).toBeInTheDocument();
+  });
+});
+
+describe('route protection', () => {
+  it('sends signed-out visitors to the login screen', async () => {
+    await renderApp('/certificates');
+    expect(await screen.findByRole('heading', { level: 1, name: 'Entrar' })).toBeInTheDocument();
+  });
+
+  it('shows the friendly 403 when a student opens the studio or admin areas', async () => {
+    await renderApp('/studio', { signInAs: 'student' });
+    expect(await screen.findByRole('heading', { name: 'Acesso negado' })).toBeInTheDocument();
+  });
+
+  it('lets only admins into the admin area', async () => {
+    await renderApp('/admin', { signInAs: 'instructor' });
+    expect(await screen.findByRole('heading', { name: 'Acesso negado' })).toBeInTheDocument();
   });
 });

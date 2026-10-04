@@ -4,15 +4,15 @@ import { clone, MockStore, SESSION_STORAGE_KEY, type MockStorage } from './store
 import { createSeedDatabase } from './seed';
 
 export interface MockOptions {
-  /** Onde persistir o estado. Padrão: `sessionStorage`. Use `null` para só memória. */
+  /** Where to persist the state. Default: `sessionStorage`. Use `null` for memory only. */
   storage?: MockStorage | null;
-  /** Latência simulada em milissegundos. Padrão: entre 120 e 350. Use `{ min: 0, max: 0 }` nos testes. */
+  /** Simulated latency in milliseconds. Default: between 120 and 350. Use `{ min: 0, max: 0 }` in tests. */
   latency?: { min: number; max: number };
-  /** Força falhas para exercitar estados de erro: recebe o nome da operação (ex.: `courses.list`). */
+  /** Forces failures to exercise error states: receives the operation name (e.g. `courses.list`). */
   failOn?: (operation: string) => boolean;
-  /** Relógio injetável. */
+  /** Injectable clock. */
   now?: () => Date;
-  /** Aleatoriedade injetável, de 0 a 1. */
+  /** Injectable randomness, from 0 to 1. */
   random?: () => number;
 }
 
@@ -20,13 +20,13 @@ export interface MockContext {
   store: MockStore;
   now(): Date;
   random(): number;
-  /** Executa uma operação aplicando latência e falhas simuladas. */
+  /** Runs an operation applying simulated latency and failures. */
   run<T>(operation: string, action: () => T): Promise<T>;
   getSessionUserId(): string | null;
   setSessionUserId(userId: string | null): void;
-  /** Usuário autenticado ou erro `unauthorized`. */
+  /** Authenticated user, or an `unauthorized` error. */
   requireUser(): User;
-  /** Usuário autenticado com um dos papéis ou erro `forbidden`. */
+  /** Authenticated user with one of the roles, or a `forbidden` error. */
   requireRole(...roles: Role[]): User;
 }
 
@@ -45,7 +45,7 @@ export function createMockContext(options: MockOptions = {}): MockContext {
   const random = options.random ?? Math.random;
   const store = new MockStore(storage, () => createSeedDatabase(now()));
 
-  // sem storage a sessão vive só em memória
+  // without storage the session lives in memory only
   let memorySessionUserId: string | null = null;
 
   const getSessionUserId = () => {
@@ -83,7 +83,7 @@ export function createMockContext(options: MockOptions = {}): MockContext {
         if (userId === null) storage?.removeItem(SESSION_STORAGE_KEY);
         else storage?.setItem(SESSION_STORAGE_KEY, userId);
       } catch {
-        // sem persistência de sessão
+        // no session persistence
       }
     },
     requireUser,

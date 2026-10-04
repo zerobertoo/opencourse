@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { EmptyState } from '@/components/StateViews';
 import { Button } from '@/components/ui/button';
 
-/** Tela 404. */
+/** 404 screen. */
 export function NotFound() {
   const { t } = useTranslation(['errors', 'common']);
   return (

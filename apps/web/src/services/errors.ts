@@ -2,8 +2,8 @@ export type ServiceErrorCode =
   'not_found' | 'unauthorized' | 'forbidden' | 'validation' | 'conflict' | 'unavailable';
 
 /**
- * Erro padrão de qualquer implementação de service (mock ou API real).
- * A interface traduz o `code` em mensagem; `message` serve apenas para logs.
+ * Standard error of any service implementation (mock or real API).
+ * The UI translates `code` into a message; `message` is only meant for logs.
  */
 export class ServiceError extends Error {
   readonly code: ServiceErrorCode;

@@ -1,1 +1,108 @@
-{ "lesson": { "title": "Lesson" } }
+{
+  "lesson": {
+    "title": "Lesson",
+    "notFoundTitle": "Lesson not found",
+    "notFoundDescription": "This lesson does not exist in this course.",
+    "noAccessTitle": "You don't have access to this course",
+    "noAccessDescription": "Ask the instructor or an administrator to give you access.",
+    "lockedTitle": "Lesson locked",
+    "lockedDescription": "Complete the previous lessons to unlock this one.",
+    "goToPending": "Go to the next pending lesson",
+    "backToCourse": "Back to course",
+    "completed": "Completed",
+    "fallbackNotice": "This lesson has not been translated yet and is shown in {language}.",
+    "previous": "Previous lesson",
+    "next": "Next lesson",
+    "markComplete": "Mark as completed",
+    "markIncomplete": "Completed (undo)",
+    "passQuizToComplete": "Pass the quiz to complete this lesson.",
+    "completedToast": "Lesson completed.",
+    "courseFinishedToast": "Course completed! Your certificate was issued.",
+    "noDescription": "This lesson has no description."
+  },
+  "video": {
+    "playerLabel": "Video player: {title}",
+    "play": "Play",
+    "pause": "Pause",
+    "seek": "Video position",
+    "timeValue": "{current} / {total}",
+    "mute": "Mute",
+    "unmute": "Unmute",
+    "speed": "Speed",
+    "rateOption": "{rate, number}×",
+    "fullscreen": "Fullscreen",
+    "exitFullscreen": "Exit fullscreen",
+    "buffering": "Loading video",
+    "errorTitle": "Could not play the video",
+    "errorDescription": "Check your connection and try again.",
+    "status": {
+      "uploading": {
+        "title": "Video uploading",
+        "description": "The instructor is still uploading this video. Come back shortly."
+      },
+      "processing": {
+        "title": "Video processing",
+        "description": "We are preparing this video for playback. Come back shortly."
+      },
+      "ready": {
+        "title": "Video unavailable",
+        "description": "This video has no playback source."
+      },
+      "error": {
+        "title": "Video processing failed",
+        "description": "There was a problem preparing this video. Let the instructor know."
+      }
+    }
+  },
+  "captions": {
+    "label": "Captions",
+    "off": "Off",
+    "language": { "pt-BR": "Portuguese", "en": "English" }
+  },
+  "curriculum": {
+    "title": "Curriculum",
+    "show": "Show curriculum",
+    "hide": "Hide curriculum",
+    "completed": "Completed",
+    "locked": "Locked"
+  },
+  "tabs": {
+    "label": "Lesson details",
+    "description": "Description",
+    "materials": "Materials",
+    "notes": "Notes"
+  },
+  "materials": {
+    "emptyTitle": "No materials",
+    "emptyDescription": "This lesson has no files to download.",
+    "download": "Download",
+    "downloadFile": "Download {name}"
+  },
+  "notes": {
+    "label": "Your notes on this lesson",
+    "placeholder": "Write your notes here. Only you can see them.",
+    "save": "Save note",
+    "savedToast": "Note saved.",
+    "lastSaved": "Saved on {date}",
+    "empty": "You haven't written anything yet."
+  },
+  "quiz": {
+    "noQuestions": "This quiz has no questions yet.",
+    "intro": "{count, plural, one {# question} other {# questions}}. Minimum score to pass: {passingScore}%.",
+    "passedToast": "You passed the quiz.",
+    "passedTitle": "Passed!",
+    "failedTitle": "Not this time",
+    "resultSummary": "Score {score}%: {correct} of {total, plural, one {# question correct} other {# questions correct}}.",
+    "failedHint": "Review the explanations and try again. You need {passingScore}% to pass.",
+    "correctOption": "Correct answer",
+    "yourAnswer": "Your answer",
+    "explanation": "Explanation",
+    "retry": "Try again",
+    "submit": "Submit answers",
+    "answerAll": "Answered: {answered} of {total}.",
+    "attemptsTitle": "Previous attempts",
+    "noAttempts": "You haven't taken this quiz yet.",
+    "statusPassed": "Passed",
+    "statusFailed": "Failed"
+  }
+}

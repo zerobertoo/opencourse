@@ -1,7 +1,7 @@
 import type { Locale, Role, User } from '@opencourse/shared';
 
 export interface UserFilters {
-  /** Busca por nome ou e-mail. */
+  /** Searches by name or e-mail. */
   search?: string;
   role?: Role;
   active?: boolean;
@@ -16,10 +16,10 @@ export interface UpdateProfileInput {
 export interface UserService {
   list(filters?: UserFilters): Promise<User[]>;
   getById(id: string): Promise<User>;
-  /** Atualiza o perfil do usuário autenticado. */
+  /** Updates the authenticated user's profile. */
   updateProfile(input: UpdateProfileInput): Promise<User>;
-  /** Somente admin. */
+  /** Admin only. */
   updateRole(userId: string, role: Role): Promise<User>;
-  /** Somente admin. Usuário desativado não consegue entrar. */
+  /** Admin only. A deactivated user cannot sign in. */
   setActive(userId: string, active: boolean): Promise<User>;
 }

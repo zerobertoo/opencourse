@@ -8,7 +8,7 @@ import type {
   QuizQuestion,
 } from '@opencourse/shared';
 
-/** Texto por idioma; idiomas ausentes ficam sem tradução (útil para cursos parciais). */
+/** Text by language; missing languages stay untranslated (useful for partial courses). */
 export type ByLocale<T> = Partial<Record<Locale, T>>;
 
 function entries<T>(byLocale: ByLocale<T>): Array<[Locale, T]> {
@@ -19,7 +19,7 @@ interface LessonCommon {
   id: string;
   durationSeconds: number;
   title: ByLocale<string>;
-  /** Markdown da aula ou descrição dela. */
+  /** Lesson Markdown or its description. */
   content: ByLocale<string>;
   attachments?: FileAttachment[];
 }
@@ -47,7 +47,7 @@ function lessonBase(common: LessonCommon, context: LessonContext) {
 
 export type LessonSpec = (context: LessonContext) => Lesson;
 
-/** Aula em vídeo. A mídia é um placeholder servido pelo app; legendas por idioma. */
+/** Video lesson. The media is a placeholder served by the app; captions per language. */
 export function videoLesson(common: LessonCommon & { captions?: Locale[] }): LessonSpec {
   return (context) => ({
     ...lessonBase(common, context),
@@ -78,7 +78,7 @@ export function quizLesson(
   });
 }
 
-/** Pergunta de múltipla escolha; `correct` indica a alternativa certa. */
+/** Multiple-choice question; `correct` marks the right option. */
 export function question(
   id: string,
   text: ByLocale<{ prompt: string; explanation: string }>,

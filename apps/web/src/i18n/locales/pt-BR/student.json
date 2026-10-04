@@ -1,1 +1,102 @@
-{ "home": { "title": "Início" } }
+{
+  "home": {
+    "title": "Início",
+    "greeting": "Olá, {name}",
+    "continueTitle": "Continuar de onde parou",
+    "continueAction": "Continuar aula",
+    "resumeAt": "Retomar em {time}",
+    "myCoursesTitle": "Meus cursos",
+    "emptyTitle": "Você ainda não tem cursos",
+    "emptyDescription": "Quando um instrutor liberar o seu acesso a um curso, ele aparecerá aqui.",
+    "emptyAction": "Verificar novamente",
+    "noResultsTitle": "Nenhum curso encontrado",
+    "noResultsDescription": "Nenhum dos seus cursos corresponde a \"{query}\".",
+    "clearSearch": "Limpar busca",
+    "recentCertificatesTitle": "Certificados recentes",
+    "viewAll": "Ver todos",
+    "noCertificatesTitle": "Nenhum certificado ainda",
+    "noCertificatesDescription": "Conclua todas as aulas de um curso para receber o seu primeiro certificado."
+  },
+  "duration": {
+    "hoursMinutes": "{hours}h {minutes}min",
+    "hours": "{hours}h",
+    "minutes": "{minutes}min"
+  },
+  "course": {
+    "status": {
+      "completed": "Concluído",
+      "notStarted": "Não iniciado",
+      "inProgress": "Em andamento"
+    },
+    "progressLabel": "Progresso em {title}",
+    "lessonsCompleted": "{completed} de {total, plural, one {# aula} other {# aulas}}",
+    "accessUntil": "Acesso até {date}",
+    "notFoundTitle": "Curso não encontrado",
+    "notFoundDescription": "Este curso não existe ou foi removido.",
+    "instructor": "Instrutor",
+    "duration": "Duração",
+    "lessons": "Aulas",
+    "fallbackNotice": "Este conteúdo ainda não foi traduzido e está sendo exibido em {language}.",
+    "start": "Começar curso",
+    "continue": "Continuar curso",
+    "review": "Rever curso",
+    "noAccessTitle": "Você ainda não tem acesso a este curso",
+    "noAccessDescription": "Peça ao instrutor ou a um administrador para liberar o seu acesso.",
+    "outcomesTitle": "O que você vai aprender",
+    "curriculumTitle": "Conteúdo do curso",
+    "sequentialNotice": "Neste curso, cada aula é liberada depois que você conclui a anterior.",
+    "emptyCurriculumTitle": "Currículo em preparação",
+    "emptyCurriculumDescription": "O instrutor ainda não publicou aulas neste curso."
+  },
+  "lessonStatus": {
+    "completed": "Concluída",
+    "locked": "Bloqueada"
+  },
+  "certificates": {
+    "title": "Certificados",
+    "subtitle": "Seus certificados de conclusão, prontos para visualizar e baixar.",
+    "heading": "Certificado de conclusão",
+    "intro": "Certificamos que",
+    "completion": "concluiu o curso",
+    "issuedOn": "Emitido em {date}",
+    "code": "Código {code}",
+    "emptyTitle": "Nenhum certificado ainda",
+    "emptyDescription": "Quando você concluir todas as aulas de um curso, o certificado será emitido automaticamente.",
+    "emptyAction": "Ir para meus cursos",
+    "preview": "Visualizar",
+    "previewFor": "Visualizar certificado de {title}",
+    "download": "Baixar PDF",
+    "downloadFor": "Baixar certificado de {title} em PDF",
+    "downloadStarted": "Download do certificado iniciado.",
+    "dialogTitle": "Pré-visualização do certificado",
+    "dialogDescription": "Esta é a aparência do certificado em PDF."
+  },
+  "settings": {
+    "title": "Configurações",
+    "subtitle": "Gerencie seu perfil, idioma, aparência e senha.",
+    "profile": {
+      "title": "Perfil",
+      "description": "Seus dados e preferências de idioma e fuso horário.",
+      "name": "Nome",
+      "email": "E-mail",
+      "language": "Idioma",
+      "timeZone": "Fuso horário",
+      "save": "Salvar perfil",
+      "savedToast": "Perfil atualizado."
+    },
+    "theme": {
+      "title": "Tema",
+      "description": "Escolha a aparência da plataforma."
+    },
+    "password": {
+      "title": "Senha",
+      "description": "Troque a senha que você usa para entrar.",
+      "current": "Senha atual",
+      "new": "Nova senha",
+      "hint": "Use pelo menos 8 caracteres.",
+      "confirm": "Confirmar nova senha",
+      "save": "Alterar senha",
+      "savedToast": "Senha alterada."
+    }
+  }
+}

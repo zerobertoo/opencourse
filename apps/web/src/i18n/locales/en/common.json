@@ -1,5 +1,8 @@
 {
-  "app": { "name": "OpenCourse", "tagline": "Your course platform" },
+  "app": {
+    "name": "OpenCourse",
+    "tagline": "Your course platform"
+  },
   "nav": {
     "studio": "Studio",
     "admin": "Administration",
@@ -9,10 +12,20 @@
     "collapseSidebar": "Collapse sidebar",
     "expandSidebar": "Expand sidebar",
     "mainNavigation": "Main navigation",
-    "skipToContent": "Skip to content"
+    "skipToContent": "Skip to content",
+    "home": "Home",
+    "certificates": "Certificates",
+    "settings": "Settings"
   },
-  "search": { "label": "Search", "placeholder": "Search courses and lessons" },
-  "language": { "label": "Language", "pt-BR": "Português (Brasil)", "en": "English" },
+  "search": {
+    "label": "Search",
+    "placeholder": "Search courses and lessons"
+  },
+  "language": {
+    "label": "Language",
+    "pt-BR": "Português (Brasil)",
+    "en": "English"
+  },
   "theme": {
     "label": "Theme",
     "light": "Light",
@@ -24,7 +37,8 @@
     "retry": "Try again",
     "cancel": "Cancel",
     "confirm": "Confirm",
-    "goHome": "Back to home"
+    "goHome": "Back to home",
+    "close": "Close"
   },
   "states": {
     "loading": "Loading",
@@ -32,7 +46,10 @@
       "title": "Under construction",
       "description": "This area will be built in the next steps."
     },
-    "error": { "title": "Something went wrong", "description": "We could not load this content." }
+    "error": {
+      "title": "Something went wrong",
+      "description": "We could not load this content."
+    }
   },
   "showcase": {
     "title": "Component guide",
@@ -66,5 +83,21 @@
     "confirmAction": "Delete",
     "toastTrigger": "Show notice",
     "toastMessage": "Action completed successfully."
+  },
+  "userMenu": {
+    "open": "Open account menu for {name}",
+    "signOut": "Sign out"
+  },
+  "validation": {
+    "required": "Fill in this field.",
+    "email": "Enter a valid e-mail.",
+    "passwordLength": "The password must have at least 8 characters.",
+    "passwordMismatch": "The passwords do not match."
+  },
+  "lessonTypes": {
+    "video": "Video",
+    "text": "Text",
+    "file": "Files",
+    "quiz": "Quiz"
   }
 }

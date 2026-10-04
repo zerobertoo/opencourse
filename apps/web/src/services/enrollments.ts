@@ -4,7 +4,7 @@ export interface EnrolledCourse {
   course: CourseDetail;
   grant: Grant;
   progress: CourseProgressSummary;
-  /** Última atividade do aluno no curso, se houver. */
+  /** The student's latest activity in the course, if any. */
   lastActivityAt: string | null;
 }
 
@@ -12,7 +12,7 @@ export interface ContinueLearningItem {
   course: CourseDetail;
   lesson: Lesson;
   progress: CourseProgressSummary;
-  /** Posição salva do vídeo, em segundos. */
+  /** Saved video position, in seconds. */
   videoPositionSeconds: number;
 }
 
@@ -24,12 +24,12 @@ export interface CourseStudent {
 }
 
 export interface EnrollmentService {
-  /** Cursos com concessão ativa do usuário, com o progresso de cada um. */
+  /** Courses with an active grant for the user, with the progress of each one. */
   listMyCourses(): Promise<EnrolledCourse[]>;
-  /** Próxima aula do curso em andamento mais recente, ou nulo. */
+  /** Next lesson of the most recent course in progress, or null. */
   getContinueLearning(): Promise<ContinueLearningItem | null>;
-  /** Verdadeiro se o usuário atual pode ler o conteúdo do curso. */
+  /** True if the current user can read the course content. */
   canAccess(courseId: string): Promise<boolean>;
-  /** Alunos do curso com progresso (instrutor do curso ou admin). */
+  /** Course students with progress (course instructor or admin). */
   listCourseStudents(courseId: string): Promise<CourseStudent[]>;
 }

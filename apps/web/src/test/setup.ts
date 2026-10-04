@@ -8,7 +8,7 @@ afterEach(() => {
   document.documentElement.classList.remove('dark');
 });
 
-// jsdom não implementa matchMedia
+// jsdom does not implement matchMedia
 if (!window.matchMedia) {
   window.matchMedia = vi.fn().mockImplementation((query: string) => ({
     matches: false,

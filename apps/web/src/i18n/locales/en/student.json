@@ -1,1 +1,102 @@
-{ "home": { "title": "Home" } }
+{
+  "home": {
+    "title": "Home",
+    "greeting": "Hello, {name}",
+    "continueTitle": "Continue where you left off",
+    "continueAction": "Continue lesson",
+    "resumeAt": "Resume at {time}",
+    "myCoursesTitle": "My courses",
+    "emptyTitle": "You don't have any courses yet",
+    "emptyDescription": "When an instructor gives you access to a course, it will show up here.",
+    "emptyAction": "Check again",
+    "noResultsTitle": "No courses found",
+    "noResultsDescription": "None of your courses match \"{query}\".",
+    "clearSearch": "Clear search",
+    "recentCertificatesTitle": "Recent certificates",
+    "viewAll": "View all",
+    "noCertificatesTitle": "No certificates yet",
+    "noCertificatesDescription": "Complete all the lessons of a course to receive your first certificate."
+  },
+  "duration": {
+    "hoursMinutes": "{hours}h {minutes}min",
+    "hours": "{hours}h",
+    "minutes": "{minutes}min"
+  },
+  "course": {
+    "status": {
+      "completed": "Completed",
+      "notStarted": "Not started",
+      "inProgress": "In progress"
+    },
+    "progressLabel": "Progress in {title}",
+    "lessonsCompleted": "{completed} of {total, plural, one {# lesson} other {# lessons}}",
+    "accessUntil": "Access until {date}",
+    "notFoundTitle": "Course not found",
+    "notFoundDescription": "This course does not exist or was removed.",
+    "instructor": "Instructor",
+    "duration": "Duration",
+    "lessons": "Lessons",
+    "fallbackNotice": "This content has not been translated yet and is shown in {language}.",
+    "start": "Start course",
+    "continue": "Continue course",
+    "review": "Review course",
+    "noAccessTitle": "You don't have access to this course yet",
+    "noAccessDescription": "Ask the instructor or an administrator to give you access.",
+    "outcomesTitle": "What you will learn",
+    "curriculumTitle": "Course content",
+    "sequentialNotice": "In this course, each lesson unlocks after you complete the previous one.",
+    "emptyCurriculumTitle": "Curriculum in progress",
+    "emptyCurriculumDescription": "The instructor has not published lessons in this course yet."
+  },
+  "lessonStatus": {
+    "completed": "Completed",
+    "locked": "Locked"
+  },
+  "certificates": {
+    "title": "Certificates",
+    "subtitle": "Your completion certificates, ready to preview and download.",
+    "heading": "Certificate of completion",
+    "intro": "This certifies that",
+    "completion": "has completed the course",
+    "issuedOn": "Issued on {date}",
+    "code": "Code {code}",
+    "emptyTitle": "No certificates yet",
+    "emptyDescription": "When you complete all the lessons of a course, the certificate is issued automatically.",
+    "emptyAction": "Go to my courses",
+    "preview": "Preview",
+    "previewFor": "Preview certificate for {title}",
+    "download": "Download PDF",
+    "downloadFor": "Download certificate for {title} as PDF",
+    "downloadStarted": "Certificate download started.",
+    "dialogTitle": "Certificate preview",
+    "dialogDescription": "This is what the PDF certificate looks like."
+  },
+  "settings": {
+    "title": "Settings",
+    "subtitle": "Manage your profile, language, appearance and password.",
+    "profile": {
+      "title": "Profile",
+      "description": "Your details and language and time zone preferences.",
+      "name": "Name",
+      "email": "E-mail",
+      "language": "Language",
+      "timeZone": "Time zone",
+      "save": "Save profile",
+      "savedToast": "Profile updated."
+    },
+    "theme": {
+      "title": "Theme",
+      "description": "Choose how the platform looks."
+    },
+    "password": {
+      "title": "Password",
+      "description": "Change the password you use to sign in.",
+      "current": "Current password",
+      "new": "New password",
+      "hint": "Use at least 8 characters.",
+      "confirm": "Confirm new password",
+      "save": "Change password",
+      "savedToast": "Password changed."
+    }
+  }
+}

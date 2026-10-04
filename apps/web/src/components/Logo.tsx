@@ -1,7 +1,7 @@
 import { BookOpen } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
-/** Logo e nome da plataforma (placeholders). */
+/** Platform logo and name (placeholders). */
 export function Logo({ showName = true }: { showName?: boolean }) {
   const { t } = useTranslation();
   return (

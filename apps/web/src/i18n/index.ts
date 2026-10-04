@@ -7,7 +7,7 @@ import { NAMESPACES, resources } from './resources';
 
 export const LANGUAGE_STORAGE_KEY = 'opencourse.language';
 
-/** Mantém o atributo `lang` do documento sincronizado com o idioma ativo. */
+/** Keeps the document's `lang` attribute in sync with the active language. */
 function syncDocumentLanguage(language: string) {
   document.documentElement.lang = language;
 }

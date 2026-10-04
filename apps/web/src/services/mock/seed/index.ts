@@ -4,7 +4,7 @@ import { buildDesignCourse } from './course-design';
 import { buildJavascriptCourse } from './course-javascript';
 import { buildPhotographyCourse, buildSqlCourse, buildTimeManagementCourse } from './course-others';
 
-/** Usuários de demonstração usados pelos botões "entrar como aluno, instrutor ou admin". */
+/** Demo users used by the "sign in as student, instructor or admin" buttons. */
 export const DEMO_USER_IDS = {
   student: 'user-lucas',
   instructor: 'user-rafael',
@@ -153,7 +153,7 @@ function buildInvites(daysFromNow: (days: number) => string): Invite[] {
 interface CompletionSpec {
   userId: string;
   lessonIds: string[];
-  /** Há quantos dias foi a última atividade deste grupo de aulas. */
+  /** How many days ago the last activity on this group of lessons happened. */
   daysAgo: number;
 }
 
@@ -204,7 +204,7 @@ function buildProgress(daysFromNow: (days: number) => string): Progress[] {
     })),
   );
 
-  // aula em andamento do aluno de demonstração: vídeo parado em 5min12s
+  // in-progress lesson of the demo student: video stopped at 5min12s
   progress.push({
     userId: 'user-lucas',
     lessonId: 'les-js-2-1',
@@ -259,7 +259,7 @@ function buildCertificates(daysFromNow: (days: number) => string): Certificate[]
   ];
 }
 
-/** Dados iniciais da plataforma mockada, calculados em relação a `now`. */
+/** Initial data of the mock platform, computed relative to `now`. */
 export function createSeedDatabase(now: Date): MockDatabase {
   const { daysFromNow } = createDateHelpers(now);
   const createdAt = daysFromNow(-300);
@@ -277,6 +277,7 @@ export function createSeedDatabase(now: Date): MockDatabase {
     invites: buildInvites(daysFromNow),
     progress: buildProgress(daysFromNow),
     quizAttempts: buildQuizAttempts(daysFromNow),
+    notes: [],
     certificates: buildCertificates(daysFromNow),
     settings: {
       brand: { name: 'OpenCourse', logoUrl: null, primaryColor: '#2f6f5e' },

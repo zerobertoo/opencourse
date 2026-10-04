@@ -1,7 +1,7 @@
 import { Toaster as SonnerToaster } from 'sonner';
 import { useTheme } from '@/theme/useTheme';
 
-/** Toasts globais acompanhando o tema ativo. */
+/** Global toasts following the active theme. */
 export function Toaster() {
   const { resolvedTheme } = useTheme();
   return <SonnerToaster theme={resolvedTheme} richColors closeButton />;

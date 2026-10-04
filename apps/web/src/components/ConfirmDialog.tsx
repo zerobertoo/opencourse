@@ -12,7 +12,7 @@ interface ConfirmDialogProps {
   destructive?: boolean;
 }
 
-/** Confirmação para ações destrutivas. */
+/** Confirmation for destructive actions. */
 export function ConfirmDialog({
   open,
   onOpenChange,

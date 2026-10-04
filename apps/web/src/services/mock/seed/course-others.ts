@@ -10,7 +10,7 @@ import {
   videoLesson,
 } from './builders';
 
-/** Curso publicado, somente em português. */
+/** Published course, Portuguese only. */
 export function buildSqlCourse(createdAt: string): CourseDetail {
   const id = 'course-sql';
   return {
@@ -122,7 +122,7 @@ export function buildSqlCourse(createdAt: string): CourseDetail {
   };
 }
 
-/** Curso em rascunho. */
+/** Draft course. */
 export function buildPhotographyCourse(createdAt: string): CourseDetail {
   const id = 'course-photography';
   return {
@@ -184,7 +184,7 @@ export function buildPhotographyCourse(createdAt: string): CourseDetail {
   };
 }
 
-/** Curso arquivado. */
+/** Archived course. */
 export function buildTimeManagementCourse(createdAt: string): CourseDetail {
   const id = 'course-time';
   return {

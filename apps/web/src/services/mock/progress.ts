@@ -20,7 +20,7 @@ import { clone } from './store';
 export function createMockProgressService(context: MockContext): ProgressService {
   const { store } = context;
 
-  /** Resolve a aula garantindo que o usuário atual pode estudá-la agora. */
+  /** Resolves the lesson making sure the current user can study it now. */
   function requireAccessibleLesson(lessonId: string) {
     const user = context.requireUser();
     const { course, lesson } = findLesson(store.db, lessonId);
@@ -34,7 +34,7 @@ export function createMockProgressService(context: MockContext): ProgressService
     return { user, course, lesson };
   }
 
-  /** Cria ou atualiza o registro de progresso e devolve o registro salvo. */
+  /** Creates or updates the progress record and returns the saved record. */
   function upsertProgress(
     userId: string,
     lessonId: string,

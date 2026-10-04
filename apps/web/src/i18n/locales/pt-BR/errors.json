@@ -6,5 +6,14 @@
   "forbidden": {
     "title": "Acesso negado",
     "description": "Você não tem permissão para ver esta página."
+  },
+  "service": {
+    "not_found": "Não encontramos o que você procurava.",
+    "unauthorized": "Sua sessão expirou. Entre novamente.",
+    "forbidden": "Você não tem permissão para fazer isso.",
+    "validation": "Confira os dados informados e tente de novo.",
+    "conflict": "Essa ação conflita com o estado atual dos dados.",
+    "unavailable": "O serviço está indisponível no momento. Tente novamente.",
+    "unknown": "Algo deu errado. Tente novamente."
   }
 }

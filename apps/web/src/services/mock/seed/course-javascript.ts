@@ -12,7 +12,7 @@ import {
 
 const COURSE_ID = 'course-javascript';
 
-/** Curso totalmente traduzido para pt-BR e en. */
+/** Course fully translated into pt-BR and en. */
 export function buildJavascriptCourse(createdAt: string): CourseDetail {
   return {
     id: COURSE_ID,

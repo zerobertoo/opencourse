@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import { EmptyState } from '@/components/StateViews';
 
-/** Placeholder para áreas que serão construídas nas próximas etapas. */
+/** Placeholder for areas that will be built in later steps. */
 export function UnderConstruction({
   titleKey,
 }: {

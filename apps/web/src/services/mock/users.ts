@@ -7,7 +7,7 @@ import { clone } from './store';
 export function createMockUserService(context: MockContext): UserService {
   const { store } = context;
 
-  /** Garante que a plataforma sempre tenha ao menos um admin ativo. */
+  /** Ensures the platform always has at least one active admin. */
   function assertAnotherActiveAdminExists(userId: string): void {
     const others = store.db.users.filter(
       (user) => user.id !== userId && user.role === 'admin' && user.active,

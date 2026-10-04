@@ -1,19 +1,19 @@
 import type { Locale } from './base';
 import type { CourseDetail, Grant, GrantStatus, Lesson, Quiz } from './entities';
 
-// ---------- Tradução de conteúdo ----------
+// ---------- Content translation ----------
 
 export interface ResolvedTranslation<T> {
   translation: T;
-  /** Idioma efetivamente usado. */
+  /** Language actually used. */
   locale: Locale;
-  /** Verdadeiro quando o idioma pedido não existia e caiu para o padrão do curso. */
+  /** True when the requested language was missing and fell back to the course default. */
   isFallback: boolean;
 }
 
 /**
- * Resolve a tradução com a cadeia de fallback: idioma do usuário, depois idioma padrão do curso.
- * Uma tradução com texto vazio conta como ausente.
+ * Resolves a translation with the fallback chain: user language, then course default language.
+ * A translation with empty text counts as missing.
  */
 export function resolveTranslation<T extends { locale: Locale }>(
   translations: readonly T[],
@@ -29,14 +29,14 @@ export function resolveTranslation<T extends { locale: Locale }>(
   return null;
 }
 
-/** Uma tradução tem texto quando algum campo de rótulo principal está preenchido. */
+/** A translation has text when one of its main label fields is filled in. */
 function hasText(item: object): boolean {
   const record = item as Record<string, unknown>;
   const label = record.title ?? record.prompt ?? record.text;
   return typeof label === 'string' && label.trim() !== '';
 }
 
-/** Todas as listas de tradução de um curso: curso, módulos, aulas, perguntas e alternativas. */
+/** Every translation list of a course: course, modules, lessons, questions and options. */
 function collectTranslatables(course: CourseDetail): Array<readonly { locale: Locale }[]> {
   const lists: Array<readonly { locale: Locale }[]> = [course.translations];
   for (const courseModule of course.modules) {
@@ -57,12 +57,12 @@ function collectTranslatables(course: CourseDetail): Array<readonly { locale: Lo
 export interface TranslationCoverage {
   translated: number;
   total: number;
-  /** Fração de 0 a 1. */
+  /** Fraction from 0 to 1. */
   ratio: number;
   isComplete: boolean;
 }
 
-/** Quanto do conteúdo do curso já está traduzido para o idioma informado. */
+/** How much of the course content is already translated into the given language. */
 export function getTranslationCoverage(course: CourseDetail, locale: Locale): TranslationCoverage {
   const lists = collectTranslatables(course);
   const translated = lists.filter((list) =>
@@ -77,14 +77,14 @@ export function getTranslationCoverage(course: CourseDetail, locale: Locale): Tr
   };
 }
 
-/** Idiomas, entre os habilitados, em que o curso ainda tem tradução incompleta. */
+/** Languages, among the enabled ones, in which the course translation is still incomplete. */
 export function getIncompleteLocales(course: CourseDetail, locales: readonly Locale[]): Locale[] {
   return locales.filter((locale) => !getTranslationCoverage(course, locale).isComplete);
 }
 
-// ---------- Currículo e progresso ----------
+// ---------- Curriculum and progress ----------
 
-/** Aulas do curso na ordem de estudo (módulo, depois aula). */
+/** Course lessons in study order (module, then lesson). */
 export function flattenLessons(course: CourseDetail): Lesson[] {
   return [...course.modules]
     .sort((a, b) => a.order - b.order)
@@ -96,8 +96,8 @@ export function getCourseDurationSeconds(course: CourseDetail): number {
 }
 
 /**
- * Aulas liberadas para o aluno. Em cursos com ordem sequencial, uma aula só libera
- * depois que todas as anteriores foram concluídas.
+ * Lessons unlocked for the student. In courses with sequential order, a lesson only unlocks
+ * after all the previous ones are completed.
  */
 export function getUnlockedLessonIds(
   course: CourseDetail,
@@ -117,10 +117,10 @@ export function getUnlockedLessonIds(
 export interface CourseProgressSummary {
   completedCount: number;
   totalCount: number;
-  /** Fração de 0 a 1. */
+  /** Fraction from 0 to 1. */
   percent: number;
   isComplete: boolean;
-  /** Primeira aula ainda não concluída, na ordem de estudo. */
+  /** First lesson not yet completed, in study order. */
   nextLessonId: string | null;
 }
 
@@ -140,9 +140,9 @@ export function summarizeCourseProgress(
   };
 }
 
-// ---------- Concessões ----------
+// ---------- Grants ----------
 
-/** Status efetivo da concessão: uma concessão ativa com validade vencida está expirada. */
+/** Effective grant status: an active grant past its expiry date is expired. */
 export function computeGrantStatus(grant: Grant, now: Date): GrantStatus {
   if (grant.status === 'revoked') return 'revoked';
   if (grant.expiresAt !== null && new Date(grant.expiresAt).getTime() <= now.getTime()) {
@@ -160,7 +160,7 @@ export interface QuizQuestionResult {
 }
 
 export interface QuizScore {
-  /** Nota de 0 a 100. */
+  /** Score from 0 to 100. */
   score: number;
   passed: boolean;
   correctCount: number;
@@ -168,7 +168,7 @@ export interface QuizScore {
   results: Record<string, QuizQuestionResult>;
 }
 
-/** Corrige um quiz. Pergunta sem resposta conta como errada. */
+/** Grades a quiz. An unanswered question counts as wrong. */
 export function scoreQuiz(quiz: Quiz, answers: Readonly<Record<string, string>>): QuizScore {
   const results: Record<string, QuizQuestionResult> = {};
   let correctCount = 0;

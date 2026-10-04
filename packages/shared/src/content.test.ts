@@ -106,7 +106,7 @@ describe('resolveTranslation', () => {
 describe('translation coverage', () => {
   it('counts translated entities per locale', () => {
     const course = buildCourse();
-    // curso + 2 módulos + 3 aulas = 6 entidades traduzíveis
+    // course + 2 modules + 3 lessons = 6 translatable entities
     expect(getTranslationCoverage(course, 'pt-BR')).toMatchObject({
       translated: 6,
       total: 6,
