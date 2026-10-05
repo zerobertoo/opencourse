@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { createServicesSignedInAs, createTestServices } from '@/test/mock-services';
+import { demoId } from '@/services/mock/seed/ids';
 
 describe('mock user service', () => {
   it('is not available to anonymous visitors or students', async () => {
@@ -30,7 +31,7 @@ describe('mock user service', () => {
 
   it('gets a user by id', async () => {
     const { services } = await createServicesSignedInAs('marina');
-    expect((await services.users.getById('user-daniel')).locale).toBe('en');
+    expect((await services.users.getById(demoId('user-daniel'))).locale).toBe('en');
     await expect(services.users.getById('ninguem')).rejects.toMatchObject({ code: 'not_found' });
   });
 
@@ -43,7 +44,7 @@ describe('mock user service', () => {
         timeZone: 'Europe/Lisbon',
       });
       expect(updated).toMatchObject({
-        id: 'user-lucas',
+        id: demoId('user-lucas'),
         name: 'Lucas F.',
         locale: 'en',
         timeZone: 'Europe/Lisbon',
@@ -62,16 +63,16 @@ describe('mock user service', () => {
   describe('admin actions', () => {
     it('changes roles and deactivates users', async () => {
       const { services } = await createServicesSignedInAs('marina');
-      expect((await services.users.updateRole('user-camila', 'instructor')).role).toBe(
+      expect((await services.users.updateRole(demoId('user-camila'), 'instructor')).role).toBe(
         'instructor',
       );
-      expect((await services.users.setActive('user-camila', false)).active).toBe(false);
-      expect((await services.users.setActive('user-diego', true)).active).toBe(true);
+      expect((await services.users.setActive(demoId('user-camila'), false)).active).toBe(false);
+      expect((await services.users.setActive(demoId('user-diego'), true)).active).toBe(true);
     });
 
     it('prevents a deactivated user from signing in, and restores access when reactivated', async () => {
       const admin = await createServicesSignedInAs('marina');
-      await admin.services.users.setActive('user-camila', false);
+      await admin.services.users.setActive(demoId('user-camila'), false);
 
       const blocked = createTestServices({ storage: admin.storage }).services;
       await blocked.auth.signOut();
@@ -81,7 +82,7 @@ describe('mock user service', () => {
 
       // the session is shared through the storage: the signOut above ended the admin session
       await admin.services.auth.signInAs('admin');
-      await admin.services.users.setActive('user-camila', true);
+      await admin.services.users.setActive(demoId('user-camila'), true);
       const restored = createTestServices({ storage: admin.storage }).services;
       await expect(restored.auth.signIn('camila@opencourse.example', 'x')).resolves.toBeDefined();
     });
@@ -90,7 +91,7 @@ describe('mock user service', () => {
       const { services } = await createServicesSignedInAs('camila');
       expect((await services.auth.getCurrentUser())?.name).toBe('Camila Duarte');
 
-      services.mock.store.db.users.find((user) => user.id === 'user-camila')!.active = false;
+      services.mock.store.db.users.find((user) => user.id === demoId('user-camila'))!.active = false;
       expect(await services.auth.getCurrentUser()).toBeNull();
       await expect(services.enrollments.listMyCourses()).rejects.toMatchObject({
         code: 'unauthorized',
@@ -99,25 +100,25 @@ describe('mock user service', () => {
 
     it('keeps at least one active admin', async () => {
       const { services } = await createServicesSignedInAs('marina');
-      await expect(services.users.updateRole('user-marina', 'student')).rejects.toMatchObject({
+      await expect(services.users.updateRole(demoId('user-marina'), 'student')).rejects.toMatchObject({
         code: 'conflict',
       });
-      await expect(services.users.setActive('user-marina', false)).rejects.toMatchObject({
+      await expect(services.users.setActive(demoId('user-marina'), false)).rejects.toMatchObject({
         code: 'conflict',
       });
 
-      await services.users.updateRole('user-lucas', 'admin');
-      await expect(services.users.updateRole('user-marina', 'instructor')).resolves.toMatchObject({
+      await services.users.updateRole(demoId('user-lucas'), 'admin');
+      await expect(services.users.updateRole(demoId('user-marina'), 'instructor')).resolves.toMatchObject({
         role: 'instructor',
       });
     });
 
     it('is restricted to admins', async () => {
       const instructor = (await createServicesSignedInAs('rafael')).services;
-      await expect(instructor.users.updateRole('user-camila', 'admin')).rejects.toMatchObject({
+      await expect(instructor.users.updateRole(demoId('user-camila'), 'admin')).rejects.toMatchObject({
         code: 'forbidden',
       });
-      await expect(instructor.users.setActive('user-camila', false)).rejects.toMatchObject({
+      await expect(instructor.users.setActive(demoId('user-camila'), false)).rejects.toMatchObject({
         code: 'forbidden',
       });
     });

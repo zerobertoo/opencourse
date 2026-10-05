@@ -3,12 +3,13 @@ import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it } from 'vitest';
 import i18n from '@/i18n';
 import { renderApp } from '@/test/render';
+import { demoId } from '@/services/mock/seed/ids';
 
 beforeEach(async () => {
   await i18n.changeLanguage('pt-BR');
 });
 
-const SQL_EDITOR = '/studio/courses/course-sql';
+const SQL_EDITOR = `/studio/courses/${demoId('course-sql')}`;
 const JS_TITLE = 'Fundamentos de JavaScript Moderno';
 
 /** The visible editor tab panel: other tabs stay mounted (hidden) and repeat some labels. */
@@ -25,7 +26,7 @@ describe('studio access', () => {
   });
 
   it('shows the forbidden screen when an instructor opens someone else’s course', async () => {
-    await renderApp('/studio/courses/course-javascript', { email: 'beatriz@opencourse.example' });
+    await renderApp(`/studio/courses/${demoId('course-javascript')}`, { email: 'beatriz@opencourse.example' });
     expect(await screen.findByText('Acesso negado')).toBeVisible();
   });
 
@@ -207,17 +208,17 @@ describe('course editor: content', () => {
     const { services } = await renderApp(`${SQL_EDITOR}/content`, { signInAs: 'instructor' });
 
     await user.click(await lessonButton('Seu primeiro SELECT'));
-    await user.selectOptions(await screen.findByLabelText('Módulo'), 'mod-sql-2');
+    await user.selectOptions(await screen.findByLabelText('Módulo'), demoId('mod-sql-2'));
     await waitFor(async () => {
-      const course = await services.courses.getById('course-sql');
-      expect(course.modules[1]?.lessons.some((lesson) => lesson.id === 'les-sql-1-1')).toBe(true);
+      const course = await services.courses.getById(demoId('course-sql'));
+      expect(course.modules[1]?.lessons.some((lesson) => lesson.id === demoId('les-sql-1-1'))).toBe(true);
     });
 
     await user.click(screen.getByRole('button', { name: 'Mover para cima' }));
     await waitFor(async () => {
-      const course = await services.courses.getById('course-sql');
+      const course = await services.courses.getById(demoId('course-sql'));
       const lessons = course.modules[1]!.lessons;
-      expect(lessons[lessons.length - 2]?.id).toBe('les-sql-1-1');
+      expect(lessons[lessons.length - 2]?.id).toBe(demoId('les-sql-1-1'));
     });
   });
 
@@ -245,8 +246,8 @@ describe('course editor: content', () => {
     await user.click(within(dialog).getByRole('button', { name: 'Excluir aula' }));
 
     await waitFor(async () => {
-      const course = await services.courses.getById('course-sql');
-      expect(course.modules[0]?.lessons.some((lesson) => lesson.id === 'les-sql-1-1')).toBe(false);
+      const course = await services.courses.getById(demoId('course-sql'));
+      expect(course.modules[0]?.lessons.some((lesson) => lesson.id === demoId('les-sql-1-1'))).toBe(false);
     });
     expect(await screen.findByText('Selecione uma aula')).toBeInTheDocument();
   });
@@ -290,8 +291,8 @@ describe('course editor: quiz builder', () => {
     await user.click(screen.getByRole('button', { name: 'Salvar quiz' }));
     expect(await screen.findByText('Quiz salvo.')).toBeVisible();
 
-    const course = await services.courses.getById('course-sql');
-    const quiz = course.modules[0]?.lessons.find((lesson) => lesson.id === 'les-sql-1-3');
+    const course = await services.courses.getById(demoId('course-sql'));
+    const quiz = course.modules[0]?.lessons.find((lesson) => lesson.id === demoId('les-sql-1-3'));
     expect(quiz?.type === 'quiz' && quiz.quiz).toMatchObject({ passingScore: 80 });
     expect(quiz?.type === 'quiz' && quiz.quiz.questions).toHaveLength(3);
   });
@@ -330,7 +331,7 @@ describe('course editor: students', () => {
     await waitFor(() => expect(within(select).getAllByRole('option').length).toBeGreaterThan(1));
     // students who already have active access are not offered
     expect(within(select).queryByRole('option', { name: /Lucas/ })).not.toBeInTheDocument();
-    await user.selectOptions(select, 'user-thiago');
+    await user.selectOptions(select, demoId('user-thiago'));
     await user.click(within(dialog).getByLabelText('Até uma data'));
     await user.click(within(dialog).getByRole('button', { name: 'Conceder acesso' }));
     expect(await within(dialog).findByText('Escolha uma data.')).toBeVisible();
@@ -339,7 +340,7 @@ describe('course editor: students', () => {
     await user.click(within(dialog).getByRole('button', { name: 'Conceder acesso' }));
 
     expect(await screen.findByText('Acesso concedido.')).toBeVisible();
-    const grants = await services.grants.list({ courseId: 'course-sql', userId: 'user-thiago' });
+    const grants = await services.grants.list({ courseId: demoId('course-sql'), userId: demoId('user-thiago') });
     expect(grants[0]?.expiresAt).toMatch(/^2099-12-31|^2100-01-01/);
   });
 
@@ -374,7 +375,7 @@ describe('course editor: students', () => {
     await user.click(within(dialog).getByRole('button', { name: 'Revogar acesso' }));
 
     expect(await screen.findByText('Acesso de Gustavo Lima revogado.')).toBeVisible();
-    const grants = await services.grants.list({ courseId: 'course-sql', userId: 'user-gustavo' });
+    const grants = await services.grants.list({ courseId: demoId('course-sql'), userId: demoId('user-gustavo') });
     expect(grants[0]?.status).toBe('revoked');
   });
 });
@@ -398,7 +399,7 @@ describe('course editor: certificate', () => {
 
     await user.click(screen.getByRole('button', { name: 'Salvar modelo' }));
     expect(await screen.findByText('Modelo de certificado salvo.')).toBeVisible();
-    expect((await services.courses.getById('course-sql')).certificateTemplate.signatoryName).toBe(
+    expect((await services.courses.getById(demoId('course-sql'))).certificateTemplate.signatoryName).toBe(
       'Dra. Teste',
     );
   });
@@ -450,11 +451,11 @@ describe('course editor: settings', () => {
     const dialog = await screen.findByRole('alertdialog');
     await user.click(within(dialog).getByRole('button', { name: 'Arquivar' }));
     expect(await screen.findByText('Curso arquivado.')).toBeVisible();
-    expect((await services.courses.getById('course-sql')).status).toBe('archived');
+    expect((await services.courses.getById(demoId('course-sql'))).status).toBe('archived');
 
     await user.click(await screen.findByRole('button', { name: 'Restaurar como rascunho' }));
     expect(await screen.findByText('Curso restaurado como rascunho.')).toBeVisible();
-    expect((await services.courses.getById('course-sql')).status).toBe('draft');
+    expect((await services.courses.getById(demoId('course-sql'))).status).toBe('draft');
   });
 
   it('toggles sequential order and unpublishes with confirmation', async () => {
@@ -463,7 +464,7 @@ describe('course editor: settings', () => {
 
     await user.click(await screen.findByLabelText('Aulas em sequência'));
     expect(await screen.findByText('Ordem das aulas atualizada.')).toBeVisible();
-    expect((await services.courses.getById('course-sql')).sequentialOrder).toBe(true);
+    expect((await services.courses.getById(demoId('course-sql'))).sequentialOrder).toBe(true);
 
     await user.click(screen.getByRole('button', { name: 'Despublicar (voltar a rascunho)' }));
     const dialog = await screen.findByRole('alertdialog');

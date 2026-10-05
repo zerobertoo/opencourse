@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { createServicesSignedInAs, createTestServices } from '@/test/mock-services';
+import { demoId } from '@/services/mock/seed/ids';
 
 describe('mock studio service', () => {
   it('summarizes the instructor courses, students and completion', async () => {
@@ -8,13 +9,13 @@ describe('mock studio service', () => {
 
     // Rafael owns the JavaScript and SQL courses (published) and Time Management (archived)
     expect(dashboard.courses.map((course) => course.courseId).sort()).toEqual([
-      'course-javascript',
-      'course-sql',
-      'course-time',
+      demoId('course-javascript'),
+      demoId('course-sql'),
+      demoId('course-time'),
     ]);
     expect(dashboard.publishedCourses).toBe(2);
 
-    const sql = dashboard.courses.find((course) => course.courseId === 'course-sql');
+    const sql = dashboard.courses.find((course) => course.courseId === demoId('course-sql'));
     // lucas, camila, renata and gustavo have an active SQL grant; only lucas finished it
     expect(sql).toMatchObject({ students: 4, completedStudents: 1, completionRate: 0.25 });
 

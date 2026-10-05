@@ -3,12 +3,13 @@ import type { MockDatabase, StoredInvite } from '../store';
 import { buildDesignCourse } from './course-design';
 import { buildJavascriptCourse } from './course-javascript';
 import { buildPhotographyCourse, buildSqlCourse, buildTimeManagementCourse } from './course-others';
+import { convertIdsToUuids, demoId } from './ids';
 
 /** Demo users used by the "sign in as student, instructor or admin" buttons. */
 export const DEMO_USER_IDS = {
-  student: 'user-lucas',
-  instructor: 'user-rafael',
-  admin: 'user-marina',
+  student: demoId('user-lucas'),
+  instructor: demoId('user-rafael'),
+  admin: demoId('user-marina'),
 } as const;
 
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -264,7 +265,7 @@ export function createSeedDatabase(now: Date): MockDatabase {
   const { daysFromNow } = createDateHelpers(now);
   const createdAt = daysFromNow(-300);
 
-  return {
+  return convertIdsToUuids({
     users: buildUsers(daysFromNow),
     courses: [
       buildJavascriptCourse(createdAt),
@@ -293,5 +294,5 @@ export function createSeedDatabase(now: Date): MockDatabase {
       },
     },
     counters: {},
-  };
+  });
 }

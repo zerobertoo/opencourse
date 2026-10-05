@@ -3,6 +3,7 @@ import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import i18n from '@/i18n';
 import { renderApp } from '@/test/render';
+import { demoId } from '@/services/mock/seed/ids';
 
 beforeEach(async () => {
   await i18n.changeLanguage('pt-BR');
@@ -157,7 +158,7 @@ describe('course page', () => {
 describe('lesson player', () => {
   it('renders a text lesson as Markdown and completes it', async () => {
     const user = userEvent.setup();
-    await renderApp('/courses/fundamentos-de-javascript/lessons/les-js-1-2', {
+    await renderApp(`/courses/fundamentos-de-javascript/lessons/${demoId('les-js-1-2')}`, {
       signInAs: 'student',
     });
 
@@ -171,7 +172,7 @@ describe('lesson player', () => {
   });
 
   it('lists downloads for a file lesson', async () => {
-    await renderApp('/courses/fundamentos-de-javascript/lessons/les-js-1-3', {
+    await renderApp(`/courses/fundamentos-de-javascript/lessons/${demoId('les-js-1-3')}`, {
       signInAs: 'student',
     });
 
@@ -181,7 +182,7 @@ describe('lesson player', () => {
   });
 
   it('renders the video player with speed, captions and fullscreen controls', async () => {
-    await renderApp('/courses/fundamentos-de-javascript/lessons/les-js-1-1', {
+    await renderApp(`/courses/fundamentos-de-javascript/lessons/${demoId('les-js-1-1')}`, {
       signInAs: 'student',
     });
 
@@ -194,7 +195,7 @@ describe('lesson player', () => {
 
   it('grades a quiz with per-question feedback and keeps the attempt history', async () => {
     const user = userEvent.setup();
-    await renderApp('/courses/fundamentos-de-javascript/lessons/les-js-1-4', {
+    await renderApp(`/courses/fundamentos-de-javascript/lessons/${demoId('les-js-1-4')}`, {
       signInAs: 'student',
     });
 
@@ -214,7 +215,7 @@ describe('lesson player', () => {
   });
 
   it('blocks locked lessons reached by URL in sequential courses', async () => {
-    await renderApp('/courses/design-de-interfaces-na-pratica/lessons/les-design-2-1', {
+    await renderApp(`/courses/design-de-interfaces-na-pratica/lessons/${demoId('les-design-2-1')}`, {
       signInAs: 'student',
     });
     expect(await screen.findByText('Aula bloqueada')).toBeVisible();
@@ -222,7 +223,7 @@ describe('lesson player', () => {
 
   it('saves personal notes', async () => {
     const user = userEvent.setup();
-    await renderApp('/courses/fundamentos-de-javascript/lessons/les-js-1-2', {
+    await renderApp(`/courses/fundamentos-de-javascript/lessons/${demoId('les-js-1-2')}`, {
       signInAs: 'student',
     });
 

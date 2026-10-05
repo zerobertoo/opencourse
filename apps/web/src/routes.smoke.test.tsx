@@ -2,6 +2,7 @@ import { screen, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import i18n from '@/i18n';
 import { renderApp } from '@/test/render';
+import { demoId } from '@/services/mock/seed/ids';
 
 /**
  * Routes of the student area, plus a course page and a lesson of the seeded course.
@@ -10,7 +11,7 @@ import { renderApp } from '@/test/render';
 const STUDENT_ROUTES = [
   '/',
   '/courses/fundamentos-de-javascript',
-  '/courses/fundamentos-de-javascript/lessons/les-js-1-1',
+  `/courses/fundamentos-de-javascript/lessons/${demoId('les-js-1-1')}`,
   '/certificates',
   '/settings',
 ];

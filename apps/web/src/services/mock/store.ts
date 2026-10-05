@@ -9,6 +9,7 @@ import type {
   QuizAttempt,
   User,
 } from '@opencourse/shared';
+import { generatedId } from './seed/ids';
 
 /** Subset of `Storage` used by the mock (lets tests inject a fake). */
 export type MockStorage = Pick<Storage, 'getItem' | 'setItem' | 'removeItem'>;
@@ -35,7 +36,7 @@ export interface MockDatabase {
  * Version of the format and the seed. When the seed or the format changes, bump it: state saved
  * in the session with another version is discarded and the seed is recreated.
  */
-export const MOCK_DB_VERSION = 4;
+export const MOCK_DB_VERSION = 5;
 
 export const DB_STORAGE_KEY = 'opencourse.mock.db';
 export const SESSION_STORAGE_KEY = 'opencourse.mock.session';
@@ -73,11 +74,11 @@ export class MockStore {
     return result;
   }
 
-  /** Generates a new id in the `prefix_n` format. */
+  /** Generates a new UUID, deterministic for each prefix and counter value. */
   nextId(prefix: string): string {
     const next = (this.database.counters[prefix] ?? 0) + 1;
     this.database.counters[prefix] = next;
-    return `${prefix}_${next}`;
+    return generatedId(prefix, next);
   }
 
   /** Restores the original data. */

@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { createServicesSignedInAs, createTestServices } from '@/test/mock-services';
+import { demoId } from '@/services/mock/seed/ids';
 
 describe('mock course service', () => {
   it('lists every course with the full curriculum', async () => {
@@ -21,7 +22,7 @@ describe('mock course service', () => {
     expect(await services.courses.list({ status: 'draft' })).toHaveLength(1);
     expect(await services.courses.list({ status: 'archived' })).toHaveLength(1);
 
-    const beatriz = await services.courses.list({ instructorId: 'user-beatriz' });
+    const beatriz = await services.courses.list({ instructorId: demoId('user-beatriz') });
     expect(beatriz.map((course) => course.slug).sort()).toEqual([
       'design-de-interfaces-na-pratica',
       'fotografia-para-iniciantes',
@@ -62,7 +63,7 @@ describe('mock course service', () => {
       expect(created).toMatchObject({
         slug: 'introducao-a-programacao',
         status: 'draft',
-        instructorId: 'user-rafael',
+        instructorId: demoId('user-rafael'),
         sequentialOrder: false,
         modules: [],
       });
@@ -134,7 +135,7 @@ describe('mock course service', () => {
 
     it('does not re-check courses that are already published', async () => {
       const { services } = await createServicesSignedInAs('rafael');
-      const updated = await services.courses.update('course-sql', { sequentialOrder: true });
+      const updated = await services.courses.update(demoId('course-sql'), { sequentialOrder: true });
       expect(updated.status).toBe('published');
     });
   });
@@ -173,7 +174,7 @@ describe('mock course service', () => {
 
     it('stores the certificate template, trimming its text', async () => {
       const { services } = await createServicesSignedInAs('rafael');
-      const updated = await services.courses.update('course-sql', {
+      const updated = await services.courses.update(demoId('course-sql'), {
         certificateTemplate: {
           enabled: false,
           signatoryName: '  Rafael T.  ',
@@ -190,7 +191,7 @@ describe('mock course service', () => {
     });
 
     it('allows admins and blocks other instructors and students', async () => {
-      const id = 'course-javascript';
+      const id = demoId('course-javascript');
 
       const admin = (await createServicesSignedInAs('marina')).services;
       await expect(admin.courses.update(id, { status: 'draft' })).resolves.toMatchObject({
@@ -214,18 +215,18 @@ describe('student visibility of unpublished courses', () => {
   it('hides a course from students with a grant once it is archived', async () => {
     const { services } = createTestServices();
     await services.auth.signIn('lucas@opencourse.example', 'x');
-    expect(await services.enrollments.canAccess('course-sql')).toBe(true);
+    expect(await services.enrollments.canAccess(demoId('course-sql'))).toBe(true);
     expect((await services.enrollments.listMyCourses()).map((e) => e.course.id)).toContain(
-      'course-sql',
+      demoId('course-sql'),
     );
 
     await services.auth.signIn('rafael@opencourse.example', 'x');
-    await services.courses.update('course-sql', { status: 'archived' });
+    await services.courses.update(demoId('course-sql'), { status: 'archived' });
 
     await services.auth.signIn('lucas@opencourse.example', 'x');
-    expect(await services.enrollments.canAccess('course-sql')).toBe(false);
+    expect(await services.enrollments.canAccess(demoId('course-sql'))).toBe(false);
     expect((await services.enrollments.listMyCourses()).map((e) => e.course.id)).not.toContain(
-      'course-sql',
+      demoId('course-sql'),
     );
   });
 });

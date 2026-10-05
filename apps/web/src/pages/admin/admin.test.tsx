@@ -3,6 +3,7 @@ import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it } from 'vitest';
 import i18n from '@/i18n';
 import { renderApp } from '@/test/render';
+import { demoId } from '@/services/mock/seed/ids';
 
 beforeEach(async () => {
   await i18n.changeLanguage('pt-BR');
@@ -86,7 +87,7 @@ describe('admin users', () => {
     await user.click(within(dialog).getByRole('button', { name: 'Salvar' }));
 
     await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
-    expect((await services.users.getById('user-lucas')).role).toBe('instructor');
+    expect((await services.users.getById(demoId('user-lucas'))).role).toBe('instructor');
     const row = (await listItems('Usuários')).find((item) =>
       within(item).queryByText('Lucas Ferreira'),
     )!;
@@ -101,14 +102,14 @@ describe('admin users', () => {
     const confirm = await screen.findByRole('alertdialog', { name: 'Desativar este usuário?' });
     await user.click(within(confirm).getByRole('button', { name: 'Desativar' }));
     await waitFor(async () =>
-      expect((await services.users.getById('user-camila')).active).toBe(false),
+      expect((await services.users.getById(demoId('user-camila'))).active).toBe(false),
     );
 
     await user.click(await screen.findByRole('button', { name: 'Reativar Diego Rocha' }));
     const reactivate = await screen.findByRole('alertdialog', { name: 'Reativar este usuário?' });
     await user.click(within(reactivate).getByRole('button', { name: 'Reativar' }));
     await waitFor(async () =>
-      expect((await services.users.getById('user-diego')).active).toBe(true),
+      expect((await services.users.getById(demoId('user-diego'))).active).toBe(true),
     );
   });
 
@@ -170,7 +171,7 @@ describe('admin grants', () => {
     await user.click(within(confirm).getByRole('button', { name: 'Revogar acesso' }));
 
     await waitFor(async () => {
-      const [grant] = await services.grants.list({ userId: 'user-felipe' });
+      const [grant] = await services.grants.list({ userId: demoId('user-felipe') });
       expect(grant?.status).toBe('revoked');
     });
   });
@@ -189,7 +190,7 @@ describe('admin grants', () => {
     await user.click(within(dialog).getByRole('button', { name: 'Salvar' }));
 
     await waitFor(async () => {
-      const grants = await services.grants.list({ userId: 'user-juliana' });
+      const grants = await services.grants.list({ userId: demoId('user-juliana') });
       expect(grants.filter((grant) => grant.status === 'active')).toHaveLength(1);
     });
   });

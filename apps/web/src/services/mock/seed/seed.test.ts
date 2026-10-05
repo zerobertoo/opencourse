@@ -5,6 +5,7 @@ import {
   flattenLessons,
   getTranslationCoverage,
   grantSchema,
+  idSchema,
   inviteSchema,
   platformSettingsSchema,
   progressSchema,
@@ -32,6 +33,12 @@ describe('seed data', () => {
     db.quizAttempts.forEach((attempt) => quizAttemptSchema.parse(attempt));
     db.certificates.forEach((certificate) => certificateSchema.parse(certificate));
     platformSettingsSchema.parse(db.settings);
+  });
+
+  it('uses UUIDs for every entity id', () => {
+    const everyId = [...db.users, ...db.courses, ...db.grants, ...db.invites, ...db.certificates]
+      .map((entity) => entity.id);
+    everyId.forEach((id) => expect(idSchema.safeParse(id).success, id).toBe(true));
   });
 
   it('keeps references between entities consistent', () => {

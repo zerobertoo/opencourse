@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { createMemoryStorage, createTestServices } from '@/test/mock-services';
+import { demoId } from '@/services/mock/seed/ids';
 
 describe('mock auth service', () => {
   it('starts without a session', async () => {
@@ -137,7 +138,7 @@ describe('mock auth service', () => {
       const invite = await services.auth.getInvite('demo-convite-sql');
       expect(invite).toMatchObject({
         email: 'novo.aluno@opencourse.example',
-        courseId: 'course-sql',
+        courseId: demoId('course-sql'),
       });
     });
 
@@ -161,7 +162,7 @@ describe('mock auth service', () => {
       expect((await services.auth.getCurrentUser())?.id).toBe(user.id);
 
       const courses = await services.enrollments.listMyCourses();
-      expect(courses.map((entry) => entry.course.id)).toEqual(['course-sql']);
+      expect(courses.map((entry) => entry.course.id)).toEqual([demoId('course-sql')]);
       expect(courses[0]?.grant).toMatchObject({
         source: 'invite',
         expiresAt: null,

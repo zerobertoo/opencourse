@@ -4,21 +4,18 @@ import { arrayMove } from './curriculumLayout';
 /** A question always keeps at least this many options (the quiz schema requires it). */
 export const MIN_OPTIONS = 2;
 
-let idCounter = 0;
-
 /** Client-side id for a new question or option; the service keeps it as is. */
-export function newQuizId(prefix: 'q' | 'o'): string {
-  idCounter += 1;
-  return `${prefix}-${Date.now().toString(36)}-${idCounter}`;
+export function newQuizId(): string {
+  return crypto.randomUUID();
 }
 
 function createOption(locale: Locale): QuizOption {
-  return { id: newQuizId('o'), isCorrect: false, translations: [{ locale, text: '' }] };
+  return { id: newQuizId(), isCorrect: false, translations: [{ locale, text: '' }] };
 }
 
 export function createQuestion(locale: Locale): QuizQuestion {
   return {
-    id: newQuizId('q'),
+    id: newQuizId(),
     translations: [{ locale, prompt: '', explanation: '' }],
     options: Array.from({ length: MIN_OPTIONS }, () => createOption(locale)),
   };

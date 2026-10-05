@@ -1,3 +1,4 @@
+import { demoId } from '@/services/mock/seed/ids';
 import { flattenLessons } from '@opencourse/shared';
 import { describe, expect, it } from 'vitest';
 import { createServicesSignedInAs, createTestServices } from '@/test/mock-services';
@@ -151,12 +152,16 @@ describe('mock curriculum service', () => {
         passingScore: 80,
         questions: [
           {
-            id: 'q1',
+            id: demoId('q1'),
             translations: [{ locale: 'pt-BR' as const, prompt: 'P?', explanation: '' }],
             options: [
-              { id: 'a', isCorrect: true, translations: [{ locale: 'pt-BR' as const, text: 'A' }] },
               {
-                id: 'b',
+                id: demoId('a'),
+                isCorrect: true,
+                translations: [{ locale: 'pt-BR' as const, text: 'A' }],
+              },
+              {
+                id: demoId('b'),
                 isCorrect: false,
                 translations: [{ locale: 'pt-BR' as const, text: 'B' }],
               },
@@ -176,7 +181,7 @@ describe('mock curriculum service', () => {
       const { services } = await createServicesSignedInAs('rafael');
       const { store } = services.mock;
       const course = await services.courses.getBySlug('fundamentos-de-javascript');
-      const lessonId = 'les-js-1-2';
+      const lessonId = demoId('les-js-1-2');
       expect(store.db.progress.some((entry) => entry.lessonId === lessonId)).toBe(true);
 
       const updated = await services.curriculum.deleteLesson(lessonId);
