@@ -60,7 +60,8 @@ export type Course = z.infer<typeof courseSchema>;
 
 export const quizOptionSchema = z.object({
   id: idSchema,
-  isCorrect: z.boolean(),
+  /** Absent in responses to people who cannot manage the course, so answers never leak. */
+  isCorrect: z.boolean().optional(),
   translations: z.array(z.object({ locale: localeSchema, text: z.string() })),
 });
 export type QuizOption = z.infer<typeof quizOptionSchema>;

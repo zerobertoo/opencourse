@@ -4,3 +4,4 @@ export * from './content';
 export * from './errors';
 export * from './health';
 export * from './auth';
+export * from './courses';
