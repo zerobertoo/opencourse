@@ -110,6 +110,9 @@ export class TestClient {
   patch(url: string, body?: unknown) {
     return this.request('PATCH', url, { body });
   }
+  delete(url: string) {
+    return this.request('DELETE', url);
+  }
 }
 
 export const STRONG_PASSWORD = 'correct horse battery';

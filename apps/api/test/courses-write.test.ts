@@ -2,7 +2,13 @@ import { apiErrorSchema, courseResponseSchema } from '@opencourse/shared';
 import { asc, eq } from 'drizzle-orm';
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import { auditLog, courses } from '../src/db/schema';
-import { createCast, insertCourse, insertLesson, insertModule } from './fixtures';
+import {
+  createCast,
+  insertCourse,
+  insertCourseWithLesson,
+  insertLesson,
+  insertModule,
+} from './fixtures';
 import { createTestApp, resetDatabase, TestClient, type TestApp } from './helpers';
 
 describe('writing courses', () => {
@@ -213,5 +219,39 @@ describe('writing courses', () => {
       { from: 'draft', to: 'published' },
       { from: 'published', to: 'archived' },
     ]);
+  });
+
+  it('lets a published course keep issues it already had, but never gain new ones', async () => {
+    const cast = await createCast(ctx.app);
+    const { course, courseModule } = await insertCourseWithLesson(ctx.app, {
+      instructorId: cast.instructorA.userId,
+      status: 'published',
+    });
+    // a video lesson added after publishing has no video yet
+    await insertLesson(ctx.app, courseModule.id, 1, { title: 'Video', type: 'video' });
+    const url = `/api/v1/courses/${course.id}`;
+
+    const settings = await cast.instructorA.client.patch(url, { sequentialOrder: true });
+    expect(settings.statusCode).toBe(200);
+
+    const wiped = await cast.instructorA.client.patch(url, {
+      translations: [{ locale: 'en', title: '', description: '', learningOutcomes: [] }],
+    });
+    expect(wiped.statusCode).toBe(400);
+    expect(wiped.json().error.details.issues).toEqual(['missingTitle']);
+  });
+
+  it('still refuses to publish a course with any issue, old or new', async () => {
+    const cast = await createCast(ctx.app);
+    const { course } = await insertCourseWithLesson(ctx.app, {
+      instructorId: cast.instructorA.userId,
+      status: 'draft',
+      lessonType: 'video',
+    });
+    const refused = await cast.instructorA.client.patch(`/api/v1/courses/${course.id}`, {
+      status: 'published',
+    });
+    expect(refused.statusCode).toBe(400);
+    expect(refused.json().error.details.issues).toEqual(['videoNotReady']);
   });
 });

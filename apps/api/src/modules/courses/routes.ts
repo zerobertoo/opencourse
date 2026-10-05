@@ -3,7 +3,6 @@ import {
   courseResponseSchema,
   courseSlugParamsSchema,
   createCourseRequestSchema,
-  getPublishIssues,
   listCoursesQuerySchema,
   listCoursesResponseSchema,
   updateCourseRequestSchema,
@@ -13,25 +12,17 @@ import type { FastifyRequest } from 'fastify';
 import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod';
 import { courses, courseTranslations, grants, type CourseRow } from '../../db/schema';
 import { recordAudit } from '../../audit';
-import { badRequest, conflict, forbidden, isUniqueViolation, notFound } from '../../errors';
+import { conflict, forbidden, isUniqueViolation, notFound } from '../../errors';
 import { escapeLike } from '../../sql';
-import { resolveCourseAccess } from './access';
+import { requireManagedCourse, resolveCourseAccess } from './access';
 import { loadCourseDetail, loadCourseSummaries } from './detail';
+import { assertPublishable } from './publish';
 import { redactQuizAnswers } from './redact';
 import { slugify } from './slug';
 
 const MAX_SLUG_ATTEMPTS = 20;
 
 export const courseRoutes: FastifyPluginAsyncZod = async (app) => {
-  /** Course the caller may edit: 404 when invisible, 403 when visible but not theirs. */
-  async function requireManagedCourse(request: FastifyRequest, course: CourseRow | undefined) {
-    if (!course) throw notFound('Course not found');
-    const access = await resolveCourseAccess(app.db, request.auth!.user, course, new Date());
-    if (!access.isVisible) throw notFound('Course not found');
-    if (!access.canManage) throw forbidden('Only the course instructor or an admin can edit it');
-    return course;
-  }
-
   /**
    * Course the caller may open, with its curriculum. Invisible courses answer 404 so a draft's
    * existence does not leak; visible ones without a grant answer 403.
@@ -130,10 +121,7 @@ export const courseRoutes: FastifyPluginAsyncZod = async (app) => {
       },
     },
     async (request) => {
-      const [course] = await app.db
-        .select()
-        .from(courses)
-        .where(eq(courses.id, request.params.id));
+      const [course] = await app.db.select().from(courses).where(eq(courses.id, request.params.id));
       return { course: await readCourse(request, course) };
     },
   );
@@ -208,11 +196,12 @@ export const courseRoutes: FastifyPluginAsyncZod = async (app) => {
         .select()
         .from(courses)
         .where(eq(courses.id, request.params.id));
-      const course = await requireManagedCourse(request, existing);
+      const course = await requireManagedCourse(app.db, request.auth!.user, existing);
       const { translations, ...fields } = request.body;
       const actorId = request.auth!.user.id;
 
       return app.db.transaction(async (tx) => {
+        const before = course.status === 'published' ? await loadCourseDetail(tx, course) : null;
         const [updated] = await tx
           .update(courses)
           .set({ ...fields, updatedAt: new Date() })
@@ -235,11 +224,7 @@ export const courseRoutes: FastifyPluginAsyncZod = async (app) => {
         }
 
         const detail = await loadCourseDetail(tx, updated);
-        if (updated.status === 'published') {
-          const issues = getPublishIssues(detail);
-          // throwing rolls the whole update back
-          if (issues.length > 0) throw badRequest('Course cannot be published yet', { issues });
-        }
+        assertPublishable(before, detail);
         if (updated.status !== course.status) {
           await recordAudit(tx, {
             actorId,

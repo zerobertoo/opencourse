@@ -1,5 +1,6 @@
 import { and, eq, gt, isNull, or } from 'drizzle-orm';
 import { grants, type CourseRow, type UserRow } from '../../db/schema';
+import { forbidden, notFound } from '../../errors';
 import type { Database } from '../../plugins/db';
 
 export interface CourseAccess {
@@ -57,4 +58,22 @@ export async function resolveCourseAccess(
     course.status === 'draft' ? false : await hasActiveGrant(db, user.id, course.id, now);
   const isVisible = course.status === 'published' || (course.status === 'archived' && granted);
   return { canManage, isVisible, canViewContent: isVisible && granted };
+}
+
+/**
+ * Course the caller may edit. Invisible courses answer the same 404 as missing ones, so a draft's
+ * existence does not leak through course, module or lesson ids; visible ones they cannot manage
+ * answer 403.
+ */
+export async function requireManagedCourse(
+  db: Pick<Database, 'select'>,
+  user: UserRow,
+  course: CourseRow | undefined,
+  notFoundMessage = 'Course not found',
+): Promise<CourseRow> {
+  if (!course) throw notFound(notFoundMessage);
+  const access = await resolveCourseAccess(db, user, course, new Date());
+  if (!access.isVisible) throw notFound(notFoundMessage);
+  if (!access.canManage) throw forbidden('Only the course instructor or an admin can edit it');
+  return course;
 }

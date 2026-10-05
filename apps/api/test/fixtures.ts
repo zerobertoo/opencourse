@@ -113,6 +113,24 @@ export async function insertLesson(
   return row;
 }
 
+/** A course with one module holding one lesson: the smallest publishable curriculum. */
+export async function insertCourseWithLesson(
+  app: FastifyInstance,
+  input: { instructorId: string; status?: CourseStatus; lessonType?: LessonType },
+) {
+  const course = await insertCourse(app, {
+    instructorId: input.instructorId,
+    status: input.status,
+    title: 'Course',
+  });
+  const courseModule = await insertModule(app, course.id, 0, 'Module');
+  const lesson = await insertLesson(app, courseModule.id, 0, {
+    title: 'Lesson',
+    type: input.lessonType,
+  });
+  return { course, courseModule, lesson };
+}
+
 export async function insertGrant(
   app: FastifyInstance,
   input: {
