@@ -93,6 +93,8 @@
     "required": "Preencha este campo.",
     "email": "Informe um e-mail válido.",
     "passwordLength": "A senha precisa ter pelo menos 8 caracteres.",
+    "passwordTooLong": "A senha pode ter no máximo 128 caracteres.",
+    "nameTooLong": "O nome pode ter no máximo 120 caracteres.",
     "passwordMismatch": "As senhas não coincidem.",
     "duration": "Use minutos ou m:ss, por exemplo 12 ou 5:30.",
     "url": "Informe um link válido que comece com http:// ou https://.",

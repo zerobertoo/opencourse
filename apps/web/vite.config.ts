@@ -11,5 +11,7 @@ export default defineConfig({
     globals: true,
     setupFiles: ['./src/test/setup.ts'],
     css: false,
+    // tests always run in demo mode, whatever a developer keeps in .env.local
+    env: { VITE_API_URL: '' },
   },
 });

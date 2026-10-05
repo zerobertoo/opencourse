@@ -33,8 +33,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       acceptInvite: async (token, input) => startSession(await auth.acceptInvite(token, input)),
       signOut: async () => {
         await auth.signOut();
-        queryClient.clear();
+        // order matters: publish "signed out" on the live query first, so every observer sees it.
+        // Clearing the whole cache first would detach the session observer from its query, and
+        // the app would keep showing the old user (and bounce /login straight back).
         queryClient.setQueryData(queryKeys.me, null);
+        queryClient.removeQueries({ predicate: (query) => query.queryKey[0] !== 'auth' });
       },
       setUser: (user) => queryClient.setQueryData(queryKeys.me, user),
     };

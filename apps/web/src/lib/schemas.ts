@@ -1,6 +1,9 @@
 import {
   lessonTypeSchema,
   localeSchema,
+  NAME_MAX_LENGTH,
+  PASSWORD_MAX_LENGTH,
+  PASSWORD_MIN_LENGTH,
   videoAdapterSchema,
   roleSchema,
   SUPPORTED_LOCALES,
@@ -12,7 +15,17 @@ import { parseClock } from './duration';
 // Messages are i18n keys (namespace `common`), translated where the error is rendered.
 const required = 'validation.required';
 const email = z.email('validation.email');
-const newPassword = z.string().min(8, 'validation.passwordLength');
+// Length rules come from the shared contract, so the forms cannot drift from what the API
+// enforces (a form that accepts more than the API shows only a generic error banner).
+const newPassword = z
+  .string()
+  .min(PASSWORD_MIN_LENGTH, 'validation.passwordLength')
+  .max(PASSWORD_MAX_LENGTH, 'validation.passwordTooLong');
+const personName = z
+  .string()
+  .trim()
+  .min(1, required)
+  .max(NAME_MAX_LENGTH, 'validation.nameTooLong');
 
 const passwordsMatch = {
   message: 'validation.passwordMismatch',
@@ -27,7 +40,7 @@ export type LoginValues = z.infer<typeof loginSchema>;
 
 export const signUpSchema = z
   .object({
-    name: z.string().trim().min(1, required),
+    name: personName,
     email,
     password: newPassword,
     confirmPassword: z.string(),
@@ -45,7 +58,7 @@ export type ResetPasswordValues = z.infer<typeof resetPasswordSchema>;
 
 export const acceptInviteSchema = z
   .object({
-    name: z.string().trim().min(1, required),
+    name: personName,
     password: newPassword,
     confirmPassword: z.string(),
   })
@@ -53,7 +66,7 @@ export const acceptInviteSchema = z
 export type AcceptInviteValues = z.infer<typeof acceptInviteSchema>;
 
 export const profileSchema = z.object({
-  name: z.string().trim().min(1, required),
+  name: personName,
   locale: localeSchema,
   timeZone: z.string().min(1, required),
 });

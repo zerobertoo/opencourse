@@ -14,6 +14,7 @@
     "validation": "Confira os dados informados e tente de novo.",
     "conflict": "Essa ação conflita com o estado atual dos dados.",
     "unavailable": "O serviço está indisponível no momento. Tente novamente.",
+    "rate_limited": "Muitas tentativas. Aguarde um instante e tente de novo.",
     "unknown": "Algo deu errado. Tente novamente."
   }
 }

@@ -1,5 +1,11 @@
 export type ServiceErrorCode =
-  'not_found' | 'unauthorized' | 'forbidden' | 'validation' | 'conflict' | 'unavailable';
+  | 'not_found'
+  | 'unauthorized'
+  | 'forbidden'
+  | 'validation'
+  | 'conflict'
+  | 'unavailable'
+  | 'rate_limited';
 
 /**
  * Standard error of any service implementation (mock or real API).

@@ -10,6 +10,7 @@ import { TextField } from '@/components/TextField';
 import { Button } from '@/components/ui/button';
 import { loginSchema, type LoginValues } from '@/lib/schemas';
 import { useServiceErrorMessage } from '@/lib/serviceError';
+import { isApiMode } from '@/services';
 
 const DEMO_ROLES: readonly Role[] = ['student', 'instructor', 'admin'];
 
@@ -95,25 +96,28 @@ export function Login() {
         </Button>
       </form>
 
-      <section aria-labelledby="demo-heading" className="space-y-3 border-t pt-5">
-        <h2 id="demo-heading" className="text-sm font-medium text-muted-foreground">
-          {t('login.demoTitle')}
-        </h2>
-        <div className="grid gap-2">
-          {DEMO_ROLES.map((role) => (
-            <Button
-              key={role}
-              variant="outline"
-              size="sm"
-              disabled={busy}
-              onClick={() => void onDemo(role)}
-            >
-              {pendingRole === role ? <Spinner /> : null}
-              {t(`login.demo.${role}`)}
-            </Button>
-          ))}
-        </div>
-      </section>
+      {/* demo accounts only exist in the mock; a real API has no one-click sign-in */}
+      {isApiMode ? null : (
+        <section aria-labelledby="demo-heading" className="space-y-3 border-t pt-5">
+          <h2 id="demo-heading" className="text-sm font-medium text-muted-foreground">
+            {t('login.demoTitle')}
+          </h2>
+          <div className="grid gap-2">
+            {DEMO_ROLES.map((role) => (
+              <Button
+                key={role}
+                variant="outline"
+                size="sm"
+                disabled={busy}
+                onClick={() => void onDemo(role)}
+              >
+                {pendingRole === role ? <Spinner /> : null}
+                {t(`login.demo.${role}`)}
+              </Button>
+            ))}
+          </div>
+        </section>
+      )}
 
       <p className="text-center text-sm text-muted-foreground">
         {t('login.noAccount')}{' '}

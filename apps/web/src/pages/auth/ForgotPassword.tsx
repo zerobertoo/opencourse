@@ -9,6 +9,7 @@ import { TextField } from '@/components/TextField';
 import { Button } from '@/components/ui/button';
 import { forgotPasswordSchema, type ForgotPasswordValues } from '@/lib/schemas';
 import { useServiceErrorMessage } from '@/lib/serviceError';
+import { isApiMode } from '@/services';
 import { useServices } from '@/services/ServicesContext';
 
 /** Password recovery request. It never reveals whether the e-mail exists. */
@@ -42,10 +43,13 @@ export function ForgotPassword() {
         <p className="text-sm text-muted-foreground">
           {t('forgot.sentDescription', { email: sentTo })}
         </p>
-        {/* the mock has no mailbox: this link stands in for the one in the e-mail */}
-        <Button asChild variant="outline" className="w-full">
-          <Link to="/reset-password?token=demo-token">{t('forgot.openDemoLink')}</Link>
-        </Button>
+        {/* the mock has no mailbox: this link stands in for the one in the e-mail.
+            With the real API the e-mail is real and the demo token would only be rejected. */}
+        {isApiMode ? null : (
+          <Button asChild variant="outline" className="w-full">
+            <Link to="/reset-password?token=demo-token">{t('forgot.openDemoLink')}</Link>
+          </Button>
+        )}
         <Link to="/login" className="block text-sm text-primary underline-offset-4 hover:underline">
           {t('forgot.backToLogin')}
         </Link>
