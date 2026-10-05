@@ -2,6 +2,7 @@ import { apiErrorSchema, createInviteResponseSchema, inviteSchema } from '@openc
 import { eq } from 'drizzle-orm';
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import { invites } from '../src/db/schema';
+import { insertCourse } from './fixtures';
 import {
   createTestApp,
   extractLink,
@@ -108,8 +109,9 @@ describe('invites', () => {
   });
 
   it('filters the listing by course', async () => {
-    const { admin } = await createCast();
-    const courseId = '3f2b8a54-6d1e-4c3f-9a7b-2d5e8c1f0a11';
+    const { admin, instructor } = await createCast();
+    const course = await insertCourse(ctx.app, { instructorId: instructor.userId });
+    const courseId = course.id;
     await invite(admin.client, 'a@example.com', { courseId });
     await invite(admin.client, 'b@example.com');
 
@@ -117,6 +119,33 @@ describe('invites', () => {
     expect(filtered.json().invites.map((item: { email: string }) => item.email)).toEqual([
       'a@example.com',
     ]);
+  });
+
+  it('rejects an invite for a course that does not exist', async () => {
+    const { admin } = await createCast();
+    const response = await admin.client.post('/api/v1/invites', {
+      email: 'a@example.com',
+      courseId: '3f2b8a54-6d1e-4c3f-9a7b-2d5e8c1f0a11',
+    });
+    expect(response.statusCode).toBe(404);
+    expect(apiErrorSchema.parse(response.json()).error.code).toBe('not_found');
+  });
+
+  it('lets instructors invite only to their own courses, and admins to any', async () => {
+    const { admin, instructor } = await createCast();
+    const other = await registerClient(ctx.app, 'ivo@example.com', 'Ivo Instructor');
+    await admin.client.patch(`/api/v1/admin/users/${other.userId}/role`, { role: 'instructor' });
+    const published = await insertCourse(ctx.app, { instructorId: other.userId });
+    const draft = await insertCourse(ctx.app, { instructorId: other.userId, status: 'draft' });
+    const mine = await insertCourse(ctx.app, { instructorId: instructor.userId });
+    const send = (client: TestClient, courseId: string) =>
+      client.post('/api/v1/invites', { email: `${courseId}@example.com`, courseId });
+
+    // visible but not theirs: 403; invisible draft: 404 so its existence stays hidden
+    expect((await send(instructor.client, published.id)).statusCode).toBe(403);
+    expect((await send(instructor.client, draft.id)).statusCode).toBe(404);
+    expect((await send(instructor.client, mine.id)).statusCode).toBe(201);
+    expect((await send(admin.client, draft.id)).statusCode).toBe(201);
   });
 
   it('shows a pending invite to anyone holding the token', async () => {

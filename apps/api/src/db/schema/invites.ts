@@ -1,4 +1,5 @@
 import { index, pgEnum, pgTable, text, timestamp, uuid } from 'drizzle-orm/pg-core';
+import { courses } from './courses';
 import { users } from './users';
 
 export const inviteStatus = pgEnum('invite_status', ['pending', 'accepted', 'expired', 'revoked']);
@@ -8,8 +9,8 @@ export const invites = pgTable(
   {
     id: uuid('id').primaryKey().defaultRandom(),
     email: text('email').notNull(),
-    /** Plain text for now (web ids are not UUIDs yet); becomes a foreign key with the courses table. */
-    courseId: text('course_id'),
+    /** The course whose grant is created when the invite is accepted. */
+    courseId: uuid('course_id').references(() => courses.id, { onDelete: 'set null' }),
     tokenHash: text('token_hash').notNull().unique(),
     /** `expired` is derived on read from `expiresAt`; the stored value only moves on accept/revoke. */
     status: inviteStatus('status').notNull().default('pending'),

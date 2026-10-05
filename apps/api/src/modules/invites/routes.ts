@@ -13,11 +13,12 @@ import { z } from 'zod';
 import { hashPassword } from '../../auth/passwords';
 import { generateToken, hashToken } from '../../auth/tokens';
 import type { Config } from '../../config';
-import { invites, users, type InviteRow } from '../../db/schema';
-import { badRequest, conflict, notFound } from '../../errors';
+import { courses, invites, users, type InviteRow } from '../../db/schema';
+import { badRequest, conflict, forbidden, notFound } from '../../errors';
 import { inviteEmail } from '../../mail/templates';
 import { effectiveInviteStatus, toLocale, toPublicInvite, toPublicUser } from '../../mappers';
 import { createUser } from '../../users/create-user';
+import { resolveCourseAccess } from '../courses/access';
 
 const DEFAULT_INVITE_TTL_MS = 14 * 24 * 60 * 60 * 1000;
 const ACCEPT_LIMIT = { max: 10, timeWindow: '1 minute' };
@@ -58,6 +59,15 @@ export const inviteRoutes: FastifyPluginAsyncZod<{ config: Config }> = async (ap
         ? new Date(request.body.expiresAt)
         : new Date(now.getTime() + DEFAULT_INVITE_TTL_MS);
       if (expiresAt <= now) throw badRequest('Invite expiry must be in the future');
+
+      if (courseId) {
+        const [course] = await app.db.select().from(courses).where(eq(courses.id, courseId));
+        if (!course) throw notFound('Course not found');
+        // same rule as editing the course: invisible -> 404, visible but not theirs -> 403
+        const access = await resolveCourseAccess(app.db, inviter, course, now);
+        if (!access.isVisible) throw notFound('Course not found');
+        if (!access.canManage) throw forbidden('Only the course instructor or an admin can invite');
+      }
 
       const [existing] = await app.db
         .select({ id: users.id })

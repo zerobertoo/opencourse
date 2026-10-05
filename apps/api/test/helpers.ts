@@ -36,7 +36,7 @@ export async function createTestApp(env: Record<string, string> = {}): Promise<T
 /** Empties every table the API writes to, so each test starts from a fresh instance. */
 export async function resetDatabase(app: FastifyInstance): Promise<void> {
   await app.db.execute(
-    sql`truncate table users, sessions, password_reset_tokens, invites, audit_log restart identity cascade`,
+    sql`truncate table users, sessions, password_reset_tokens, invites, courses, grants, audit_log restart identity cascade`,
   );
 }
 

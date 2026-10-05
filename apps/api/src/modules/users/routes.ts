@@ -16,15 +16,11 @@ import { revokeUserSessions } from '../../auth/sessions';
 import { auditLog, users } from '../../db/schema';
 import { conflict, forbidden, notFound } from '../../errors';
 import { toPublicUser } from '../../mappers';
+import { escapeLike } from '../../sql';
 import type { Database } from '../../plugins/db';
 import { ADMIN_GUARD_LOCK_ID } from '../../users/create-user';
 
 const userIdParamsSchema = z.object({ id: z.uuid() });
-
-/** Escapes LIKE wildcards so a search for "50%" does not match everything. */
-function escapeLike(value: string): string {
-  return value.replace(/[\\%_]/g, (character) => `\\${character}`);
-}
 
 /**
  * Runs `change` in a transaction that holds the admin guard lock, so two admins demoting each
