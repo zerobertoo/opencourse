@@ -3,6 +3,7 @@ import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod';
 import type { Config } from '../config';
 import { forbidden } from '../errors';
 import { authRoutes } from '../modules/auth/routes';
+import { courseRoutes } from '../modules/courses/routes';
 import { inviteRoutes } from '../modules/invites/routes';
 import { meRoutes } from '../modules/me/routes';
 import { userRoutes } from '../modules/users/routes';
@@ -25,6 +26,7 @@ export const v1Routes: FastifyPluginAsyncZod<{ config: Config }> = async (app, {
 
   await app.register(authRoutes, { config });
   await app.register(meRoutes);
+  await app.register(courseRoutes);
   await app.register(userRoutes);
   await app.register(inviteRoutes, { config });
 };

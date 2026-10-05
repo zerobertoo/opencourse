@@ -1,6 +1,7 @@
 import fp from 'fastify-plugin';
 import { hasZodFastifySchemaValidationErrors } from 'fastify-type-provider-zod';
 import type { ApiError, ApiErrorCode } from '@opencourse/shared';
+import { HttpError } from '../errors';
 
 const CODE_BY_STATUS: Record<number, ApiErrorCode> = {
   400: 'validation',
@@ -43,6 +44,12 @@ export const errorHandlerPlugin = fp(async (app) => {
 
     return reply
       .code(status)
-      .send(toErrorBody(CODE_BY_STATUS[status] ?? 'validation', (error as Error).message));
+      .send(
+        toErrorBody(
+          CODE_BY_STATUS[status] ?? 'validation',
+          (error as Error).message,
+          error instanceof HttpError ? error.details : undefined,
+        ),
+      );
   });
 });

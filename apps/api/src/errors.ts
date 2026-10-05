@@ -4,15 +4,19 @@
  */
 export class HttpError extends Error {
   readonly statusCode: number;
+  /** Optional context sent to the client as `error.details`, such as publish issues. */
+  readonly details: unknown;
 
-  constructor(statusCode: number, message: string) {
+  constructor(statusCode: number, message: string, details?: unknown) {
     super(message);
     this.name = 'HttpError';
     this.statusCode = statusCode;
+    this.details = details;
   }
 }
 
-export const badRequest = (message: string) => new HttpError(400, message);
+export const badRequest = (message: string, details?: unknown) =>
+  new HttpError(400, message, details);
 export const unauthorized = (message = 'Authentication required') => new HttpError(401, message);
 export const forbidden = (message = 'You do not have access to this resource') =>
   new HttpError(403, message);
