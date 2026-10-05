@@ -11,7 +11,8 @@ export const DEFAULT_LOCALE: Locale = 'pt-BR';
 export const roleSchema = z.enum(['student', 'instructor', 'admin']);
 export type Role = z.infer<typeof roleSchema>;
 
-export const idSchema = z.string().min(1);
+/** Ids are UUIDs everywhere: the database generates them and the demo seed derives them. */
+export const idSchema = z.uuid();
 
 /** Dates travel as ISO 8601 so they are serializable (JSON, sessionStorage, API). */
 export const isoDateSchema = z.string().datetime();
