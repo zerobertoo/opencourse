@@ -1,0 +1,1 @@
+ALTER TABLE "invites" ALTER COLUMN "course_id" SET DATA TYPE text;

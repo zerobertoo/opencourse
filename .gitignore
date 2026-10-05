@@ -5,3 +5,6 @@ dist
 *.tsbuildinfo
 coverage
 .rtk/
+.env
+.env.*
+!.env.example
