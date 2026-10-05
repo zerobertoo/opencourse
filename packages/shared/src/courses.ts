@@ -23,11 +23,13 @@ export type ListCoursesQuery = z.infer<typeof listCoursesQuerySchema>;
 export const listCoursesResponseSchema = z.object({ courses: z.array(courseSchema) });
 export const courseResponseSchema = z.object({ course: courseDetailSchema });
 
-/** Covers are plain https links until the storage adapter exists. */
-export const coverImageUrlSchema = z
+/** Links to files hosted elsewhere: https only until the storage adapter exists (milestone 4b). */
+export const httpsUrlSchema = z
   .url()
   .max(2048)
-  .refine((value) => value.startsWith('https://'), 'Cover must be an https URL');
+  .refine((value) => value.startsWith('https://'), 'Must be an https URL');
+
+export const coverImageUrlSchema = httpsUrlSchema;
 
 export const createCourseRequestSchema = z.object({
   title: z.string().trim().min(1).max(200),
