@@ -134,6 +134,17 @@ services:
       retries: 5
       start_period: 10s
 
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+      args:
+        VITE_API_URL: ${VITE_API_URL:-http://localhost:3000}
+    ports:
+      - '${WEB_PORT:-5173}:80'
+    depends_on:
+      - api
+
   # long-running background worker: delivers outbox events and runs queue jobs (certificates, e-mail)
   worker:
     build:
