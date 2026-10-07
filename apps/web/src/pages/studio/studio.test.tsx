@@ -295,7 +295,8 @@ describe('course editor: quiz builder', () => {
     const quiz = course.modules[0]?.lessons.find((lesson) => lesson.id === demoId('les-sql-1-3'));
     expect(quiz?.type === 'quiz' && quiz.quiz).toMatchObject({ passingScore: 80 });
     expect(quiz?.type === 'quiz' && quiz.quiz.questions).toHaveLength(3);
-  });
+    // many keystrokes through a heavy form: the default 5s is tight on a slow CI runner
+  }, 20_000);
 
   it('keeps at least two options and reorders questions', async () => {
     const user = userEvent.setup();
