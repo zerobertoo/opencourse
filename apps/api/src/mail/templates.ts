@@ -17,6 +17,25 @@ export function passwordResetEmail(locale: Locale, link: string): Template {
   };
 }
 
+/** Tells a student their certificate is ready, in the language of the account. */
+export function certificateEmail(
+  locale: Locale,
+  name: string,
+  courseTitle: string,
+  link: string,
+): Template {
+  if (locale === 'en') {
+    return {
+      subject: `Your certificate for ${courseTitle} is ready`,
+      text: `Congratulations, ${name}! You completed "${courseTitle}".\n\nDownload your certificate here:\n${link}`,
+    };
+  }
+  return {
+    subject: `Seu certificado de ${courseTitle} está pronto`,
+    text: `Parabéns, ${name}! Você concluiu "${courseTitle}".\n\nBaixe seu certificado aqui:\n${link}`,
+  };
+}
+
 /** Invitation e-mail. The invitee has no account yet, so the language is the platform default. */
 export function inviteEmail(locale: Locale, inviterName: string, link: string): Template {
   if (locale === 'en') {

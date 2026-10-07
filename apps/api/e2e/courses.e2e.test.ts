@@ -5,13 +5,14 @@ import { Browser, linkIn, PASSWORD, uniqueEmail, waitForMail } from './support';
 /** Registers a student and returns their browser and id. */
 async function registerStudent(prefix: string) {
   const browser = new Browser();
+  const email = uniqueEmail(prefix);
   const registered = await browser.call('POST', '/auth/register', {
     name: `${prefix} Test`,
-    email: uniqueEmail(prefix),
+    email,
     password: PASSWORD,
   });
   expect(registered.status).toBe(201);
-  return { browser, id: registered.body.user.id as string };
+  return { browser, id: registered.body.user.id as string, email };
 }
 
 describe('stack: courses and grants', () => {
@@ -286,6 +287,20 @@ describe('stack: courses and grants', () => {
         metrics.courses.find((course: { courseId: string }) => course.courseId === courseId)
           .completedStudents,
       ).toBeGreaterThanOrEqual(1);
+
+      // finishing the course issued the certificate in the background, and the student was told
+      let mine: { code: string; holderName: string }[] = [];
+      for (let attempt = 0; attempt < 20 && mine.length === 0; attempt += 1) {
+        mine = (await student.browser.call('GET', '/me/certificates')).body.certificates;
+        if (mine.length === 0) await new Promise((resolve) => setTimeout(resolve, 250));
+      }
+      expect(mine).toHaveLength(1);
+      expect(mine[0]!.code).toMatch(/^OC-[A-Z2-9]{4}-[A-Z2-9]{4}$/);
+      const verified = await new Browser().call('GET', `/certificates/verify/${mine[0]!.code}`);
+      expect(verified.status).toBe(200);
+      expect(verified.body.holderName).toBe('learner Test');
+      expect(JSON.stringify(verified.body)).not.toContain(student.email);
+      expect(await waitForMail(student.email)).toContain('/certificates');
     },
   );
 });

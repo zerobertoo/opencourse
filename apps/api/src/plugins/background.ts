@@ -28,7 +28,11 @@ export const backgroundPlugin = fp(async (app) => {
   });
 
   app.decorate('settleBackgroundTasks', async () => {
-    while (pending.size > 0) await Promise.all([...pending]);
+    while (pending.size > 0) {
+      await Promise.all([...pending]);
+      // a finished task may have emitted an event whose listener starts the next one on a later tick
+      await new Promise((resolve) => setImmediate(resolve));
+    }
   });
 
   // let in-flight work finish before the connections it uses are closed

@@ -6,3 +6,4 @@ export * from './users';
 export * from './courses';
 export * from './grants';
 export * from './progress';
+export * from './certificates';
