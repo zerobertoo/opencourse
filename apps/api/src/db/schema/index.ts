@@ -7,3 +7,4 @@ export * from './courses';
 export * from './grants';
 export * from './progress';
 export * from './certificates';
+export * from './outbox';

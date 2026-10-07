@@ -16,6 +16,7 @@ import { and, asc, eq } from 'drizzle-orm';
 import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod';
 import { courses, lessonNotes, lessons, modules, progress, quizAttempts } from '../../db/schema';
 import { badRequest, forbidden, notFound } from '../../errors';
+import { enqueueEvents } from '../../outbox';
 import { resolveCourseAccess } from '../courses/access';
 import { loadCourseDetail } from '../courses/detail';
 import {
@@ -29,14 +30,9 @@ import {
   toProgress,
   toQuizAttempt,
   upsertProgress,
-  type PendingEvent,
 } from './service';
 
 export const progressRoutes: FastifyPluginAsyncZod = async (app) => {
-  const publish = (events: PendingEvent[]) => {
-    for (const event of events) app.events.emit(event.name, event.payload as never);
-  };
-
   app.get(
     '/courses/:id/progress',
     {
@@ -86,7 +82,7 @@ export const progressRoutes: FastifyPluginAsyncZod = async (app) => {
       const { completed, videoPositionSeconds } = request.body;
       const now = new Date();
 
-      const { row, events } = await app.db.transaction(async (tx) => {
+      const row = await app.db.transaction(async (tx) => {
         const { course, lesson } = await requireReadableLesson(tx, user, request.params.id);
         await lockStudentCourse(tx, user.id, course.id);
         if (completed === true && lesson.type === 'quiz') {
@@ -119,14 +115,12 @@ export const progressRoutes: FastifyPluginAsyncZod = async (app) => {
           },
           now,
         );
-        return {
-          row: saved,
-          events:
-            completed === true ? completionEvents(detail, user.id, lesson.id, completedBefore) : [],
-        };
+        // recorded with the row: the event exists exactly when the completion does
+        if (completed === true) {
+          await enqueueEvents(tx, completionEvents(detail, user.id, lesson.id, completedBefore));
+        }
+        return saved;
       });
-      // announced only once the row is committed
-      publish(events);
       return { progress: toProgress(row) };
     },
   );
@@ -174,7 +168,7 @@ export const progressRoutes: FastifyPluginAsyncZod = async (app) => {
       const { answers } = request.body;
       const now = new Date();
 
-      const { attempt, feedback, events } = await app.db.transaction(async (tx) => {
+      const { attempt, feedback } = await app.db.transaction(async (tx) => {
         const { course, lesson } = await requireReadableLesson(tx, user, request.params.lessonId);
         await lockStudentCourse(tx, user.id, course.id);
         const quiz = lesson.type === 'quiz' ? lesson.quiz : null;
@@ -200,14 +194,12 @@ export const progressRoutes: FastifyPluginAsyncZod = async (app) => {
           .returning();
         if (!saved) throw new Error('Failed to save the attempt');
 
-        let pending: PendingEvent[] = [];
         if (graded.passed) {
           await upsertProgress(tx, user.id, lesson.id, { completed: true }, now);
-          pending = completionEvents(detail, user.id, lesson.id, completedBefore);
+          await enqueueEvents(tx, completionEvents(detail, user.id, lesson.id, completedBefore));
         }
-        return { attempt: saved, feedback: graded, events: pending };
+        return { attempt: saved, feedback: graded };
       });
-      publish(events);
       return reply.code(201).send({ attempt: toQuizAttempt(attempt), feedback });
     },
   );

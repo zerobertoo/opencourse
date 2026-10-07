@@ -1,9 +1,12 @@
+import { randomUUID } from 'node:crypto';
 import { CSRF_HEADER_NAME, CSRF_HEADER_VALUE } from '@opencourse/shared';
 import { sql } from 'drizzle-orm';
 import type { FastifyInstance, LightMyRequestResponse } from 'fastify';
+import { Redis } from 'ioredis';
 import { buildApp } from '../src/app';
 import { loadConfig, type Config } from '../src/config';
 import type { Mail, Mailer } from '../src/mail/mailer';
+import { startWorker, type WorkerOptions, type WorkerRuntime } from '../src/worker/runtime';
 
 /** Records e-mails instead of sending them. */
 export class FakeMailer implements Mailer {
@@ -33,10 +36,40 @@ export async function createTestApp(env: Record<string, string> = {}): Promise<T
   return { app, config, mailer };
 }
 
+export interface TestWorker extends WorkerRuntime {
+  /** Stops the worker and deletes its queue keys from Redis. */
+  dispose(): Promise<void>;
+}
+
+/** Starts a worker on a queue of its own (fast polling and retries) that sends through `mailer`. */
+export async function startTestWorker(
+  mailer: Mailer,
+  options: Pick<WorkerOptions, 'retryDelayMs'> = {},
+): Promise<TestWorker> {
+  const config = loadConfig(process.env);
+  const queuePrefix = `opencourse:test-queue:${randomUUID()}`;
+  const worker = await startWorker(config, {
+    mailer,
+    queuePrefix,
+    pollIntervalMs: 20,
+    retryDelayMs: options.retryDelayMs ?? 20,
+  });
+  return {
+    ...worker,
+    async dispose() {
+      await worker.stop();
+      const redis = new Redis(config.REDIS_URL);
+      const keys = await redis.keys(`${queuePrefix}:*`);
+      if (keys.length > 0) await redis.del(...keys);
+      redis.disconnect();
+    },
+  };
+}
+
 /** Empties every table the API writes to, so each test starts from a fresh instance. */
 export async function resetDatabase(app: FastifyInstance): Promise<void> {
   await app.db.execute(
-    sql`truncate table users, sessions, password_reset_tokens, invites, courses, grants, audit_log restart identity cascade`,
+    sql`truncate table users, sessions, password_reset_tokens, invites, courses, grants, audit_log, outbox_events restart identity cascade`,
   );
 }
 

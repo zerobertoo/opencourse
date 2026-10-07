@@ -15,6 +15,7 @@ import {
   type CertificateRow,
 } from '../../db/schema';
 import { isUniqueViolation } from '../../errors';
+import { enqueueEvents } from '../../outbox';
 import type { Database } from '../../plugins/db';
 
 const CODE_ATTEMPTS = 5;
@@ -34,6 +35,8 @@ export interface IssueInput {
   courseId: string;
   /** Marks the audit entry of certificates issued after the fact by the backfill script. */
   backfill?: boolean;
+  /** Records `certificate.issued` in the outbox, in the same transaction as the certificate. */
+  announce?: boolean;
   /** Replaceable so tests can force a code collision. */
   generateCode?: () => string;
 }
@@ -47,7 +50,13 @@ export async function issueCertificate(
   db: Database,
   input: IssueInput,
 ): Promise<CertificateRow | null> {
-  const { userId, courseId, backfill = false, generateCode = generateCertificateCode } = input;
+  const {
+    userId,
+    courseId,
+    backfill = false,
+    announce = false,
+    generateCode = generateCertificateCode,
+  } = input;
   const [course] = await db.select().from(courses).where(eq(courses.id, courseId));
   const [user] = await db.select().from(users).where(eq(users.id, userId));
   if (!course || !user || !course.certificateTemplate.enabled) return null;
@@ -86,6 +95,14 @@ export async function issueCertificate(
           targetId: row.id,
           metadata: { userId, courseId, code, ...(backfill ? { backfill: true } : {}) },
         });
+        if (announce) {
+          await enqueueEvents(tx, [
+            {
+              name: 'certificate.issued',
+              payload: { userId, courseId, certificateId: row.id, code },
+            },
+          ]);
+        }
         return row;
       });
     } catch (error) {

@@ -25,7 +25,7 @@ export const certificates = pgTable(
     defaultLocale: text('default_locale').notNull(),
     template: jsonb('template').$type<Omit<CertificateTemplate, 'enabled'>>().notNull(),
     issuedAt: timestamp('issued_at', { withTimezone: true }).notNull().defaultNow(),
-    /** Null until the e-mail went out; a future worker can retry the nulls. */
+    /** Null until the e-mail went out; the worker retries the send and stamps this on success. */
     emailSentAt: timestamp('email_sent_at', { withTimezone: true }),
   },
   (table) => [

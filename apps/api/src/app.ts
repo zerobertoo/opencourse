@@ -17,7 +17,6 @@ import { authPlugin } from './plugins/auth';
 import { backgroundPlugin } from './plugins/background';
 import { dbPlugin } from './plugins/db';
 import { errorHandlerPlugin } from './plugins/error-handler';
-import { eventsPlugin } from './plugins/events';
 import { mailerPlugin } from './plugins/mailer';
 import { rateLimitPlugin } from './plugins/rate-limit';
 import { redisPlugin } from './plugins/redis';
@@ -93,7 +92,6 @@ export async function buildApp(
   await app.register(dbPlugin, { databaseUrl: config.DATABASE_URL });
   await app.register(redisPlugin, { redisUrl: config.REDIS_URL });
   await app.register(backgroundPlugin);
-  await app.register(eventsPlugin);
   await app.register(mailerPlugin, { mailer: dependencies.mailer ?? createSmtpMailer(config) });
   await app.register(authPlugin, { config });
   await app.register(rateLimitPlugin, { disabled: config.RATE_LIMIT_DISABLED });

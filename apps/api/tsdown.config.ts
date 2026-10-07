@@ -1,8 +1,8 @@
 import { defineConfig } from 'tsdown';
 
 export default defineConfig({
-  // flat outputs: dist/server.js and dist/migrate.js
-  entry: { server: 'src/server.ts', migrate: 'src/db/migrate.ts' },
+  // flat outputs: dist/server.js, dist/worker.js and dist/migrate.js
+  entry: { server: 'src/server.ts', worker: 'src/worker.ts', migrate: 'src/db/migrate.ts' },
   format: 'esm',
   platform: 'node',
   target: 'node22',

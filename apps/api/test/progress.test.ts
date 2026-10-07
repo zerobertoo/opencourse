@@ -1,7 +1,7 @@
 import type { CourseCompletedEvent, LessonCompletedEvent } from '@opencourse/shared';
-import { and, eq, sql } from 'drizzle-orm';
+import { asc, sql } from 'drizzle-orm';
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
-import { progress } from '../src/db/schema';
+import { outboxEvents } from '../src/db/schema';
 import {
   buildQuiz,
   createCast,
@@ -12,31 +12,26 @@ import {
 } from './fixtures';
 import { createTestApp, resetDatabase, TestClient, type TestApp } from './helpers';
 
-/** Lets the bus deliver: listeners run on a microtask after emit. */
-const settle = () => new Promise((resolve) => setImmediate(resolve));
-
 const UNKNOWN_ID = '00000000-0000-4000-8000-000000000000';
 
 describe('lesson progress', () => {
   let ctx: TestApp;
   const lessonEvents: LessonCompletedEvent[] = [];
   const courseEvents: CourseCompletedEvent[] = [];
-  /** What the database said about the lesson at the moment its event arrived. */
-  const completedWhenAnnounced: boolean[] = [];
+
+  /** Reads the events recorded in the outbox so far, oldest first. */
+  async function settle() {
+    const rows = await ctx.app.db.select().from(outboxEvents).orderBy(asc(outboxEvents.createdAt));
+    lessonEvents.length = 0;
+    courseEvents.length = 0;
+    for (const row of rows) {
+      if (row.name === 'lesson.completed') lessonEvents.push(row.payload as LessonCompletedEvent);
+      if (row.name === 'course.completed') courseEvents.push(row.payload as CourseCompletedEvent);
+    }
+  }
 
   beforeAll(async () => {
     ctx = await createTestApp();
-    ctx.app.events.on('lesson.completed', async (event) => {
-      lessonEvents.push(event);
-      const [row] = await ctx.app.db
-        .select()
-        .from(progress)
-        .where(and(eq(progress.userId, event.userId), eq(progress.lessonId, event.lessonId)));
-      completedWhenAnnounced.push(row?.completed === true);
-    });
-    ctx.app.events.on('course.completed', (event) => {
-      courseEvents.push(event);
-    });
   });
   afterAll(async () => {
     await ctx.app.close();
@@ -45,7 +40,6 @@ describe('lesson progress', () => {
     await resetDatabase(ctx.app);
     lessonEvents.length = 0;
     courseEvents.length = 0;
-    completedWhenAnnounced.length = 0;
   });
 
   /** Course with text, video and quiz lessons, in that order, and a granted student. */
@@ -346,7 +340,7 @@ describe('lesson progress', () => {
   });
 
   describe('domain events', () => {
-    it('announces a completed lesson once, after the row is saved, and not on repeats', async () => {
+    it('records a completed lesson once in the outbox, and not on repeats', async () => {
       const { cast, text, course } = await setup();
       await mark(cast.student.client, text.id, { completed: true });
       await mark(cast.student.client, text.id, { completed: true });
@@ -354,7 +348,6 @@ describe('lesson progress', () => {
       expect(lessonEvents).toEqual([
         { userId: cast.student.userId, courseId: course.id, lessonId: text.id },
       ]);
-      expect(completedWhenAnnounced).toEqual([true]);
       expect(courseEvents).toEqual([]);
     });
 

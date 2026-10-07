@@ -1,11 +1,13 @@
-import {
-  apiErrorSchema,
-  certificateCodeSchema,
-  type CertificateIssuedEvent,
-} from '@opencourse/shared';
+import { apiErrorSchema, certificateCodeSchema } from '@opencourse/shared';
 import { eq } from 'drizzle-orm';
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
-import { auditLog, certificates, courses, courseTranslations } from '../src/db/schema';
+import {
+  auditLog,
+  certificates,
+  courses,
+  courseTranslations,
+  outboxEvents,
+} from '../src/db/schema';
 import { backfillCertificates } from '../src/modules/certificates/backfill';
 import { issueCertificate } from '../src/modules/certificates/service';
 import {
@@ -16,34 +18,40 @@ import {
   insertModule,
   insertProgress,
 } from './fixtures';
-import { createTestApp, resetDatabase, TestClient, type TestApp } from './helpers';
-
-/** Lets the bus deliver and the background e-mail finish. */
-async function settle(ctx: TestApp) {
-  await new Promise((resolve) => setImmediate(resolve));
-  await ctx.app.settleBackgroundTasks();
-  await new Promise((resolve) => setImmediate(resolve));
-  await ctx.app.settleBackgroundTasks();
-}
+import {
+  createTestApp,
+  resetDatabase,
+  startTestWorker,
+  TestClient,
+  type TestApp,
+  type TestWorker,
+} from './helpers';
 
 describe('certificates', () => {
   let ctx: TestApp;
-  const announced: CertificateIssuedEvent[] = [];
+  let worker: TestWorker;
 
   beforeAll(async () => {
     ctx = await createTestApp();
-    ctx.app.events.on('certificate.issued', (event) => {
-      announced.push(event);
-    });
+    worker = await startTestWorker(ctx.mailer);
   });
   afterAll(async () => {
+    await worker.dispose();
     await ctx.app.close();
   });
   beforeEach(async () => {
     await resetDatabase(ctx.app);
-    announced.length = 0;
     ctx.mailer.sent.length = 0;
   });
+
+  /** Waits for the worker to deliver every pending event and finish its jobs. */
+  const settle = () => worker.drain();
+
+  /** The `certificate.issued` events recorded in the outbox. */
+  const announcedEvents = async () =>
+    (await ctx.app.db.select().from(outboxEvents)).filter(
+      (event) => event.name === 'certificate.issued',
+    );
 
   /** A course with one lesson and a granted student. */
   async function setup() {
@@ -71,7 +79,7 @@ describe('certificates', () => {
     it('issues one certificate when the last lesson is completed', async () => {
       const { cast, lesson, course } = await setup();
       await mark(cast.student.client, lesson.id, true);
-      await settle(ctx);
+      await settle();
 
       const rows = await rowsOf();
       expect(rows).toHaveLength(1);
@@ -84,7 +92,7 @@ describe('certificates', () => {
         template: { signatoryName: 'Ines', signatoryRole: '', message: '' },
       });
       expect(certificateCodeSchema.safeParse(rows[0]!.code).success).toBe(true);
-      expect(announced).toEqual([
+      expect((await announcedEvents()).map((event) => event.payload)).toEqual([
         {
           userId: cast.student.userId,
           courseId: course.id,
@@ -97,13 +105,13 @@ describe('certificates', () => {
     it('does not issue again when the lesson is un-completed and completed again', async () => {
       const { cast, lesson } = await setup();
       await mark(cast.student.client, lesson.id, true);
-      await settle(ctx);
+      await settle();
       await mark(cast.student.client, lesson.id, false);
       await mark(cast.student.client, lesson.id, true);
-      await settle(ctx);
+      await settle();
 
       expect(await rowsOf()).toHaveLength(1);
-      expect(announced).toHaveLength(1);
+      expect(await announcedEvents()).toHaveLength(1);
       expect(ctx.mailer.sent).toHaveLength(1);
     });
 
@@ -121,15 +129,15 @@ describe('certificates', () => {
         })
         .where(eq(courses.id, course.id));
       await mark(cast.student.client, lesson.id, true);
-      await settle(ctx);
+      await settle();
       expect(await rowsOf()).toHaveLength(0);
-      expect(announced).toHaveLength(0);
+      expect(await announcedEvents()).toHaveLength(0);
     });
 
     it('keeps the certificate when a lesson is added later and when the grant is revoked', async () => {
       const { cast, lesson, courseModule, grant } = await setup();
       await mark(cast.student.client, lesson.id, true);
-      await settle(ctx);
+      await settle();
       await insertLesson(ctx.app, courseModule.id, 1, { title: 'Added later' });
       await cast.instructorA.client.post(`/api/v1/grants/${grant.id}/revoke`);
 
@@ -142,7 +150,7 @@ describe('certificates', () => {
     it('freezes the name, titles and template at issue time', async () => {
       const { cast, lesson, course } = await setup();
       await mark(cast.student.client, lesson.id, true);
-      await settle(ctx);
+      await settle();
       const [issued] = await rowsOf();
 
       await cast.student.client.patch('/api/v1/me', { name: 'Renamed Person' });
@@ -175,7 +183,7 @@ describe('certificates', () => {
     it('draws another code when the first one is taken', async () => {
       const { cast, lesson, course } = await setup();
       await mark(cast.student.client, lesson.id, true);
-      await settle(ctx);
+      await settle();
       const [taken] = await rowsOf();
 
       const codes = [taken!.code, 'OC-ABCD-EFGH'];
@@ -190,7 +198,7 @@ describe('certificates', () => {
     it('records an audit entry without an actor', async () => {
       const { cast, lesson } = await setup();
       await mark(cast.student.client, lesson.id, true);
-      await settle(ctx);
+      await settle();
       const [row] = await rowsOf();
       const entries = await ctx.app.db
         .select()
@@ -209,7 +217,7 @@ describe('certificates', () => {
     it('tells the student and records when it went out', async () => {
       const { cast, lesson } = await setup();
       await mark(cast.student.client, lesson.id, true);
-      await settle(ctx);
+      await settle();
 
       const mail = ctx.mailer.lastTo('sam@example.com');
       expect(mail?.subject).toContain('Design basics');
@@ -224,7 +232,7 @@ describe('certificates', () => {
       };
       try {
         await mark(cast.student.client, lesson.id, true);
-        await settle(ctx);
+        await settle();
       } finally {
         ctx.mailer.send = original;
       }
@@ -238,7 +246,7 @@ describe('certificates', () => {
     it('lists only the caller’s certificates, newest first, and needs a session', async () => {
       const { cast, lesson } = await setup();
       await mark(cast.student.client, lesson.id, true);
-      await settle(ctx);
+      await settle();
 
       const mine = await cast.student.client.get('/api/v1/me/certificates');
       expect(mine.json().certificates).toHaveLength(1);
@@ -250,7 +258,7 @@ describe('certificates', () => {
     it('verifies a code publicly, normalizes it, and exposes no ids or e-mail', async () => {
       const { cast, lesson } = await setup();
       await mark(cast.student.client, lesson.id, true);
-      await settle(ctx);
+      await settle();
       const [row] = await rowsOf();
       const anonymous = new TestClient(ctx.app);
 
@@ -285,10 +293,10 @@ describe('certificates', () => {
 
       expect(await backfillCertificates(ctx.app.db)).toBe(1);
       expect(await backfillCertificates(ctx.app.db)).toBe(0);
-      await settle(ctx);
+      await settle();
 
       expect(await rowsOf()).toHaveLength(1);
-      expect(announced).toHaveLength(0);
+      expect(await announcedEvents()).toHaveLength(0);
       expect(ctx.mailer.sent).toHaveLength(0);
       const [entry] = await ctx.app.db
         .select()

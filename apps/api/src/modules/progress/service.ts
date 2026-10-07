@@ -3,8 +3,6 @@ import {
   getUnlockedLessonIds,
   summarizeCourseProgress,
   type CourseDetail,
-  type DomainEventMap,
-  type DomainEventName,
   type LessonNote,
   type Progress,
   type Quiz,
@@ -21,16 +19,12 @@ import {
   type UserRow,
 } from '../../db/schema';
 import { badRequest, forbidden, notFound } from '../../errors';
+import type { PendingEvent } from '../../outbox';
 import type { Database } from '../../plugins/db';
 import { resolveCourseAccess } from '../courses/access';
 import { findCourseOfLesson, type Transaction } from '../courses/curriculum';
 
 type Reader = Pick<Database, 'select'>;
-
-export interface PendingEvent<Name extends DomainEventName = DomainEventName> {
-  name: Name;
-  payload: DomainEventMap[Name];
-}
 
 export function toProgress(row: ProgressRow): Progress {
   return {

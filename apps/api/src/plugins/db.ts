@@ -11,11 +11,20 @@ declare module 'fastify' {
   }
 }
 
+/** Opens a Postgres pool. The caller closes it with `close`. */
+export function openDatabase(databaseUrl: string, max = 10) {
+  const client = postgres(databaseUrl, { max, connect_timeout: 5 });
+  return {
+    db: drizzle(client, { schema }),
+    close: () => client.end({ timeout: 5 }),
+  };
+}
+
 /** Opens the Postgres pool, exposes it as `app.db` and closes it with the app. */
 export const dbPlugin = fp<{ databaseUrl: string }>(async (app, { databaseUrl }) => {
-  const client = postgres(databaseUrl, { max: 10, connect_timeout: 5 });
-  app.decorate('db', drizzle(client, { schema }));
+  const { db, close } = openDatabase(databaseUrl);
+  app.decorate('db', db);
   app.addHook('onClose', async () => {
-    await client.end({ timeout: 5 });
+    await close();
   });
 });

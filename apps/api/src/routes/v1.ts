@@ -4,7 +4,6 @@ import type { Config } from '../config';
 import { forbidden } from '../errors';
 import { authRoutes } from '../modules/auth/routes';
 import { certificateRoutes } from '../modules/certificates/routes';
-import { registerCertificateListeners } from '../modules/certificates/listeners';
 import { curriculumRoutes } from '../modules/courses/curriculum-routes';
 import { courseRoutes } from '../modules/courses/routes';
 import { enrollmentRoutes } from '../modules/enrollments/routes';
@@ -34,7 +33,6 @@ export const v1Routes: FastifyPluginAsyncZod<{ config: Config }> = async (app, {
   await app.register(authRoutes, { config });
   await app.register(meRoutes);
   await app.register(certificateRoutes);
-  registerCertificateListeners(app, config.WEB_BASE_URL);
   await app.register(courseRoutes);
   await app.register(curriculumRoutes);
   await app.register(grantRoutes);
