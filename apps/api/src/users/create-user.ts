@@ -2,6 +2,8 @@ import { DEFAULT_LOCALE, type Locale, type Role } from '@opencourse/shared';
 import { sql } from 'drizzle-orm';
 import { users, type UserRow } from '../db/schema';
 import { conflict, isUniqueViolation } from '../errors';
+import { toLocale } from '../mappers';
+import { enqueueEvents } from '../outbox';
 import type { Database } from '../plugins/db';
 
 /** Arbitrary constant: serializes every "first user" decision across API instances. */
@@ -51,6 +53,17 @@ export async function createUser(
         })
         .returning();
       if (!created) throw new Error('Failed to create user');
+      await enqueueEvents(tx, [
+        {
+          name: 'user.created',
+          payload: {
+            userId: created.id,
+            name: created.name,
+            email: created.email,
+            locale: toLocale(created.locale),
+          },
+        },
+      ]);
       return created;
     });
   } catch (error) {

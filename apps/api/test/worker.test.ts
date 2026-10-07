@@ -94,6 +94,8 @@ describe('outbox and worker', () => {
 
     it('records the completion events together with the progress row', async () => {
       const { complete } = await setup();
+      // registering the cast already wrote user.created rows
+      await ctx.app.db.delete(outboxEvents);
       await complete();
       expect((await outboxRows()).map((row) => row.name).sort()).toEqual([
         'course.completed',

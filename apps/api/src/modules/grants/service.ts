@@ -2,6 +2,7 @@ import type { GrantSource } from '@opencourse/shared';
 import { and, eq, isNull } from 'drizzle-orm';
 import { recordAudit } from '../../audit';
 import { courses, grants, type GrantRow, type UserRow } from '../../db/schema';
+import { enqueueEvents } from '../../outbox';
 import type { Database } from '../../plugins/db';
 import { requireManagedCourse } from '../courses/access';
 
@@ -45,6 +46,18 @@ export async function createGrantRow(tx: GrantWriter, input: NewGrant): Promise<
       ...input.metadata,
     },
   });
+  await enqueueEvents(tx, [
+    {
+      name: 'enrollment.granted',
+      payload: {
+        grantId: row.id,
+        userId: row.userId,
+        courseId: row.courseId,
+        source: row.source,
+        expiresAt: row.expiresAt?.toISOString() ?? null,
+      },
+    },
+  ]);
   return row;
 }
 
@@ -117,6 +130,12 @@ export async function revokeGrantRow(
     targetId: row.id,
     metadata: { userId: row.userId, courseId: row.courseId },
   });
+  await enqueueEvents(tx, [
+    {
+      name: 'grant.revoked',
+      payload: { grantId: row.id, userId: row.userId, courseId: row.courseId },
+    },
+  ]);
   return row;
 }
 
