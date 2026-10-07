@@ -1,33 +1,11 @@
-import { execFileSync } from 'node:child_process';
-import path from 'node:path';
-import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 import { apiErrorSchema, healthResponseSchema, livenessResponseSchema } from '@opencourse/shared';
+import { compose, waitFor } from './support';
 
 // these tests talk to the real stack started by `docker compose up -d --build --wait`
 const API_URL = process.env.E2E_API_URL ?? 'http://localhost:3000';
 const MAILPIT_URL = process.env.E2E_MAILPIT_URL ?? 'http://localhost:8025';
 const S3_URL = process.env.E2E_S3_URL ?? 'http://localhost:9000';
-const REPOSITORY_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../..');
-
-/** Runs a `docker compose` subcommand against the repository stack. */
-function compose(...args: string[]): void {
-  execFileSync('docker', ['compose', ...args], { cwd: REPOSITORY_ROOT, stdio: 'ignore' });
-}
-
-/** Polls until `check` resolves true, or fails with `description` after `timeoutMs`. */
-async function waitFor(
-  description: string,
-  check: () => Promise<boolean>,
-  timeoutMs = 20_000,
-): Promise<void> {
-  const deadline = Date.now() + timeoutMs;
-  while (Date.now() < deadline) {
-    if (await check().catch(() => false)) return;
-    await new Promise((resolve) => setTimeout(resolve, 500));
-  }
-  throw new Error(`Timed out waiting for: ${description}`);
-}
 
 describe('stack: api', () => {
   it('reports every dependency as up on /health', async () => {
