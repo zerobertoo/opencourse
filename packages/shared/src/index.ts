@@ -7,5 +7,6 @@ export * from './auth';
 export * from './courses';
 export * from './curriculum';
 export * from './grants';
+export * from './certificates';
 export * from './events';
 export * from './progress';

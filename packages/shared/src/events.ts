@@ -1,4 +1,5 @@
 import { idSchema } from './base';
+import type { CertificateIssuedEvent } from './certificates';
 import { z } from 'zod';
 
 /** Typed domain events carried by the internal bus (PRD section 10). */
@@ -15,9 +16,10 @@ export const courseCompletedEventSchema = z.object({
 });
 export type CourseCompletedEvent = z.infer<typeof courseCompletedEventSchema>;
 
-/** Event name to payload. New events are added here so emitters and listeners stay typed. */
+/** Event name to payload (`certificate.issued` is defined with the certificate schemas). New events are added here so emitters and listeners stay typed. */
 export interface DomainEventMap {
   'lesson.completed': LessonCompletedEvent;
   'course.completed': CourseCompletedEvent;
+  'certificate.issued': CertificateIssuedEvent;
 }
 export type DomainEventName = keyof DomainEventMap;
