@@ -181,9 +181,10 @@ function CourseRowsSection({ timeZone }: { timeZone: string }) {
   );
 }
 
-function RecentCertificatesSection({ timeZone }: { timeZone: string }) {
+function RecentCertificatesSection() {
   const { t, i18n } = useTranslation(['student', 'common']);
-  const { formatDate } = useFormatters(timeZone);
+  // the day a certificate was issued is a fact of the credential, not of whoever is looking
+  const { formatDate } = useFormatters('UTC');
   const query = useMyCertificates();
   const locale = toLocale(i18n.resolvedLanguage);
 
@@ -263,7 +264,7 @@ export function Home() {
       </h1>
       <HeroSection timeZone={user.timeZone} />
       <CourseRowsSection timeZone={user.timeZone} />
-      <RecentCertificatesSection timeZone={user.timeZone} />
+      <RecentCertificatesSection />
     </div>
   );
 }

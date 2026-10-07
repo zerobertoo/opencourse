@@ -14,7 +14,8 @@ import { useFormatters } from '@/lib/intl';
 export function VerifyCertificate() {
   const { t, i18n } = useTranslation(['student', 'common']);
   const { code = '' } = useParams();
-  const { formatDate } = useFormatters();
+  // the public page has no viewer time zone, so the issue date is the UTC day on every page
+  const { formatDate } = useFormatters('UTC');
   const query = useVerifyCertificate(code);
   const locale = toLocale(i18n.resolvedLanguage);
 

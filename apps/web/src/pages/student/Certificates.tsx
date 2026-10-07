@@ -4,7 +4,6 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { toast } from 'sonner';
-import { useAuth } from '@/auth/AuthContext';
 import { CertificatePreview } from '@/components/CertificatePreview';
 import { EmptyState, ErrorState } from '@/components/StateViews';
 import { Button } from '@/components/ui/button';
@@ -20,8 +19,8 @@ import type { CertificateDetails } from '@/services';
 /** My certificates: list with preview and (mocked) PDF download. */
 export function Certificates() {
   const { t, i18n } = useTranslation(['student', 'common']);
-  const { user } = useAuth();
-  const { formatDate } = useFormatters(user?.timeZone);
+  // UTC like the public page, so the same certificate shows the same day everywhere
+  const { formatDate } = useFormatters('UTC');
   const query = useMyCertificates();
   const [previewing, setPreviewing] = useState<CertificateDetails | null>(null);
   const locale = toLocale(i18n.resolvedLanguage);
