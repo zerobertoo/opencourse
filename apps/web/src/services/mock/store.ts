@@ -40,6 +40,9 @@ export const MOCK_DB_VERSION = 5;
 
 export const DB_STORAGE_KEY = 'opencourse.mock.db';
 export const SESSION_STORAGE_KEY = 'opencourse.mock.session';
+/** API mode keeps its own state, so demo data and mirrored real data never mix in one browser. */
+export const API_DB_STORAGE_KEY = 'opencourse.mock.api-db';
+export const API_SESSION_STORAGE_KEY = 'opencourse.mock.api-session';
 
 interface PersistedDatabase {
   version: number;
@@ -58,6 +61,7 @@ export class MockStore {
   constructor(
     private readonly storage: MockStorage | null,
     private readonly createSeed: () => MockDatabase,
+    private readonly storageKey: string = DB_STORAGE_KEY,
   ) {
     this.database = this.load() ?? this.reseed();
   }
@@ -94,7 +98,7 @@ export class MockStore {
 
   private load(): MockDatabase | null {
     try {
-      const raw = this.storage?.getItem(DB_STORAGE_KEY);
+      const raw = this.storage?.getItem(this.storageKey);
       if (!raw) return null;
       const parsed = JSON.parse(raw) as PersistedDatabase;
       return parsed.version === MOCK_DB_VERSION ? parsed.data : null;
@@ -107,7 +111,7 @@ export class MockStore {
   private persist(): void {
     try {
       const payload: PersistedDatabase = { version: MOCK_DB_VERSION, data: this.database };
-      this.storage?.setItem(DB_STORAGE_KEY, JSON.stringify(payload));
+      this.storage?.setItem(this.storageKey, JSON.stringify(payload));
     } catch {
       // quota exceeded or storage blocked: the state stays in memory only
     }

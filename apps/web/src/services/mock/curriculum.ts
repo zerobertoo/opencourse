@@ -246,7 +246,7 @@ export function createMockCurriculumService(context: MockContext): CurriculumSer
           } catch {
             throw new ServiceError('validation', 'Invalid video URL');
           }
-          if (url.protocol !== 'https:' && url.protocol !== 'http:') {
+          if (url.protocol !== 'https:') {
             throw new ServiceError('validation', 'Invalid video URL');
           }
           uploadTokens.delete(lessonId);
@@ -306,7 +306,7 @@ export function createMockCurriculumService(context: MockContext): CurriculumSer
           new Set(layoutLessonIds).size === lessonsById.size &&
           layoutLessonIds.every((id) => lessonsById.has(id));
         if (!coversEverything) {
-          throw new ServiceError('validation', 'The layout must list every module and lesson once');
+          throw new ServiceError('conflict', 'The layout must list every module and lesson once');
         }
 
         return changeCourse(course, (target) => {

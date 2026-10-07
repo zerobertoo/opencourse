@@ -42,11 +42,11 @@ describe('mock runtime', () => {
     const { services } = createTestServices();
     const [first] = await services.courses.list();
     first!.translations[0]!.title = 'Alterado fora do service';
-    first!.modules.length = 0;
+    first!.moduleCount = 0;
 
     const [again] = await services.courses.list();
     expect(again!.translations[0]!.title).not.toBe('Alterado fora do service');
-    expect(again!.modules.length).toBeGreaterThan(0);
+    expect(again!.moduleCount).toBeGreaterThan(0);
   });
 });
 

@@ -80,22 +80,27 @@ describe('mock grant service', () => {
       expect(grant.expiresAt).toBe(inDays(30));
     });
 
-    it('rejects a duplicate active grant but allows a new one after the old one expired', async () => {
+    it('extends the open grant instead of stacking a second one, expired or not', async () => {
       const { services } = await createServicesSignedInAs('rafael');
-      await expect(
-        services.grants.create({
-          userId: demoId('user-lucas'),
-          courseId: demoId('course-javascript'),
-          expiresAt: null,
-        }),
-      ).rejects.toMatchObject({ code: 'conflict' });
-      await expect(
-        services.grants.create({
-          userId: demoId('user-juliana'),
-          courseId: demoId('course-javascript'),
-          expiresAt: null,
-        }),
-      ).resolves.toMatchObject({ status: 'active' });
+      const before = await services.grants.list({ courseId: demoId('course-javascript') });
+      const extended = await services.grants.create({
+        userId: demoId('user-lucas'),
+        courseId: demoId('course-javascript'),
+        expiresAt: inDays(30),
+      });
+      expect(extended.expiresAt).toBe(inDays(30));
+      expect(before.some((grant) => grant.id === extended.id)).toBe(true);
+      const reopened = await services.grants.create({
+        userId: demoId('user-juliana'),
+        courseId: demoId('course-javascript'),
+        expiresAt: null,
+      });
+      expect(reopened).toMatchObject({ status: 'active', expiresAt: null });
+      const after = await services.grants.list({ courseId: demoId('course-javascript') });
+      expect(
+        after.filter((grant) => grant.userId === reopened.userId && grant.status !== 'revoked'),
+      ).toHaveLength(1);
+      expect(after).toHaveLength(before.length);
     });
 
     it('validates user, course and expiration', async () => {
@@ -122,12 +127,20 @@ describe('mock grant service', () => {
         }),
       ).rejects.toMatchObject({ code: 'not_found' });
       await expect(
-        services.grants.create({ userId: demoId('user-gustavo'), courseId: 'ninguem', expiresAt: null }),
+        services.grants.create({
+          userId: demoId('user-gustavo'),
+          courseId: 'ninguem',
+          expiresAt: null,
+        }),
       ).rejects.toMatchObject({ code: 'not_found' });
     });
 
     it('is forbidden for students and for instructors of other courses', async () => {
-      const input = { userId: demoId('user-gustavo'), courseId: demoId('course-javascript'), expiresAt: null };
+      const input = {
+        userId: demoId('user-gustavo'),
+        courseId: demoId('course-javascript'),
+        expiresAt: null,
+      };
       const student = (await createServicesSignedInAs('lucas')).services;
       await expect(student.grants.create(input)).rejects.toMatchObject({ code: 'forbidden' });
       const other = (await createServicesSignedInAs('beatriz')).services;
@@ -273,7 +286,9 @@ describe('mock grant service', () => {
           [demoId('invite-3'), 'expired'],
         ].sort(),
       );
-      expect(await instructor.grants.listInvites({ courseId: demoId('course-sql') })).toHaveLength(1);
+      expect(await instructor.grants.listInvites({ courseId: demoId('course-sql') })).toHaveLength(
+        1,
+      );
 
       const admin = (await createServicesSignedInAs('marina')).services;
       expect(await admin.grants.listInvites()).toHaveLength(3);

@@ -98,6 +98,7 @@
     "passwordMismatch": "As senhas não coincidem.",
     "duration": "Use minutos ou m:ss, por exemplo 12 ou 5:30.",
     "url": "Informe um link válido que comece com http:// ou https://.",
+    "httpsUrl": "Informe um link válido que comece com https://.",
     "messageTooLong": "A mensagem é longa demais.",
     "dateRequired": "Escolha uma data.",
     "dateFuture": "Escolha uma data futura.",

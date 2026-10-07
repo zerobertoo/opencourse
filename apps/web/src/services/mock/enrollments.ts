@@ -28,7 +28,7 @@ export function createMockEnrollmentService(context: MockContext): EnrollmentSer
     const now = context.now();
     return db.courses
       .flatMap((course) => {
-        if (course.status !== 'published') return [];
+        if (course.status === 'draft') return [];
         const grant = findActiveGrant(db, userId, course.id, now);
         if (!grant) return [];
         return [

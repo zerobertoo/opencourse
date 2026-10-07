@@ -1,8 +1,13 @@
-import { getPublishIssues, type CourseDetail } from '@opencourse/shared';
+import {
+  getCourseSummaryStats,
+  getPublishIssues,
+  type CourseDetail,
+  type ListedCourse,
+} from '@opencourse/shared';
 import type { CourseService } from '../courses';
 import { ServiceError } from '../errors';
 import type { MockContext } from './context';
-import { canManageCourse, findCourseById } from './helpers';
+import { canManageCourse, findCourseById, withEffectiveStatus } from './helpers';
 import { clone } from './store';
 
 /** "Introdução a SQL!" becomes "introducao-a-sql". */
@@ -22,7 +27,11 @@ export function createMockCourseService(context: MockContext): CourseService {
     list: (filters = {}) =>
       context.run('courses.list', () => {
         const search = filters.search?.trim().toLowerCase();
+        const sessionUserId = context.getSessionUserId();
+        const user = store.db.users.find((candidate) => candidate.id === sessionUserId);
+        const now = context.now();
         const courses = store.db.courses.filter((course) => {
+          if (filters.scope === 'managed' && !(user && canManageCourse(user, course))) return false;
           if (filters.status && course.status !== filters.status) return false;
           if (filters.instructorId && course.instructorId !== filters.instructorId) return false;
           if (search) {
@@ -32,7 +41,25 @@ export function createMockCourseService(context: MockContext): CourseService {
           }
           return true;
         });
-        return clone(courses);
+        const listed = courses.map((course): ListedCourse => {
+          const { modules, ...summary } = course;
+          void modules;
+          // the mock keeps every grant, so the open one is the stored one with its status computed
+          const own = user
+            ? store.db.grants.find(
+                (grant) =>
+                  grant.userId === user.id &&
+                  grant.courseId === course.id &&
+                  grant.status !== 'revoked',
+              )
+            : undefined;
+          return {
+            ...summary,
+            ...getCourseSummaryStats(course),
+            myGrant: own ? withEffectiveStatus(own, now) : null,
+          };
+        });
+        return clone(listed);
       }),
 
     getBySlug: (slug) =>

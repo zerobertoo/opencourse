@@ -2,13 +2,7 @@ import type { Invite } from '@opencourse/shared';
 import { ServiceError } from '../errors';
 import type { GrantService } from '../grants';
 import type { MockContext } from './context';
-import {
-  canManageCourse,
-  findActiveGrant,
-  findCourseById,
-  findUserById,
-  withEffectiveStatus,
-} from './helpers';
+import { canManageCourse, findCourseById, findUserById, withEffectiveStatus } from './helpers';
 import { clone, toPublicInvite, type StoredInvite } from './store';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -72,8 +66,19 @@ export function createMockGrantService(context: MockContext): GrantService {
         const now = context.now();
         findUserById(store.db, input.userId);
         assertFutureOrNull(input.expiresAt, now);
-        if (findActiveGrant(store.db, input.userId, input.courseId, now)) {
-          throw new ServiceError('conflict', 'User already has active access to this course');
+        // like the API: one open grant per user and course, so granting again extends it
+        const open = store.db.grants.find(
+          (candidate) =>
+            candidate.userId === input.userId &&
+            candidate.courseId === input.courseId &&
+            candidate.status !== 'revoked',
+        );
+        if (open) {
+          store.mutate(() => {
+            open.expiresAt = input.expiresAt;
+            open.status = 'active';
+          });
+          return clone(withEffectiveStatus(open, now));
         }
 
         const grant = {

@@ -156,11 +156,12 @@ export const externalVideoSchema = z.object({
     .refine((value) => {
       try {
         const { protocol } = new URL(value);
-        return protocol === 'https:' || protocol === 'http:';
+        // the API accepts external video links over https only
+        return protocol === 'https:';
       } catch {
         return false;
       }
-    }, 'validation.url'),
+    }, 'validation.httpsUrl'),
 });
 export type ExternalVideoValues = z.infer<typeof externalVideoSchema>;
 

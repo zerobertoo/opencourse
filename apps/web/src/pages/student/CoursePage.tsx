@@ -60,6 +60,15 @@ export function CoursePage() {
 
   if (courseQuery.isPending) return <CoursePageSkeleton />;
   if (courseQuery.isError) {
+    if (isServiceError(courseQuery.error) && courseQuery.error.code === 'forbidden') {
+      return (
+        <EmptyState title={t('course.noAccessTitle')} description={t('course.noAccessDescription')}>
+          <Button asChild variant="outline">
+            <Link to="/">{t('common:actions.goHome')}</Link>
+          </Button>
+        </EmptyState>
+      );
+    }
     if (isServiceError(courseQuery.error) && courseQuery.error.code === 'not_found') {
       return (
         <EmptyState title={t('course.notFoundTitle')} description={t('course.notFoundDescription')}>

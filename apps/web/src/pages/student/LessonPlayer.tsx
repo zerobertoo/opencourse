@@ -148,6 +148,15 @@ export function LessonPlayer() {
 
   if (courseQuery.isPending) return <PlayerSkeleton />;
   if (courseQuery.isError) {
+    if (isServiceError(courseQuery.error) && courseQuery.error.code === 'forbidden') {
+      return (
+        <EmptyState title={t('lesson.noAccessTitle')} description={t('lesson.noAccessDescription')}>
+          <Button asChild variant="outline">
+            <Link to="/">{t('common:actions.goHome')}</Link>
+          </Button>
+        </EmptyState>
+      );
+    }
     if (isServiceError(courseQuery.error) && courseQuery.error.code === 'not_found') {
       return (
         <EmptyState title={t('lesson.notFoundTitle')} description={t('lesson.notFoundDescription')}>

@@ -66,7 +66,7 @@ export function findActiveGrant(
 
 /**
  * The course instructor and admins always have access; students need an active grant and a
- * published course (drafts and archived courses are hidden from them).
+ * course that is not a draft (an archived course stays readable to its grant holders, as in the API).
  */
 export function canReadCourse(
   db: MockDatabase,
@@ -76,9 +76,7 @@ export function canReadCourse(
 ): boolean {
   if (user.role === 'admin') return true;
   if (user.role === 'instructor' && course.instructorId === user.id) return true;
-  return (
-    course.status === 'published' && findActiveGrant(db, user.id, course.id, now) !== undefined
-  );
+  return course.status !== 'draft' && findActiveGrant(db, user.id, course.id, now) !== undefined;
 }
 
 /** The course owner instructor or an admin can manage access and students. */

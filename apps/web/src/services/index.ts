@@ -26,7 +26,11 @@ function getPreferences() {
  * invites while the rest stays mocked until its backend milestone.
  */
 export const services: Services = API_URL
-  ? createHybridServices(new ApiClient({ baseUrl: API_URL }), createMockServices(), getPreferences)
+  ? createHybridServices(
+      new ApiClient({ baseUrl: API_URL }),
+      createMockServices({ mode: 'api' }),
+      getPreferences,
+    )
   : createMockServices();
 
 export { ServiceError, isServiceError, type ServiceErrorCode } from './errors';

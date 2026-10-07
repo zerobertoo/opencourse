@@ -24,7 +24,10 @@ export interface LocalizedCourse {
 }
 
 /** Course content in the requested language, falling back to the course default language. */
-export function localizeCourse(course: CourseDetail, locale: Locale): LocalizedCourse {
+export function localizeCourse(
+  course: Pick<CourseDetail, 'translations' | 'defaultLocale'>,
+  locale: Locale,
+): LocalizedCourse {
   const resolved = resolveTranslation(course.translations, locale, course.defaultLocale);
   return {
     title: resolved?.translation.title ?? '',

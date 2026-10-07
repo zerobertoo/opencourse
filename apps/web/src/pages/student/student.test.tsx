@@ -43,6 +43,15 @@ describe('authentication', () => {
     expect(screen.getByText(/Introdução à Análise de Dados com SQL/)).toBeVisible();
   });
 
+  it('still offers the invite when the course cannot be read, as for guests on the real API', async () => {
+    await renderApp('/invite/demo-convite-sql', {
+      mock: { failOn: (operation) => operation === 'courses.getById' },
+    });
+    expect(await screen.findByDisplayValue('novo.aluno@opencourse.example')).toBeVisible();
+    expect(screen.getByText(/convidado para um curso/i)).toBeVisible();
+    expect(screen.queryByText(/Introdução à Análise de Dados com SQL/)).not.toBeInTheDocument();
+  });
+
   it('asks for a new link when the reset token is missing', async () => {
     await renderApp('/reset-password');
     expect(await screen.findByText('Link inválido')).toBeVisible();

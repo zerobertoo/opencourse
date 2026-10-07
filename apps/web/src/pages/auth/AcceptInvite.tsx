@@ -31,7 +31,10 @@ export function AcceptInvite() {
     queryKey: queryKeys.invite(token),
     queryFn: async () => {
       const found = await auth.getInvite(token);
-      const course = found.courseId ? await courses.getById(found.courseId) : null;
+      // a guest cannot read the course on the real API: the invite still works without its title
+      const course = found.courseId
+        ? await courses.getById(found.courseId).catch(() => null)
+        : null;
       return { invite: found, course };
     },
   });
@@ -90,7 +93,9 @@ export function AcceptInvite() {
         <p className="text-sm text-muted-foreground">
           {courseTitle
             ? t('invite.subtitleWithCourse', { course: courseTitle })
-            : t('invite.subtitle')}
+            : pending.courseId
+              ? t('invite.subtitleWithUnnamedCourse')
+              : t('invite.subtitle')}
         </p>
       </div>
       <form onSubmit={onSubmit} noValidate className="space-y-4">

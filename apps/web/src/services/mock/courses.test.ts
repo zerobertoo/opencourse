@@ -3,11 +3,65 @@ import { createServicesSignedInAs, createTestServices } from '@/test/mock-servic
 import { demoId } from '@/services/mock/seed/ids';
 
 describe('mock course service', () => {
-  it('lists every course with the full curriculum', async () => {
+  it('lists every course as a summary with curriculum stats and no curriculum', async () => {
     const { services } = createTestServices();
     const courses = await services.courses.list();
     expect(courses).toHaveLength(5);
-    expect(courses.every((course) => course.modules.length >= 2)).toBe(true);
+    expect(courses.every((course) => course.moduleCount >= 2 && course.lessonCount >= 2)).toBe(
+      true,
+    );
+    expect(courses.every((course) => course.durationSeconds > 0)).toBe(true);
+    expect(courses.every((course) => !('modules' in course))).toBe(true);
+    const detail = await services.courses.getById(courses[0]!.id);
+    expect(courses[0]).toMatchObject({
+      moduleCount: detail.modules.length,
+      lessonCount: detail.modules.flatMap((courseModule) => courseModule.lessons).length,
+    });
+    expect(courses[0]!.completeLocales).toEqual(expect.any(Array));
+  });
+
+  it('reports the signed in user own grant on each listed course', async () => {
+    const { services } = await createServicesSignedInAs('lucas');
+    const courses = await services.courses.list();
+    const granted = courses.filter((course) => course.myGrant !== null);
+    expect(granted.length).toBeGreaterThan(0);
+    for (const course of granted) {
+      expect(course.myGrant).toMatchObject({
+        userId: demoId('user-lucas'),
+        courseId: course.id,
+      });
+    }
+    expect(courses.some((course) => course.myGrant === null)).toBe(true);
+  });
+
+  it('reports a past-due grant as expired and ignores revoked ones', async () => {
+    const { services } = await createServicesSignedInAs('lucas');
+    const [granted, revoked] = (await services.courses.list()).filter((course) => course.myGrant);
+    services.mock.store.mutate((db) => {
+      for (const grant of db.grants.filter(
+        (candidate) => candidate.userId === demoId('user-lucas'),
+      )) {
+        if (grant.courseId === granted!.id) grant.expiresAt = '2020-01-01T00:00:00.000Z';
+        if (grant.courseId === revoked!.id) grant.status = 'revoked';
+      }
+    });
+
+    const courses = await services.courses.list();
+    expect(courses.find((course) => course.id === granted!.id)!.myGrant).toMatchObject({
+      status: 'expired',
+    });
+    expect(courses.find((course) => course.id === revoked!.id)!.myGrant).toBeNull();
+  });
+
+  it('limits the managed scope to what the user can edit', async () => {
+    const { services } = await createServicesSignedInAs('rafael');
+    const own = await services.courses.list({ instructorId: demoId('user-rafael') });
+    const managed = await services.courses.list({ scope: 'managed' });
+    expect(managed.map((course) => course.id).sort()).toEqual(own.map((c) => c.id).sort());
+    expect(managed.length).toBeLessThan((await services.courses.list()).length);
+
+    const { services: admin } = await createServicesSignedInAs('marina');
+    expect(await admin.courses.list({ scope: 'managed' })).toHaveLength(5);
   });
 
   it('filters by status and instructor', async () => {
@@ -135,7 +189,9 @@ describe('mock course service', () => {
 
     it('does not re-check courses that are already published', async () => {
       const { services } = await createServicesSignedInAs('rafael');
-      const updated = await services.courses.update(demoId('course-sql'), { sequentialOrder: true });
+      const updated = await services.courses.update(demoId('course-sql'), {
+        sequentialOrder: true,
+      });
       expect(updated.status).toBe('published');
     });
   });
@@ -212,7 +268,7 @@ describe('mock course service', () => {
 });
 
 describe('student visibility of unpublished courses', () => {
-  it('hides a course from students with a grant once it is archived', async () => {
+  it('keeps an archived course readable to students with a grant', async () => {
     const { services } = createTestServices();
     await services.auth.signIn('lucas@opencourse.example', 'x');
     expect(await services.enrollments.canAccess(demoId('course-sql'))).toBe(true);
@@ -224,9 +280,15 @@ describe('student visibility of unpublished courses', () => {
     await services.courses.update(demoId('course-sql'), { status: 'archived' });
 
     await services.auth.signIn('lucas@opencourse.example', 'x');
-    expect(await services.enrollments.canAccess(demoId('course-sql'))).toBe(false);
-    expect((await services.enrollments.listMyCourses()).map((e) => e.course.id)).not.toContain(
+    expect(await services.enrollments.canAccess(demoId('course-sql'))).toBe(true);
+    expect((await services.enrollments.listMyCourses()).map((e) => e.course.id)).toContain(
       demoId('course-sql'),
     );
+
+    await services.auth.signIn('rafael@opencourse.example', 'x');
+    await services.courses.update(demoId('course-sql'), { status: 'draft' });
+
+    await services.auth.signIn('lucas@opencourse.example', 'x');
+    expect(await services.enrollments.canAccess(demoId('course-sql'))).toBe(false);
   });
 });

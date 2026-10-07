@@ -274,6 +274,13 @@ describe('mock curriculum service', () => {
       await expect(
         services.curriculum.setLessonVideo(lessonId, { provider: 'external', url: 'nao é url' }),
       ).rejects.toMatchObject({ code: 'validation' });
+      // like the API: external links are https only
+      await expect(
+        services.curriculum.setLessonVideo(lessonId, {
+          provider: 'external',
+          url: 'http://videos.example/abc',
+        }),
+      ).rejects.toMatchObject({ code: 'validation' });
     });
   });
 
@@ -345,8 +352,9 @@ describe('mock curriculum service', () => {
         ],
       ];
       for (const layout of attempts) {
+        // like the API: a layout that does not match the course is a conflict, not bad input
         await expect(services.curriculum.reorder(courseId, layout)).rejects.toMatchObject({
-          code: 'validation',
+          code: 'conflict',
         });
       }
     });

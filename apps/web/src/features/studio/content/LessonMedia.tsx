@@ -15,7 +15,7 @@ import { FileTooLargeError, MOCK_UPLOAD_LIMIT_BYTES, readFileAsDataUrl } from '@
 import { formatFileSize } from '@/lib/fileSize';
 import { externalVideoSchema, type ExternalVideoValues } from '@/lib/schemas';
 import { useServiceErrorMessage } from '@/lib/serviceError';
-import type { AttachmentUpload } from '@/services';
+import { isApiMode, type AttachmentUpload } from '@/services';
 
 const URL_PLACEHOLDER = 'https://';
 
@@ -214,12 +214,14 @@ export function VideoSection({
           ) : null}
 
           <div className="flex flex-wrap gap-2">
-            <FilePicker
-              label={t('studio:video.upload')}
-              accept="video/mp4,video/webm,video/quicktime,video/x-matroska,.mp4,.webm,.mov,.mkv,.m4v"
-              disabled={setVideo.isPending}
-              onFiles={(files) => void upload(files)}
-            />
+            {isApiMode ? null : (
+              <FilePicker
+                label={t('studio:video.upload')}
+                accept="video/mp4,video/webm,video/quicktime,video/x-matroska,.mp4,.webm,.mov,.mkv,.m4v"
+                disabled={setVideo.isPending}
+                onFiles={(files) => void upload(files)}
+              />
+            )}
             {lesson.video ? (
               <Button
                 variant="ghost"
@@ -232,7 +234,9 @@ export function VideoSection({
               </Button>
             ) : null}
           </div>
-          <p className="text-xs text-muted-foreground">{t('studio:video.demoNote')}</p>
+          <p className="text-xs text-muted-foreground">
+            {isApiMode ? t('studio:video.apiNote') : t('studio:video.demoNote')}
+          </p>
 
           <form
             onSubmit={useLink}
@@ -263,7 +267,9 @@ export function VideoSection({
 
       <PanelSection
         title={t('studio:video.captionsTitle')}
-        description={t('studio:video.captionsDescription')}
+        description={
+          isApiMode ? t('studio:video.captionsApiNote') : t('studio:video.captionsDescription')
+        }
       >
         <ul className="space-y-2">
           {locales.map((locale) => {
@@ -281,12 +287,14 @@ export function VideoSection({
                   </Badge>
                 </span>
                 <span className="flex gap-2">
-                  <FilePicker
-                    label={t('studio:video.captionUpload', { language })}
-                    accept=".vtt,text/vtt"
-                    disabled={updateLesson.isPending}
-                    onFiles={(files) => void uploadCaption(locale, files)}
-                  />
+                  {isApiMode ? null : (
+                    <FilePicker
+                      label={t('studio:video.captionUpload', { language })}
+                      accept=".vtt,text/vtt"
+                      disabled={updateLesson.isPending}
+                      onFiles={(files) => void uploadCaption(locale, files)}
+                    />
+                  )}
                   {caption ? (
                     <Button
                       variant="ghost"
@@ -377,20 +385,24 @@ export function MaterialsSection({ courseId, lesson }: { courseId: string; lesso
           ))}
         </ul>
       )}
-      <div className="space-y-1.5">
-        <FilePicker
-          label={t('studio:materials.add')}
-          accept="*/*"
-          multiple
-          disabled={isSaving}
-          onFiles={(files) => void addFiles(files)}
-        />
-        <p className="text-xs text-muted-foreground">
-          {t('studio:materials.limitNote', {
-            limit: formatFileSize(MOCK_UPLOAD_LIMIT_BYTES, i18n.language),
-          })}
-        </p>
-      </div>
+      {isApiMode ? (
+        <p className="text-xs text-muted-foreground">{t('studio:materials.apiNote')}</p>
+      ) : (
+        <div className="space-y-1.5">
+          <FilePicker
+            label={t('studio:materials.add')}
+            accept="*/*"
+            multiple
+            disabled={isSaving}
+            onFiles={(files) => void addFiles(files)}
+          />
+          <p className="text-xs text-muted-foreground">
+            {t('studio:materials.limitNote', {
+              limit: formatFileSize(MOCK_UPLOAD_LIMIT_BYTES, i18n.language),
+            })}
+          </p>
+        </div>
+      )}
     </PanelSection>
   );
 }

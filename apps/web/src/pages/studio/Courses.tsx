@@ -1,5 +1,5 @@
-import { courseStatusSchema, flattenLessons, getIncompleteLocales } from '@opencourse/shared';
-import type { CourseDetail, CourseStatus, Locale } from '@opencourse/shared';
+import { courseStatusSchema } from '@opencourse/shared';
+import type { CourseStatus, ListedCourse, Locale } from '@opencourse/shared';
 import { Plus, Search } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -24,7 +24,7 @@ function StudioCourseCard({
   enabledLocales,
   timeZone,
 }: {
-  course: CourseDetail;
+  course: ListedCourse;
   students: number | undefined;
   enabledLocales: Locale[];
   timeZone?: string;
@@ -32,7 +32,7 @@ function StudioCourseCard({
   const { t, i18n } = useTranslation(['studio', 'common']);
   const { formatDate } = useFormatters(timeZone);
   const title = localizeCourse(course, toLocale(i18n.resolvedLanguage)).title;
-  const incomplete = getIncompleteLocales(course, enabledLocales);
+  const incomplete = enabledLocales.filter((locale) => !course.completeLocales.includes(locale));
 
   return (
     <Card className="group relative flex w-full flex-col overflow-hidden transition-shadow focus-within:ring-2 focus-within:ring-ring hover:shadow-md">
@@ -56,8 +56,8 @@ function StudioCourseCard({
         </div>
         <p className="font-mono text-xs text-muted-foreground">
           {t('studio:courses.structure', {
-            modules: course.modules.length,
-            lessons: flattenLessons(course).length,
+            modules: course.moduleCount,
+            lessons: course.lessonCount,
           })}
           {students !== undefined ? ` · ${t('studio:courses.students', { count: students })}` : ''}
         </p>
@@ -90,11 +90,8 @@ export function StudioCourses() {
   const parsedStatus = courseStatusSchema.safeParse(params.get('status'));
   const status: CourseStatus | undefined = parsedStatus.success ? parsedStatus.data : undefined;
 
-  const query = useStudioCourses({
-    search,
-    status,
-    instructorId: user?.role === 'instructor' ? user.id : undefined,
-  });
+  // the managed scope already limits instructors to their own courses
+  const query = useStudioCourses({ scope: 'managed', search, status });
   const stats = useStudioDashboard();
   const enabledLocales = useEnabledLocales();
   const hasFilters = search.trim() !== '' || status !== undefined;

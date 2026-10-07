@@ -189,6 +189,8 @@
     "removed": "Vídeo removido.",
     "uploadStarted": "Envio recebido. O vídeo está sendo processado.",
     "demoNote": "Nesta demonstração nenhum arquivo é enviado: um vídeo de exemplo substitui o seu.",
+    "apiNote": "Por enquanto os vídeos entram por link. O envio de arquivos chega em uma versão futura.",
+    "captionsApiNote": "Ainda não é possível adicionar legendas. O envio de arquivos chega em uma versão futura.",
     "externalUrl": "Link do vídeo externo",
     "useLink": "Usar link",
     "linkSaved": "Link do vídeo salvo.",
@@ -208,7 +210,8 @@
     "add": "Adicionar arquivos",
     "remove": "Remover {name}",
     "saved": "Materiais salvos.",
-    "limitNote": "Limite da demonstração: arquivos de até {limit}."
+    "limitNote": "Limite da demonstração: arquivos de até {limit}.",
+    "apiNote": "Ainda não é possível anexar arquivos. O envio de arquivos chega em uma versão futura."
   },
   "upload": {
     "tooLarge": "Este arquivo é grande demais para a demonstração. O limite é {limit}."

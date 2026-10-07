@@ -260,6 +260,41 @@ function buildCertificates(daysFromNow: (days: number) => string): Certificate[]
   ];
 }
 
+function buildSettings(): MockDatabase['settings'] {
+  return {
+    brand: { name: 'OpenCourse', logoUrl: null, primaryColor: '#2f6f5e' },
+    enabledLocales: ['pt-BR', 'en'],
+    defaultLocale: 'pt-BR',
+    videoAdapter: 'local',
+    email: {
+      host: 'localhost',
+      port: 1025,
+      username: '',
+      fromAddress: 'nao-responda@opencourse.example',
+      secure: false,
+    },
+  };
+}
+
+/**
+ * Starting point when the real API owns the data: nothing but the default settings. Users,
+ * courses and grants arrive from the API and are mirrored in as they are read.
+ */
+export function createEmptyDatabase(): MockDatabase {
+  return {
+    users: [],
+    courses: [],
+    grants: [],
+    invites: [],
+    progress: [],
+    quizAttempts: [],
+    notes: [],
+    certificates: [],
+    settings: buildSettings(),
+    counters: {},
+  };
+}
+
 /** Initial data of the mock platform, computed relative to `now`. */
 export function createSeedDatabase(now: Date): MockDatabase {
   const { daysFromNow } = createDateHelpers(now);
@@ -280,19 +315,7 @@ export function createSeedDatabase(now: Date): MockDatabase {
     quizAttempts: buildQuizAttempts(daysFromNow),
     notes: [],
     certificates: buildCertificates(daysFromNow),
-    settings: {
-      brand: { name: 'OpenCourse', logoUrl: null, primaryColor: '#2f6f5e' },
-      enabledLocales: ['pt-BR', 'en'],
-      defaultLocale: 'pt-BR',
-      videoAdapter: 'local',
-      email: {
-        host: 'localhost',
-        port: 1025,
-        username: '',
-        fromAddress: 'nao-responda@opencourse.example',
-        secure: false,
-      },
-    },
+    settings: buildSettings(),
     counters: {},
   });
 }

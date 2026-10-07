@@ -1,9 +1,22 @@
 import type { Role, User } from '@opencourse/shared';
 import { ServiceError } from '../errors';
-import { clone, MockStore, SESSION_STORAGE_KEY, type MockStorage } from './store';
-import { createSeedDatabase } from './seed';
+import {
+  API_DB_STORAGE_KEY,
+  API_SESSION_STORAGE_KEY,
+  clone,
+  DB_STORAGE_KEY,
+  MockStore,
+  SESSION_STORAGE_KEY,
+  type MockStorage,
+} from './store';
+import { createEmptyDatabase, createSeedDatabase } from './seed';
 
 export interface MockOptions {
+  /**
+   * `demo` (default) starts from the demo seed. `api` starts empty and keeps its state under
+   * its own storage keys: the real API owns the data and the mock only mirrors it.
+   */
+  mode?: 'demo' | 'api';
   /** Where to persist the state. Default: `sessionStorage`. Use `null` for memory only. */
   storage?: MockStorage | null;
   /** Simulated latency in milliseconds. Default: between 120 and 350. Use `{ min: 0, max: 0 }` in tests. */
@@ -46,7 +59,13 @@ export function createMockContext(options: MockOptions = {}): MockContext {
   const latency = options.latency ?? { min: 120, max: 350 };
   const now = options.now ?? (() => new Date());
   const random = options.random ?? Math.random;
-  const store = new MockStore(storage, () => createSeedDatabase(now()));
+  const isApiMode = options.mode === 'api';
+  const sessionKey = isApiMode ? API_SESSION_STORAGE_KEY : SESSION_STORAGE_KEY;
+  const store = new MockStore(
+    storage,
+    isApiMode ? createEmptyDatabase : () => createSeedDatabase(now()),
+    isApiMode ? API_DB_STORAGE_KEY : DB_STORAGE_KEY,
+  );
 
   // without storage the session lives in memory only
   let memorySessionUserId: string | null = null;
@@ -54,7 +73,7 @@ export function createMockContext(options: MockOptions = {}): MockContext {
   const getSessionUserId = () => {
     if (!storage) return memorySessionUserId;
     try {
-      return storage.getItem(SESSION_STORAGE_KEY);
+      return storage.getItem(sessionKey);
     } catch {
       return memorySessionUserId;
     }
@@ -84,8 +103,8 @@ export function createMockContext(options: MockOptions = {}): MockContext {
     setSessionUserId(userId) {
       memorySessionUserId = userId;
       try {
-        if (userId === null) storage?.removeItem(SESSION_STORAGE_KEY);
-        else storage?.setItem(SESSION_STORAGE_KEY, userId);
+        if (userId === null) storage?.removeItem(sessionKey);
+        else storage?.setItem(sessionKey, userId);
       } catch {
         // no session persistence
       }

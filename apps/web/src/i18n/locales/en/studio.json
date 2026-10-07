@@ -189,6 +189,8 @@
     "removed": "Video removed.",
     "uploadStarted": "Upload received. The video is being processed.",
     "demoNote": "In this demo no file is sent anywhere: a sample video stands in for your upload.",
+    "apiNote": "Videos are added by link for now. Uploads arrive in a later release.",
+    "captionsApiNote": "Caption files cannot be added yet. Uploads arrive in a later release.",
     "externalUrl": "External video link",
     "useLink": "Use link",
     "linkSaved": "Video link saved.",
@@ -208,7 +210,8 @@
     "add": "Add files",
     "remove": "Remove {name}",
     "saved": "Materials saved.",
-    "limitNote": "Demo limit: files up to {limit}."
+    "limitNote": "Demo limit: files up to {limit}.",
+    "apiNote": "Files cannot be attached yet. Uploads arrive in a later release."
   },
   "upload": {
     "tooLarge": "This file is too large for the demo. The limit is {limit}."

@@ -30,7 +30,10 @@ export function useAllUsers() {
 /** Every course, so grant rows and filters can show titles. */
 export function useAllCourses() {
   const { courses } = useServices();
-  return useQuery({ queryKey: adminKeys.courses, queryFn: () => courses.list() });
+  return useQuery({
+    queryKey: adminKeys.courses,
+    queryFn: () => courses.list({ scope: 'managed' }),
+  });
 }
 
 export function useAdminGrants(filters: GrantFilters) {

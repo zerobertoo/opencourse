@@ -43,7 +43,10 @@ function setup(routes: Routes) {
 
 describe('hybrid services', () => {
   it('signs in through the API and mirrors the user into the mock session', async () => {
-    const { services, mock } = setup({ 'POST /auth/login': () => json(200, { user: realUser }) });
+    const { services, mock } = setup({
+      'POST /auth/login': () => json(200, { user: realUser }),
+      'GET /courses': () => json(200, { courses: [] }),
+    });
 
     const user = await services.auth.signIn('maria@example.com', 'secret-password');
     expect(user.name).toBe('Maria Real');
@@ -54,7 +57,11 @@ describe('hybrid services', () => {
   });
 
   it('keeps mocked services locked until someone signs in', async () => {
-    const { services } = setup({});
+    // the real API answers 401 to the catalog request of someone who is not signed in
+    const { services } = setup({
+      'GET /courses': () =>
+        json(401, { error: { code: 'unauthorized', message: 'Authentication required' } }),
+    });
     const error = await services.enrollments.listMyCourses().catch((caught: unknown) => caught);
     expect(isServiceError(error) && error.code).toBe('unauthorized');
   });
@@ -81,6 +88,7 @@ describe('hybrid services', () => {
     const { services, mock } = setup({
       'POST /auth/login': () => json(200, { user: realUser }),
       'POST /auth/logout': () => json(500, { error: { code: 'internal', message: 'boom' } }),
+      'GET /courses': () => json(200, { courses: [] }),
     });
     await services.auth.signIn('maria@example.com', 'secret-password');
 
@@ -199,7 +207,7 @@ describe('hybrid services', () => {
     });
   });
 
-  it('uses the API for users and invites but keeps grants on the mock', async () => {
+  it('uses the API for users, invites and grants', async () => {
     const created = {
       invite: {
         id: '8c1f0a11-3f2b-4a54-8d1e-2d5e8c1f0a11',
@@ -216,6 +224,7 @@ describe('hybrid services', () => {
       'POST /auth/login': () => json(200, { user: realUser }),
       'POST /invites': () => json(201, created),
       'GET /admin/users': () => json(200, { users: [realUser] }),
+      'GET /grants': () => json(200, { grants: [] }),
     });
     await services.auth.signIn('maria@example.com', 'secret-password');
 
@@ -225,9 +234,9 @@ describe('hybrid services', () => {
     expect(await services.users.list()).toHaveLength(1);
 
     const callsBefore = fetchMock.mock.calls.length;
-    await services.grants.list().catch(() => undefined);
-    // grants.list is still the mock: no HTTP request
-    expect(fetchMock.mock.calls.length).toBe(callsBefore);
+    expect(await services.grants.list()).toEqual([]);
+    // grants.list now goes to the API
+    expect(fetchMock.mock.calls.length).toBe(callsBefore + 1);
   });
 
   it('keeps the mirrored user fresh after a profile or role change', async () => {

@@ -88,9 +88,7 @@ function CoursesSection({ onCreate }: { onCreate: () => void }) {
   const { user } = useAuth();
   const { formatPercent } = useFormatters(user?.timeZone);
   const locale = toLocale(i18n.resolvedLanguage);
-  const courses = useStudioCourses({
-    instructorId: user?.role === 'instructor' ? user.id : undefined,
-  });
+  const courses = useStudioCourses({ scope: 'managed' });
   const stats = useStudioDashboard();
 
   if (courses.isPending) {
@@ -162,9 +160,7 @@ export function StudioDashboard() {
     <div className="space-y-8">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="space-y-1">
-          <h1 className="text-2xl font-semibold sm:text-3xl">
-            {t('studio:dashboard.title')}
-          </h1>
+          <h1 className="text-2xl font-semibold sm:text-3xl">{t('studio:dashboard.title')}</h1>
           <p className="text-muted-foreground">{t('studio:dashboard.subtitle')}</p>
         </div>
         <Button onClick={() => setCreating(true)}>
