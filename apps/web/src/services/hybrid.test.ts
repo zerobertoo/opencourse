@@ -52,12 +52,28 @@ describe('hybrid services', () => {
 
     // mocked screens ask the mock who is signed in, and must now get the real user
     expect(await mock.auth.getCurrentUser()).toMatchObject({ id: realUser.id });
-    await expect(services.certificates.listMine()).resolves.toEqual(expect.any(Array));
+    await expect(services.settings.get()).resolves.toBeDefined();
+  });
+
+  it('reads certificates from the API, not from the mock', async () => {
+    const { services, fetchMock } = setup({
+      'GET /certificates/verify/OC-ABCD-EFGH': () =>
+        json(200, {
+          code: 'OC-ABCD-EFGH',
+          issuedAt: '2026-10-06T10:00:00.000Z',
+          holderName: 'Real Holder',
+          courseTitles: { en: 'Real course' },
+          defaultLocale: 'en',
+          template: { signatoryName: '', signatoryRole: '', message: '' },
+        }),
+    });
+    expect((await services.certificates.verify('OC-ABCD-EFGH'))?.holderName).toBe('Real Holder');
+    expect(fetchMock).toHaveBeenCalledOnce();
   });
 
   it('keeps mocked services locked until someone signs in', async () => {
     const { services } = setup({});
-    const error = await services.certificates.listMine().catch((caught: unknown) => caught);
+    const error = await services.settings.update({}).catch((caught: unknown) => caught);
     expect(isServiceError(error) && error.code).toBe('unauthorized');
   });
 
@@ -90,7 +106,7 @@ describe('hybrid services', () => {
     // the real cookies are still valid and the UI still shows the user, so the mock must agree:
     // otherwise every mocked screen would answer "unauthorized" to a user who looks signed in
     expect(await mock.auth.getCurrentUser()).toMatchObject({ id: realUser.id });
-    await expect(services.certificates.listMine()).resolves.toEqual(expect.any(Array));
+    await expect(services.settings.get()).resolves.toBeDefined();
   });
 
   it('signs the mock out once the API confirms the sign out', async () => {

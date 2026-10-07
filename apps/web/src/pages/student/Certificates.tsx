@@ -1,3 +1,4 @@
+import { pickCertificateTitle } from '@opencourse/shared';
 import { Download, Eye } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -12,7 +13,7 @@ import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@/compone
 import { Skeleton } from '@/components/ui/skeleton';
 import { useMyCertificates } from '@/hooks/queries';
 import { buildCertificatePdf } from '@/lib/certificatePdf';
-import { localizeCourse, toLocale } from '@/lib/content';
+import { toLocale } from '@/lib/content';
 import { useFormatters } from '@/lib/intl';
 import type { CertificateDetails } from '@/services';
 
@@ -28,8 +29,8 @@ export function Certificates() {
   const issuedOn = (certificate: CertificateDetails) => formatDate(new Date(certificate.issuedAt));
 
   const download = (certificate: CertificateDetails) => {
-    const courseTitle = localizeCourse(certificate.course, locale).title;
-    const template = certificate.course.certificateTemplate;
+    const courseTitle = pickCertificateTitle(certificate, locale);
+    const template = certificate.template;
     const blob = buildCertificatePdf({
       heading: t('certificates.heading'),
       intro: t('certificates.intro'),
@@ -77,7 +78,7 @@ export function Certificates() {
     body = (
       <ul className="grid gap-4 md:grid-cols-2">
         {query.data.map((certificate) => {
-          const courseTitle = localizeCourse(certificate.course, locale).title;
+          const courseTitle = pickCertificateTitle(certificate, locale);
           return (
             <li key={certificate.id} className="min-w-0">
               <Card className="flex h-full flex-col gap-4 p-4">
@@ -86,9 +87,9 @@ export function Certificates() {
                   courseTitle={courseTitle}
                   issuedOn={issuedOn(certificate)}
                   code={certificate.code}
-                  message={certificate.course.certificateTemplate.message}
-                  signatoryName={certificate.course.certificateTemplate.signatoryName}
-                  signatoryRole={certificate.course.certificateTemplate.signatoryRole}
+                  message={certificate.template.message}
+                  signatoryName={certificate.template.signatoryName}
+                  signatoryRole={certificate.template.signatoryRole}
                 />
                 <div className="mt-auto flex flex-col gap-2 sm:flex-row">
                   <Button
@@ -134,12 +135,12 @@ export function Certificates() {
               <CertificatePreview
                 className="mt-4"
                 holderName={previewing.holderName}
-                courseTitle={localizeCourse(previewing.course, locale).title}
+                courseTitle={pickCertificateTitle(previewing, locale)}
                 issuedOn={issuedOn(previewing)}
                 code={previewing.code}
-                message={previewing.course.certificateTemplate.message}
-                signatoryName={previewing.course.certificateTemplate.signatoryName}
-                signatoryRole={previewing.course.certificateTemplate.signatoryRole}
+                message={previewing.template.message}
+                signatoryName={previewing.template.signatoryName}
+                signatoryRole={previewing.template.signatoryRole}
               />
               <Button className="mt-4 w-full sm:w-auto" onClick={() => download(previewing)}>
                 <Download aria-hidden="true" />

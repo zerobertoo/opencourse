@@ -1,6 +1,7 @@
 import type { User } from '@opencourse/shared';
 import { createApiAuthService, type ApiPreferences } from './api/auth';
 import type { ApiClient } from './api/client';
+import { createApiCertificateService } from './api/certificates';
 import { createApiCourseService } from './api/courses';
 import { createApiCurriculumService } from './api/curriculum';
 import { createApiGrantService } from './api/grants';
@@ -18,8 +19,8 @@ import type { Services } from './types';
 
 /**
  * Real API for authentication, users, invites, courses, curriculum, grants, enrollments, progress,
- * quizzes, notes and the Studio dashboard; mock only for what has no backend yet (certificates and
- * settings).
+ * quizzes, notes, certificates and the Studio dashboard; mock only for what has no backend yet
+ * (settings).
  *
  * The mocked services decide what a user may do from "who is signed in", so the signed-in user is
  * mirrored into the mock as it is read or changed. Nothing else is mirrored: the API owns every
@@ -80,7 +81,7 @@ export function createHybridServices(
     enrollments: createApiEnrollmentService(client),
     progress: createApiProgressService(client),
     notes: createApiNoteService(client),
-    certificates: mock.certificates,
+    certificates: createApiCertificateService(client),
     settings: mock.settings,
     studio: createApiStudioService(client),
   };

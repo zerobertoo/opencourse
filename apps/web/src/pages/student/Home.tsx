@@ -1,3 +1,4 @@
+import { pickCertificateTitle } from '@opencourse/shared';
 import { Award, Play } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Link, useSearchParams } from 'react-router-dom';
@@ -215,7 +216,7 @@ function RecentCertificatesSection({ timeZone }: { timeZone: string }) {
               <Award className="size-6 shrink-0 text-primary" aria-hidden="true" />
               <span className="min-w-0">
                 <span className="block truncate font-medium">
-                  {localizeCourse(certificate.course, locale).title}
+                  {pickCertificateTitle(certificate, locale)}
                 </span>
                 <span className="block text-xs text-muted-foreground">
                   {t('certificates.issuedOn', {
