@@ -11,6 +11,7 @@ import { openDatabase } from '../plugins/db';
 import { consumers } from './consumers';
 import {
   DEFAULT_QUEUE_PREFIX,
+  DEFAULT_RETRY_DELAY_MS,
   deliveryJobAdder,
   JOB_ATTEMPTS,
   QUEUE_NAME,
@@ -49,7 +50,7 @@ export async function startWorker(
   const log = options.logger ?? pino({ level: config.LOG_LEVEL });
   const prefix = options.queuePrefix ?? DEFAULT_QUEUE_PREFIX;
   const pollIntervalMs = options.pollIntervalMs ?? 1000;
-  const retryDelayMs = options.retryDelayMs ?? 30_000;
+  const retryDelayMs = options.retryDelayMs ?? DEFAULT_RETRY_DELAY_MS;
   const mailer = options.mailer ?? createSmtpMailer(config);
 
   const { db, close: closeDatabase } = openDatabase(config.DATABASE_URL, 5);

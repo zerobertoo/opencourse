@@ -341,6 +341,15 @@ describe('outbound webhooks', () => {
       expect(await send(url)).toMatchObject({ statusCode: null, refused: true });
     });
 
+    it('does not report a response that was cut off as a success', async () => {
+      receiver.respond = (_request, response) => {
+        response.writeHead(200, { 'content-length': '100' });
+        response.write('partial');
+        setTimeout(() => response.socket?.destroy(), 10);
+      };
+      expect(await send(receiver.url, true)).toMatchObject({ statusCode: null, refused: false });
+    });
+
     it('refuses plain http unless private networks are allowed', async () => {
       expect(await send(receiver.url)).toMatchObject({ refused: true });
       expect(receiver.requests).toHaveLength(0);
@@ -353,6 +362,10 @@ describe('outbound webhooks', () => {
       expect(isPublicAddress('100.64.0.1')).toBe(false);
       expect(isPublicAddress('::ffff:10.0.0.1')).toBe(false);
       expect(isPublicAddress('not-an-ip')).toBe(false);
+      // addresses that embed an IPv4 one, and documentation ranges
+      expect(isPublicAddress('64:ff9b::a00:1')).toBe(false);
+      expect(isPublicAddress('2002:7f00:1::')).toBe(false);
+      expect(isPublicAddress('203.0.113.9')).toBe(false);
     });
   });
 

@@ -51,14 +51,23 @@ export async function postWebhook(input: WebhookRequest): Promise<WebhookRespons
     return failure('Only https is allowed here', true);
   }
 
+  // one deadline for the whole exchange, name resolution included
+  const signal = AbortSignal.timeout(input.timeoutMs);
+  const timedOut = new Promise<never>((_resolve, reject) =>
+    signal.addEventListener('abort', () => reject(new Error('timeout')), { once: true }),
+  );
+  // rejects at the deadline even when nothing is racing it (an IP literal skips the lookup)
+  timedOut.catch(() => undefined);
   const host = url.hostname.replace(/^\[|\]$/g, '');
   let addresses: { address: string; family: number }[];
   try {
     addresses = isIP(host)
       ? [{ address: host, family: isIP(host) }]
-      : await lookup(host, { all: true });
+      : await Promise.race([lookup(host, { all: true }), timedOut]);
   } catch (error) {
-    return failure(`DNS lookup failed: ${(error as Error).message}`);
+    return signal.aborted
+      ? failure(`Timed out after ${input.timeoutMs} ms`)
+      : failure(`DNS lookup failed: ${(error as Error).message}`);
   }
   const target = addresses[0];
   if (!target) return failure('Host did not resolve to any address');
@@ -67,7 +76,6 @@ export async function postWebhook(input: WebhookRequest): Promise<WebhookRespons
   }
 
   const send = url.protocol === 'https:' ? httpsRequest : httpRequest;
-  const signal = AbortSignal.timeout(input.timeoutMs);
   return new Promise<WebhookResponse>((resolve) => {
     const timestamp = Math.floor(Date.now() / 1000);
     const request = send(
@@ -94,8 +102,22 @@ export async function postWebhook(input: WebhookRequest): Promise<WebhookRespons
       },
       (response) => {
         const statusCode = response.statusCode ?? 0;
+        // only a response that arrived whole counts: headers followed by a reset or a stall
+        // are not an answer
+        let complete = false;
+        response.on('end', () => {
+          complete = true;
+          resolve({ statusCode, error: null, refused: false });
+        });
         response.on('error', () => undefined);
-        response.on('close', () => resolve({ statusCode, error: null, refused: false }));
+        response.on('close', () => {
+          if (complete) return;
+          resolve(
+            signal.aborted
+              ? failure(`Timed out after ${input.timeoutMs} ms`)
+              : failure('Connection closed before the response ended'),
+          );
+        });
         // the body is not stored, only drained so the socket frees up
         response.resume();
       },

@@ -29,7 +29,8 @@ it('delivers a signed user.created webhook to a receiver and records the deliver
     events: ['user.created'],
     description: 'e2e receiver',
   });
-  if (created.status === 400) {
+  // the API refuses plain http unless it runs with WEBHOOKS_ALLOW_PRIVATE_NETWORKS=true
+  if (created.status === 400 && /https/i.test(created.body.error.message)) {
     receiver.close();
     return context.skip();
   }

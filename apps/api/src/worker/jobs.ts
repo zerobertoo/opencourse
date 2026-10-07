@@ -14,6 +14,9 @@ export interface JobData {
   payload: unknown;
 }
 
+/** First wait before a retry; each further retry doubles it. */
+export const DEFAULT_RETRY_DELAY_MS = 30_000;
+
 /** Every job gets this many attempts, doubling the wait between them. */
 export const JOB_ATTEMPTS = 5;
 

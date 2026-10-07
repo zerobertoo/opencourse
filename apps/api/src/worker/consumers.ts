@@ -6,6 +6,7 @@ import {
   type DomainEventName,
 } from '@opencourse/shared';
 import { eq } from 'drizzle-orm';
+import { z } from 'zod';
 import { certificates, users } from '../db/schema';
 import type { Mailer } from '../mail/mailer';
 import { certificateEmail } from '../mail/templates';
@@ -13,6 +14,8 @@ import { toLocale } from '../mappers';
 import { issueCertificate } from '../modules/certificates/service';
 import { deliverWebhook, fanOutWebhooks, type AddDeliveryJob } from '../modules/webhooks/delivery';
 import type { Database } from '../plugins/db';
+
+const deliveryJobPayloadSchema = z.object({ deliveryId: z.uuid() });
 
 export interface WorkerContext {
   db: Database;
@@ -111,7 +114,7 @@ export const consumers: readonly Consumer[] = [
     name: 'deliver-webhook',
     events: [],
     run: ({ db, allowPrivateNetworks, webhookTimeoutMs }, payload, job) =>
-      deliverWebhook(db, (payload as { deliveryId: string }).deliveryId, {
+      deliverWebhook(db, deliveryJobPayloadSchema.parse(payload).deliveryId, {
         allowPrivateNetworks,
         timeoutMs: webhookTimeoutMs,
         isLastAttempt: job.isLastAttempt,

@@ -25,6 +25,7 @@ import { badRequest, conflict, notFound } from '../../errors';
 import {
   deliveryJobAdder,
   DEFAULT_QUEUE_PREFIX,
+  DEFAULT_RETRY_DELAY_MS,
   QUEUE_NAME,
   type JobData,
 } from '../../worker/jobs';
@@ -32,7 +33,6 @@ import { postWebhook } from './http';
 import { toWebhook, toWebhookDelivery } from './mappers';
 
 const TEST_TIMEOUT_MS = 10_000;
-const RETRY_DELAY_MS = 30_000;
 
 export interface WebhookRoutesOptions {
   config: Config;
@@ -325,7 +325,10 @@ export const webhookRoutes: FastifyPluginAsyncZod<WebhookRoutesOptions> = async 
         throw conflict('Only a failed delivery can be retried');
       }
       try {
-        await deliveryJobAdder(getQueue(), RETRY_DELAY_MS)(row.id, `${row.id}-retry-${Date.now()}`);
+        await deliveryJobAdder(getQueue(), DEFAULT_RETRY_DELAY_MS)(
+          row.id,
+          `${row.id}-retry-${Date.now()}`,
+        );
       } catch (error) {
         await app.db
           .update(webhookDeliveries)
