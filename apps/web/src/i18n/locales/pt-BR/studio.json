@@ -171,7 +171,7 @@
   },
   "video": {
     "title": "Vídeo",
-    "description": "Envie um vídeo ou use o link de um provedor externo.",
+    "description": "Envie um arquivo de vídeo ou cole o link de um provedor compatível.",
     "statusLabel": "Status",
     "status": {
       "none": "Sem vídeo",
@@ -182,14 +182,25 @@
     },
     "provider": {
       "local": "Enviado para esta plataforma",
-      "external": "Link externo"
+      "external": "Link do {plugin}"
     },
+    "tabs": {
+      "label": "Como adicionar o vídeo",
+      "upload": "Enviar um arquivo",
+      "link": "Colar um link"
+    },
+    "uploading": "Enviando… {percent}%",
+    "processingNote": "O vídeo está sendo preparado para streaming. Esta página se atualiza sozinha.",
+    "readyNote": "Duração: {duration}.",
+    "errorNote": "O processamento falhou: {message}",
+    "supportedProviders": "Provedores compatíveis: {providers}.",
+    "uploadHint": "MP4, WebM, MOV ou MKV. O arquivo é convertido para streaming (360p, 720p e 1080p, conforme o original).",
     "upload": "Enviar vídeo",
     "remove": "Remover vídeo",
     "removed": "Vídeo removido.",
     "uploadStarted": "Envio recebido. O vídeo está sendo processado.",
+    "uploadFailed": "O envio falhou. Verifique a conexão e tente de novo.",
     "demoNote": "Nesta demonstração nenhum arquivo é enviado: um vídeo de exemplo substitui o seu.",
-    "apiNote": "Por enquanto os vídeos entram por link. O envio de arquivos chega em uma versão futura.",
     "captionsApiNote": "Ainda não é possível adicionar legendas. O envio de arquivos chega em uma versão futura.",
     "externalUrl": "Link do vídeo externo",
     "useLink": "Usar link",

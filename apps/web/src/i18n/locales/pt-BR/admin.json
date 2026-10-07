@@ -143,17 +143,6 @@
       "default": "Idioma padrão",
       "defaultHint": "Usado para novos usuários e sempre que uma tradução estiver faltando."
     },
-    "video": {
-      "title": "Vídeo",
-      "description": "Onde os novos vídeos são armazenados e transmitidos. Nesta demonstração nada é enviado.",
-      "adapter": "Adaptador de vídeo",
-      "adapters": {
-        "local": "Armazenamento local (HLS)",
-        "bunny": "Bunny Stream",
-        "vimeo": "Vimeo",
-        "cloudflare": "Cloudflare Stream"
-      }
-    },
     "email": {
       "title": "E-mail transacional",
       "description": "Servidor SMTP usado em convites e recuperação de senha. Nesta demonstração nada é enviado.",
@@ -170,6 +159,12 @@
     "listLabel": "Extensões planejadas",
     "description": "As extensões permitirão conectar a plataforma a outras ferramentas. Nenhuma está disponível ainda.",
     "comingSoon": "Em breve",
+    "videoProviders": {
+      "title": "Provedores de vídeo",
+      "description": "Links desses provedores podem ser incorporados nas aulas em vídeo. Cada um é um pequeno plugin no código, então adicionar outro não exige mudanças em mais nada.",
+      "listLabel": "Provedores de vídeo",
+      "installed": "Instalado"
+    },
     "items": {
       "webhooks": {
         "name": "Webhooks de saída",
@@ -178,10 +173,6 @@
       "apiTokens": {
         "name": "Tokens de API",
         "description": "Permita que integrações confiáveis criem e gerenciem acessos pela API."
-      },
-      "videoAdapters": {
-        "name": "Provedores de vídeo",
-        "description": "Hospede os vídeos das aulas no Bunny Stream, Vimeo ou Cloudflare Stream."
       },
       "examplePlugin": {
         "name": "Plugin de exemplo",
@@ -206,7 +197,8 @@
       "grantRevoked": "Acesso revogado",
       "lessonCompleted": "Aula concluída",
       "courseCompleted": "Curso concluído",
-      "certificateIssued": "Certificado emitido"
+      "certificateIssued": "Certificado emitido",
+      "videoProcessed": "Vídeo processado"
     },
     "editFor": "Editar {url}",
     "edit": "Editar",

@@ -21,3 +21,18 @@ if (!window.matchMedia) {
     dispatchEvent: vi.fn(),
   }));
 }
+
+// jsdom exposes `audioTracks` and `videoTracks` as plain lists, but the player listens to them
+// like event targets (as browsers that support them do), so tests give it empty ones
+class EmptyTrackList extends EventTarget {
+  readonly length = 0;
+  [Symbol.iterator]() {
+    return [][Symbol.iterator]();
+  }
+}
+for (const name of ['audioTracks', 'videoTracks']) {
+  Object.defineProperty(HTMLMediaElement.prototype, name, {
+    configurable: true,
+    get: () => new EmptyTrackList(),
+  });
+}

@@ -212,8 +212,20 @@ describe('admin plugins', () => {
   it('lists the planned extensions as coming soon', async () => {
     await renderApp('/admin/plugins', { signInAs: 'admin' });
     const items = await listItems('Extensões planejadas');
-    expect(items).toHaveLength(4);
+    expect(items).toHaveLength(3);
     expect(within(items[0]!).getByText('Em breve')).toBeVisible();
+  });
+
+  it('lists the installed video provider plugins', async () => {
+    await renderApp('/admin/plugins', { signInAs: 'admin' });
+    const providers = await listItems('Provedores de vídeo');
+    expect(providers.map((item) => item.textContent)).toEqual(
+      expect.arrayContaining([
+        expect.stringContaining('YouTube'),
+        expect.stringContaining('Panda Video'),
+      ]),
+    );
+    for (const item of providers) expect(within(item).getByText('Instalado')).toBeVisible();
   });
 });
 

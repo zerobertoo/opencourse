@@ -54,9 +54,10 @@ export function videoLesson(common: LessonCommon & { captions?: Locale[] }): Les
     type: 'video',
     video: {
       provider: 'local',
-      externalId: null,
+      assetId: common.id,
       status: 'ready',
-      playbackUrl: '/media/sample-lesson.mp4',
+      errorMessage: null,
+      durationSeconds: common.durationSeconds,
     },
     captions: (common.captions ?? ['pt-BR']).map((locale) => ({
       locale,

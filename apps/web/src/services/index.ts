@@ -46,4 +46,5 @@ export type * from './progress';
 export type * from './settings';
 export type * from './studio';
 export type * from './users';
+export type * from './video';
 export type * from './webhooks';

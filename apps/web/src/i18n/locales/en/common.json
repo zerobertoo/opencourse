@@ -99,6 +99,7 @@
     "duration": "Use minutes or m:ss, for example 12 or 5:30.",
     "url": "Enter a valid link starting with http:// or https://.",
     "httpsUrl": "Enter a valid link starting with https://.",
+    "videoProvider": "This link is not from a supported video provider.",
     "messageTooLong": "The message is too long.",
     "dateRequired": "Choose a date.",
     "dateFuture": "Choose a date in the future.",

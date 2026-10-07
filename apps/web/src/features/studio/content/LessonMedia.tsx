@@ -1,5 +1,11 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import type { Caption, Lesson, Locale } from '@opencourse/shared';
+import {
+  findVideoProvider,
+  videoProviders,
+  type Caption,
+  type Lesson,
+  type Locale,
+} from '@opencourse/shared';
 import { FileText, Trash2, Upload, Video } from 'lucide-react';
 import { useId, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
@@ -10,7 +16,9 @@ import { Spinner } from '@/components/Spinner';
 import { TextField } from '@/components/TextField';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useCurriculumMutations } from '@/hooks/studioQueries';
+import { formatClock } from '@/lib/duration';
 import { FileTooLargeError, MOCK_UPLOAD_LIMIT_BYTES, readFileAsDataUrl } from '@/lib/files';
 import { formatFileSize } from '@/lib/fileSize';
 import { externalVideoSchema, type ExternalVideoValues } from '@/lib/schemas';
@@ -101,7 +109,7 @@ function useUploadErrorMessage() {
       : describeError(error);
 }
 
-/** Video status, upload (simulated), external link and per-language captions. */
+/** Video status, file upload or provider link, and per-language captions. */
 export function VideoSection({
   courseId,
   lesson,
@@ -128,19 +136,26 @@ export function VideoSection({
 
   const status = lesson.video?.status ?? 'none';
   const isBusy = status === 'processing' || status === 'uploading';
+  const [uploadProgress, setUploadProgress] = useState<number | null>(null);
+  const isUploading = uploadProgress !== null;
+  const providerLabels = videoProviders.map((provider) => provider.label).join(', ');
 
   const upload = async (files: File[]) => {
     const file = files[0];
     if (!file) return;
     setFormError(null);
+    setUploadProgress(0);
     try {
       await setVideo.mutateAsync({
         lessonId: lesson.id,
-        source: { provider: 'local', fileName: file.name },
+        source: { provider: 'local', file },
+        onProgress: setUploadProgress,
       });
       toast.success(t('studio:video.uploadStarted'));
     } catch (error) {
       setFormError(describeError(error));
+    } finally {
+      setUploadProgress(null);
     }
   };
 
@@ -187,6 +202,16 @@ export function VideoSection({
     }
   };
 
+  const video = lesson.video;
+  const providerText =
+    video?.provider === 'local'
+      ? t('studio:video.provider.local')
+      : video?.provider === 'external'
+        ? t('studio:video.provider.external', {
+            plugin: findVideoProvider(video.plugin)?.label ?? video.plugin,
+          })
+        : null;
+
   return (
     <>
       <PanelSection title={t('studio:video.title')} description={t('studio:video.description')}>
@@ -198,70 +223,90 @@ export function VideoSection({
             <Badge
               variant={status === 'ready' ? 'success' : status === 'error' ? 'warning' : 'neutral'}
             >
-              {isBusy ? <Spinner /> : null}
-              {t(`studio:video.status.${status}`)}
+              {isBusy || isUploading ? <Spinner /> : null}
+              {isUploading
+                ? t('studio:video.uploading', { percent: Math.round(uploadProgress * 100) })
+                : t(`studio:video.status.${status}`)}
             </Badge>
-            {lesson.video ? (
-              <span className="text-xs text-muted-foreground">
-                {t(`studio:video.provider.${lesson.video.provider}`)}
-              </span>
+            {providerText ? (
+              <span className="text-xs text-muted-foreground">{providerText}</span>
             ) : null}
           </div>
-          {lesson.video?.provider === 'external' && lesson.video.playbackUrl ? (
-            <p className="break-all text-xs text-muted-foreground">
-              {lesson.video.playbackUrl}
+          {video?.provider === 'local' && video.status === 'processing' ? (
+            <p className="text-xs text-muted-foreground">{t('studio:video.processingNote')}</p>
+          ) : null}
+          {video?.provider === 'local' && video.status === 'ready' && video.durationSeconds ? (
+            <p className="text-xs text-muted-foreground">
+              {t('studio:video.readyNote', { duration: formatClock(video.durationSeconds) })}
             </p>
           ) : null}
+          {video?.provider === 'local' && video.status === 'error' ? (
+            <p role="alert" className="text-sm text-destructive">
+              {t('studio:video.errorNote', { message: video.errorMessage ?? '' })}
+            </p>
+          ) : null}
+          {video?.provider === 'external' ? (
+            <p className="break-all text-xs text-muted-foreground">{video.embedUrl}</p>
+          ) : null}
 
-          <div className="flex flex-wrap gap-2">
-            {isApiMode ? null : (
+          <Tabs defaultValue="upload">
+            <TabsList aria-label={t('studio:video.tabs.label')}>
+              <TabsTrigger value="upload">{t('studio:video.tabs.upload')}</TabsTrigger>
+              <TabsTrigger value="link">{t('studio:video.tabs.link')}</TabsTrigger>
+            </TabsList>
+            <TabsContent value="upload" className="space-y-3">
               <FilePicker
                 label={t('studio:video.upload')}
                 accept="video/mp4,video/webm,video/quicktime,video/x-matroska,.mp4,.webm,.mov,.mkv,.m4v"
-                disabled={setVideo.isPending}
+                disabled={setVideo.isPending || isUploading}
                 onFiles={(files) => void upload(files)}
               />
-            )}
-            {lesson.video ? (
-              <Button
-                variant="ghost"
-                size="sm"
-                disabled={removeVideo.isPending}
-                onClick={() => void remove()}
+              <p className="text-xs text-muted-foreground">
+                {isApiMode ? t('studio:video.uploadHint') : t('studio:video.demoNote')}
+              </p>
+            </TabsContent>
+            <TabsContent value="link" className="space-y-2">
+              <form
+                onSubmit={useLink}
+                noValidate
+                className="flex flex-col gap-2 sm:flex-row sm:items-start"
               >
-                <Trash2 aria-hidden="true" />
-                {t('studio:video.remove')}
-              </Button>
-            ) : null}
-          </div>
-          <p className="text-xs text-muted-foreground">
-            {isApiMode ? t('studio:video.apiNote') : t('studio:video.demoNote')}
-          </p>
+                <div className="flex-1">
+                  <TextField
+                    label={t('studio:video.externalUrl')}
+                    type="url"
+                    inputMode="url"
+                    placeholder={URL_PLACEHOLDER}
+                    error={errors.url}
+                    {...register('url')}
+                  />
+                </div>
+                <Button
+                  type="submit"
+                  variant="outline"
+                  className="sm:mt-[1.625rem]"
+                  disabled={setVideo.isPending}
+                >
+                  {t('studio:video.useLink')}
+                </Button>
+              </form>
+              <p className="text-xs text-muted-foreground">
+                {t('studio:video.supportedProviders', { providers: providerLabels })}
+              </p>
+            </TabsContent>
+          </Tabs>
 
-          <form
-            onSubmit={useLink}
-            noValidate
-            className="flex flex-col gap-2 sm:flex-row sm:items-start"
-          >
-            <div className="flex-1">
-              <TextField
-                label={t('studio:video.externalUrl')}
-                type="url"
-                inputMode="url"
-                placeholder={URL_PLACEHOLDER}
-                error={errors.url}
-                {...register('url')}
-              />
-            </div>
+          {video ? (
             <Button
-              type="submit"
-              variant="outline"
-              className="sm:mt-[1.625rem]"
-              disabled={setVideo.isPending}
+              variant="ghost"
+              size="sm"
+              disabled={removeVideo.isPending || isUploading}
+              onClick={() => void remove()}
             >
-              {t('studio:video.useLink')}
+              <Trash2 aria-hidden="true" />
+              {t('studio:video.remove')}
             </Button>
-          </form>
+          ) : null}
         </div>
       </PanelSection>
 
@@ -375,9 +420,7 @@ export function MaterialsSection({ courseId, lesson }: { courseId: string; lesso
                 size="sm"
                 aria-label={t('studio:materials.remove', { name: attachment.name })}
                 disabled={isSaving}
-                onClick={() =>
-                  void removeFile(attachment.id)
-                }
+                onClick={() => void removeFile(attachment.id)}
               >
                 <Trash2 aria-hidden="true" />
               </Button>

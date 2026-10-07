@@ -107,7 +107,10 @@ describe('mock curriculum service', () => {
       const [attachment] = flattenLessons(withFile)[0]!.attachments;
       expect(attachment).toMatchObject({ name: 'a.pdf', sizeBytes: 10 });
       expect(attachment!.id).not.toBe('');
-      const withoutFile = await services.curriculum.removeLessonAttachment(lessonId, attachment!.id);
+      const withoutFile = await services.curriculum.removeLessonAttachment(
+        lessonId,
+        attachment!.id,
+      );
       expect(flattenLessons(withoutFile)[0]!.attachments).toHaveLength(0);
     });
 
@@ -194,6 +197,8 @@ describe('mock curriculum service', () => {
   });
 
   describe('video', () => {
+    const videoFile = (name: string) => new File(['x'], name, { type: 'video/mp4' });
+
     async function videoLesson(options = {}) {
       const context = await setup('rafael', options);
       const { services, courseId } = context;
@@ -222,41 +227,48 @@ describe('mock curriculum service', () => {
       const { services, courseId, lessonId } = await videoLesson({ videoProcessingMs: 20 });
       await services.curriculum.setLessonVideo(lessonId, {
         provider: 'local',
-        fileName: 'aula.mp4',
+        file: videoFile('aula.mp4'),
       });
-      expect(await videoOf(services, courseId)).toMatchObject({
-        provider: 'local',
-        status: 'processing',
-        playbackUrl: null,
-      });
+      const processing = await videoOf(services, courseId);
+      expect(processing).toMatchObject({ provider: 'local', status: 'processing' });
 
       await new Promise((resolve) => setTimeout(resolve, 60));
       expect(await videoOf(services, courseId)).toMatchObject({
         status: 'ready',
-        playbackUrl: '/media/sample-lesson.mp4',
+        assetId: processing?.provider === 'local' ? processing.assetId : undefined,
       });
+      // every uploaded video plays the demo clip
+      expect(
+        await services.video.getPlaybackUrl(
+          processing?.provider === 'local' ? processing.assetId : '',
+        ),
+      ).toBe('/media/sample-lesson.mp4');
     });
 
     it('is ready immediately when processing takes no time', async () => {
       const { services, courseId, lessonId } = await videoLesson({ videoProcessingMs: 0 });
       await services.curriculum.setLessonVideo(lessonId, {
         provider: 'local',
-        fileName: 'aula.webm',
+        file: videoFile('aula.webm'),
       });
       expect(await videoOf(services, courseId)).toMatchObject({ status: 'ready' });
     });
 
     it('does not let a stale upload override a newer external video or a removal', async () => {
       const { services, courseId, lessonId } = await videoLesson({ videoProcessingMs: 20 });
-      await services.curriculum.setLessonVideo(lessonId, { provider: 'local', fileName: 'a.mp4' });
+      await services.curriculum.setLessonVideo(lessonId, {
+        provider: 'local',
+        file: videoFile('a.mp4'),
+      });
       await services.curriculum.setLessonVideo(lessonId, {
         provider: 'external',
-        url: 'https://videos.example/abc',
+        url: 'https://youtu.be/dQw4w9WgXcQ',
       });
       await new Promise((resolve) => setTimeout(resolve, 60));
       expect(await videoOf(services, courseId)).toMatchObject({
         provider: 'external',
-        playbackUrl: 'https://videos.example/abc',
+        plugin: 'youtube',
+        embedUrl: 'https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ',
       });
 
       await services.curriculum.removeLessonVideo(lessonId);
@@ -266,7 +278,10 @@ describe('mock curriculum service', () => {
     it('validates the file format and the external URL', async () => {
       const { services, lessonId } = await videoLesson();
       await expect(
-        services.curriculum.setLessonVideo(lessonId, { provider: 'local', fileName: 'notas.txt' }),
+        services.curriculum.setLessonVideo(lessonId, {
+          provider: 'local',
+          file: videoFile('notas.txt'),
+        }),
       ).rejects.toMatchObject({ code: 'validation' });
       await expect(
         services.curriculum.setLessonVideo(lessonId, { provider: 'external', url: 'javascript:1' }),
@@ -274,11 +289,17 @@ describe('mock curriculum service', () => {
       await expect(
         services.curriculum.setLessonVideo(lessonId, { provider: 'external', url: 'nao é url' }),
       ).rejects.toMatchObject({ code: 'validation' });
-      // like the API: external links are https only
+      // like the API: external links are https only, and must belong to a provider plugin
       await expect(
         services.curriculum.setLessonVideo(lessonId, {
           provider: 'external',
-          url: 'http://videos.example/abc',
+          url: 'http://youtu.be/dQw4w9WgXcQ',
+        }),
+      ).rejects.toMatchObject({ code: 'validation' });
+      await expect(
+        services.curriculum.setLessonVideo(lessonId, {
+          provider: 'external',
+          url: 'https://videos.example/abc',
         }),
       ).rejects.toMatchObject({ code: 'validation' });
     });

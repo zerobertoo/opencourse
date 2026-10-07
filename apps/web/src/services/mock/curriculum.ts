@@ -1,6 +1,7 @@
 import {
   fileAttachmentSchema,
   quizSchema,
+  resolveVideoUrl,
   type CourseDetail,
   type CourseModuleWithLessons,
   type Lesson,
@@ -12,7 +13,6 @@ import type { MockContext } from './context';
 import { canManageCourse, findCourseById, findLesson, findModule } from './helpers';
 import { clone } from './store';
 
-const SAMPLE_VIDEO_URL = '/media/sample-lesson.mp4';
 const VIDEO_FILE_PATTERN = /\.(mp4|mov|webm|mkv|m4v)$/i;
 const DEFAULT_PASSING_SCORE = 70;
 
@@ -82,12 +82,7 @@ export function createMockCurriculumService(context: MockContext): CurriculumSer
       const { lesson } = findLesson(store.db, lessonId);
       if (lesson.type !== 'video' || lesson.video?.status !== 'processing') return;
       store.mutate(() => {
-        lesson.video = {
-          provider: 'local',
-          externalId: null,
-          status: 'ready',
-          playbackUrl: SAMPLE_VIDEO_URL,
-        };
+        if (lesson.video?.provider === 'local') lesson.video = { ...lesson.video, status: 'ready' };
       });
     } catch {
       // the lesson was deleted while its video was processing
@@ -240,36 +235,30 @@ export function createMockCurriculumService(context: MockContext): CurriculumSer
         }
 
         if (source.provider === 'external') {
-          let url: URL;
-          try {
-            url = new URL(source.url.trim());
-          } catch {
-            throw new ServiceError('validation', 'Invalid video URL');
-          }
-          if (url.protocol !== 'https:') {
-            throw new ServiceError('validation', 'Invalid video URL');
+          const resolved = resolveVideoUrl(source.url);
+          if (!resolved) {
+            throw new ServiceError('validation', 'Not a link from a supported video provider');
           }
           uploadTokens.delete(lessonId);
           return changeCourse(course, () => {
-            lesson.video = {
-              provider: 'external',
-              externalId: url.toString(),
-              status: 'ready',
-              playbackUrl: url.toString(),
-            };
+            lesson.video = { provider: 'external', status: 'ready', ...resolved };
           });
         }
 
-        if (!VIDEO_FILE_PATTERN.test(source.fileName)) {
+        if (!VIDEO_FILE_PATTERN.test(source.file.name)) {
           throw new ServiceError('validation', 'Unsupported video format');
         }
         const token = ++uploadCounter;
         uploadTokens.set(lessonId, token);
         const instant = context.videoProcessingMs <= 0;
         const updated = changeCourse(course, () => {
-          lesson.video = instant
-            ? { provider: 'local', externalId: null, status: 'ready', playbackUrl: SAMPLE_VIDEO_URL }
-            : { provider: 'local', externalId: null, status: 'processing', playbackUrl: null };
+          lesson.video = {
+            provider: 'local',
+            assetId: store.nextId('video'),
+            status: instant ? 'ready' : 'processing',
+            errorMessage: null,
+            durationSeconds: null,
+          };
         });
         if (instant) uploadTokens.delete(lessonId);
         else setTimeout(() => finishProcessing(lessonId, token), context.videoProcessingMs);

@@ -43,9 +43,14 @@ export interface UpdateLessonInput {
   quiz?: Quiz;
 }
 
-/** Where a video comes from: an upload to the local adapter or a link to an external provider. */
+/** Where a video comes from: a file to upload to this instance or a link a provider plugin recognises. */
 export type LessonVideoSource =
-  { provider: 'local'; fileName: string } | { provider: 'external'; url: string };
+  { provider: 'local'; file: File } | { provider: 'external'; url: string };
+
+export interface SetLessonVideoOptions {
+  /** Called with the share of the file already sent, from 0 to 1. Only uploads report it. */
+  onProgress?: (fraction: number) => void;
+}
 
 /** Desired curriculum layout: modules in order, each with its lessons in order. */
 export interface CurriculumLayoutItem {
@@ -64,8 +69,15 @@ export interface CurriculumService {
   deleteLesson(lessonId: string): Promise<CourseDetail>;
   addLessonAttachments(lessonId: string, files: AttachmentUpload[]): Promise<CourseDetail>;
   removeLessonAttachment(lessonId: string, attachmentId: string): Promise<CourseDetail>;
-  /** Starts the video upload (status `processing`) or links an external one (`ready`). */
-  setLessonVideo(lessonId: string, source: LessonVideoSource): Promise<CourseDetail>;
+  /**
+   * Sends the file (it then shows as `processing` until the worker finishes) or links an external
+   * video (`ready`). Throws `validation` for a link no provider plugin recognises.
+   */
+  setLessonVideo(
+    lessonId: string,
+    source: LessonVideoSource,
+    options?: SetLessonVideoOptions,
+  ): Promise<CourseDetail>;
   removeLessonVideo(lessonId: string): Promise<CourseDetail>;
   /**
    * Batch reordering: applies the module order and moves lessons between modules. The layout

@@ -143,17 +143,6 @@
       "default": "Default language",
       "defaultHint": "Used for new users and whenever a translation is missing."
     },
-    "video": {
-      "title": "Video",
-      "description": "Where new video uploads are stored and streamed from. In this demo nothing is uploaded.",
-      "adapter": "Video adapter",
-      "adapters": {
-        "local": "Local storage (HLS)",
-        "bunny": "Bunny Stream",
-        "vimeo": "Vimeo",
-        "cloudflare": "Cloudflare Stream"
-      }
-    },
     "email": {
       "title": "Transactional e-mail",
       "description": "SMTP server used for invites and password recovery. In this demo nothing is sent.",
@@ -170,6 +159,12 @@
     "listLabel": "Planned extensions",
     "description": "Extensions will let you connect the platform to other tools. None is available yet.",
     "comingSoon": "Coming soon",
+    "videoProviders": {
+      "title": "Video providers",
+      "description": "Links from these providers can be embedded in video lessons. Each one is a small plugin in the code, so adding another needs no changes elsewhere.",
+      "listLabel": "Video providers",
+      "installed": "Installed"
+    },
     "items": {
       "webhooks": {
         "name": "Outbound webhooks",
@@ -178,10 +173,6 @@
       "apiTokens": {
         "name": "API tokens",
         "description": "Let trusted integrations create and manage access through the API."
-      },
-      "videoAdapters": {
-        "name": "Video providers",
-        "description": "Host lesson videos on Bunny Stream, Vimeo or Cloudflare Stream."
       },
       "examplePlugin": {
         "name": "Example plugin",
@@ -206,7 +197,8 @@
       "grantRevoked": "Access revoked",
       "lessonCompleted": "Lesson completed",
       "courseCompleted": "Course completed",
-      "certificateIssued": "Certificate issued"
+      "certificateIssued": "Certificate issued",
+      "videoProcessed": "Video processed"
     },
     "editFor": "Edit {url}",
     "edit": "Edit",

@@ -30,6 +30,7 @@ import { AttachmentList } from '@/features/player/AttachmentList';
 import { CurriculumSidebar } from '@/features/player/CurriculumSidebar';
 import { NotesTab } from '@/features/player/NotesTab';
 import { QuizLesson } from '@/features/player/QuizLesson';
+import { ExternalVideoEmbed } from '@/features/player/ExternalVideoEmbed';
 import { VideoPlayer } from '@/features/player/VideoPlayer';
 import {
   useCourseAccess,
@@ -37,6 +38,7 @@ import {
   useCourseProgress,
   useSaveVideoPosition,
   useSetLessonCompleted,
+  useVideoPlaybackUrl,
 } from '@/hooks/queries';
 import { localizeCourse, localizeLesson, toLocale } from '@/lib/content';
 import { useServiceErrorMessage } from '@/lib/serviceError';
@@ -58,6 +60,73 @@ function PlayerSkeleton() {
   );
 }
 
+type VideoLessonData = Extract<Lesson, { type: 'video' }>;
+
+/** A video lesson: the uploaded file through the HLS player, or the provider's own embed. */
+function VideoLessonBody({
+  lesson,
+  title,
+  initialPositionSeconds,
+  onVideoPosition,
+  onVideoEnded,
+}: {
+  lesson: VideoLessonData;
+  title: string;
+  initialPositionSeconds: number;
+  onVideoPosition: (seconds: number) => void;
+  onVideoEnded: () => void;
+}) {
+  const { t } = useTranslation('player');
+  const { video } = lesson;
+  const isUpload = video?.provider === 'local' && video.status === 'ready';
+  const playback = useVideoPlaybackUrl(isUpload ? video.assetId : undefined);
+
+  if (video?.provider === 'external') {
+    return <ExternalVideoEmbed embedUrl={video.embedUrl} title={title} />;
+  }
+  if (video?.status !== 'ready') {
+    // no video yet reads as "unavailable"
+    const status = video?.status ?? 'ready';
+    return (
+      <EmptyState
+        title={t(`video.status.${status}.title`)}
+        description={t(`video.status.${status}.description`)}
+      />
+    );
+  }
+  if (playback.isError) {
+    return (
+      <ErrorState
+        title={t('video.errorTitle')}
+        description={t('video.errorDescription')}
+        onRetry={() => void playback.refetch()}
+      />
+    );
+  }
+  if (!playback.data) {
+    return (
+      <div
+        role="status"
+        className="grid aspect-video place-items-center rounded-xl border bg-player"
+      >
+        <Spinner />
+        <span className="sr-only">{t('video.buffering')}</span>
+      </div>
+    );
+  }
+  return (
+    <VideoPlayer
+      key={lesson.id}
+      src={playback.data}
+      title={title}
+      captions={lesson.captions}
+      initialPositionSeconds={initialPositionSeconds}
+      onPositionChange={onVideoPosition}
+      onEnded={onVideoEnded}
+    />
+  );
+}
+
 /** What the lesson shows as its main content, by lesson type. */
 function LessonBody({
   course,
@@ -74,35 +143,22 @@ function LessonBody({
   onVideoEnded: () => void;
   timeZone: string;
 }) {
-  const { t, i18n } = useTranslation(['player', 'common']);
+  const { i18n } = useTranslation(['player', 'common']);
   const locale = toLocale(i18n.resolvedLanguage);
   const content = localizeLesson(lesson, locale, course.defaultLocale);
 
   switch (lesson.type) {
-    case 'video': {
-      const { video } = lesson;
-      if (video?.status !== 'ready' || !video.playbackUrl) {
-        // no video yet reads as "unavailable", same as a ready video without a source
-        const status = video?.status ?? 'ready';
-        return (
-          <EmptyState
-            title={t(`video.status.${status}.title`)}
-            description={t(`video.status.${status}.description`)}
-          />
-        );
-      }
+    case 'video':
       return (
-        <VideoPlayer
+        <VideoLessonBody
           key={lesson.id}
-          src={video.playbackUrl}
+          lesson={lesson}
           title={content.title}
-          captions={lesson.captions}
           initialPositionSeconds={initialPositionSeconds}
-          onPositionChange={onVideoPosition}
-          onEnded={onVideoEnded}
+          onVideoPosition={onVideoPosition}
+          onVideoEnded={onVideoEnded}
         />
       );
-    }
     case 'text':
       return <Markdown>{content.content}</Markdown>;
     case 'file':

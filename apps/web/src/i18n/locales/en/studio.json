@@ -171,7 +171,7 @@
   },
   "video": {
     "title": "Video",
-    "description": "Upload a video or link one from an external provider.",
+    "description": "Upload a video file or paste a link from a supported provider.",
     "statusLabel": "Status",
     "status": {
       "none": "No video",
@@ -182,14 +182,25 @@
     },
     "provider": {
       "local": "Uploaded to this platform",
-      "external": "External link"
+      "external": "Link from {plugin}"
     },
+    "tabs": {
+      "label": "How to add the video",
+      "upload": "Upload a file",
+      "link": "Paste a link"
+    },
+    "uploading": "Uploading… {percent}%",
+    "processingNote": "The video is being prepared for streaming. This page updates by itself.",
+    "readyNote": "Duration: {duration}.",
+    "errorNote": "Processing failed: {message}",
+    "supportedProviders": "Supported providers: {providers}.",
+    "uploadHint": "MP4, WebM, MOV or MKV. The file is converted to streaming quality (360p, 720p and 1080p, depending on the original).",
     "upload": "Upload video",
     "remove": "Remove video",
     "removed": "Video removed.",
     "uploadStarted": "Upload received. The video is being processed.",
+    "uploadFailed": "The upload failed. Check the connection and try again.",
     "demoNote": "In this demo no file is sent anywhere: a sample video stands in for your upload.",
-    "apiNote": "Videos are added by link for now. Uploads arrive in a later release.",
     "captionsApiNote": "Caption files cannot be added yet. Uploads arrive in a later release.",
     "externalUrl": "External video link",
     "useLink": "Use link",

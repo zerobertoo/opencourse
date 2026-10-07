@@ -265,7 +265,6 @@ function buildSettings(): MockDatabase['settings'] {
     brand: { name: 'OpenCourse', logoUrl: null, primaryColor: '#2f6f5e' },
     enabledLocales: ['pt-BR', 'en'],
     defaultLocale: 'pt-BR',
-    videoAdapter: 'local',
     email: {
       host: 'localhost',
       port: 1025,

@@ -5,7 +5,7 @@ import {
   NAME_MAX_LENGTH,
   PASSWORD_MAX_LENGTH,
   PASSWORD_MIN_LENGTH,
-  videoAdapterSchema,
+  resolveVideoUrl,
   roleSchema,
   SUPPORTED_LOCALES,
   type Locale,
@@ -156,13 +156,14 @@ export const externalVideoSchema = z.object({
     .min(1, required)
     .refine((value) => {
       try {
-        const { protocol } = new URL(value);
         // the API accepts external video links over https only
-        return protocol === 'https:';
+        return new URL(value).protocol === 'https:';
       } catch {
         return false;
       }
-    }, 'validation.httpsUrl'),
+    }, 'validation.httpsUrl')
+    // a valid link still has to belong to a provider plugin
+    .refine((value) => resolveVideoUrl(value) !== null, 'validation.videoProvider'),
 });
 export type ExternalVideoValues = z.infer<typeof externalVideoSchema>;
 
@@ -260,7 +261,6 @@ export const platformSettingsFormSchema = z
       .array(localeSchema, 'validation.localeRequired')
       .min(1, 'validation.localeRequired'),
     defaultLocale: localeSchema,
-    videoAdapter: videoAdapterSchema,
     host: z.string().trim(),
     // Kept as text so the field can be emptied while typing; converted on submit.
     port: z

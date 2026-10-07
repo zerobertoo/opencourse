@@ -212,16 +212,18 @@ describe('lesson player', () => {
     expect(link).toHaveAttribute('href', '/media/files/exercicios-modulo-1.pdf');
   });
 
-  it('renders the video player with speed, captions and fullscreen controls', async () => {
+  it('renders the video player with its captions and translated controls', async () => {
     await renderApp(`/courses/fundamentos-de-javascript/lessons/${demoId('les-js-1-1')}`, {
       signInAs: 'student',
     });
 
     const player = await screen.findByRole('group', { name: /Player de vídeo/ });
-    expect(within(player).getByRole('button', { name: 'Reproduzir' })).toBeVisible();
-    expect(within(player).getByRole('combobox', { name: 'Velocidade' })).toBeVisible();
-    expect(within(player).getByRole('combobox', { name: 'Legendas' })).toBeVisible();
-    expect(within(player).getByRole('slider', { name: 'Posição do vídeo' })).toBeVisible();
+    // the demo video plays through the same player as an uploaded one, minus the HLS engine
+    const video = player.querySelector('video');
+    expect(video).toHaveAttribute('src', '/media/sample-lesson.mp4');
+    expect(video?.querySelector('track[kind="captions"][srclang="pt-BR"]')).not.toBeNull();
+    // the player's own labels follow the app language
+    expect(within(player).getByRole('button', { name: /Reproduzir/ })).toBeInTheDocument();
   });
 
   it('grades a quiz with per-question feedback and keeps the attempt history', async () => {

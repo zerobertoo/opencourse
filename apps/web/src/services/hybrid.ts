@@ -13,6 +13,7 @@ import {
   createApiStudioService,
 } from './api/learning';
 import { createApiUserService } from './api/users';
+import { createApiVideoService } from './api/video';
 import { createApiWebhookService } from './api/webhooks';
 import type { AuthService } from './auth';
 import type { MockServices } from './mock';
@@ -85,6 +86,7 @@ export function createHybridServices(
     certificates: createApiCertificateService(client),
     settings: mock.settings,
     studio: createApiStudioService(client),
+    video: createApiVideoService(client),
     webhooks: createApiWebhookService(client),
   };
 }

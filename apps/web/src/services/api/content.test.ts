@@ -204,17 +204,113 @@ describe('API curriculum service', () => {
     ]);
   });
 
-  it('refuses uploads without calling the API: files need the storage adapter', async () => {
+  it('refuses attachments without calling the API: they wait for a later milestone', async () => {
     const api = setup();
     const attempts = [
       api.curriculum.addLessonAttachments('l1', [{ name: 'a.pdf', sizeBytes: 1, url: 'data:' }]),
       api.curriculum.removeLessonAttachment('l1', 'a1'),
-      api.curriculum.setLessonVideo('l1', { provider: 'local', fileName: 'a.mp4' }),
     ];
     for (const attempt of attempts) {
       await expect(attempt).rejects.toMatchObject({ code: 'unavailable' });
     }
     expect(api.requests).toEqual([]);
+  });
+
+  describe('video upload', () => {
+    const ASSET = '6f1c3a52-2d1c-4a43-9a43-0d3c8b6f9a11';
+    const upload = {
+      assetId: ASSET,
+      partSizeBytes: 4,
+      parts: [
+        { partNumber: 1, url: 'https://s3.test/part-1' },
+        { partNumber: 2, url: 'https://s3.test/part-2' },
+      ],
+    };
+    const video = {
+      provider: 'local',
+      assetId: ASSET,
+      status: 'processing',
+      errorMessage: null,
+      durationSeconds: null,
+    };
+
+    /** The curriculum service with a fake storage that answers every part with `answerPart`. */
+    async function setupUpload(answerPart: () => Response) {
+      const { course } = await samples();
+      const requests: Recorded[] = [];
+      const client = new ApiClient({
+        baseUrl: 'http://api.test',
+        fetch: (async (input: RequestInfo | URL, init?: RequestInit) => {
+          const path = new URL(String(input)).pathname.replace('/api/v1', '');
+          requests.push({
+            method: init?.method ?? 'GET',
+            path,
+            query: {},
+            body: init?.body ? JSON.parse(String(init.body)) : undefined,
+          });
+          return path.endsWith('/video/upload') ? json(200, upload) : json(200, { course, video });
+        }) as typeof fetch,
+      });
+      const parts: Array<{ url: string; size: number }> = [];
+      const sendPart = (async (url: RequestInfo | URL, init?: RequestInit) => {
+        parts.push({ url: String(url), size: (init?.body as Blob).size });
+        return answerPart();
+      }) as typeof fetch;
+      return { course, requests, parts, curriculum: createApiCurriculumService(client, sendPart) };
+    }
+
+    it('sends the file in slices, reports progress and completes with the ETags', async () => {
+      const etags = ['"etag-1"', '"etag-2"'];
+      const api = await setupUpload(
+        () => new Response(null, { status: 200, headers: { etag: etags.shift()! } }),
+      );
+      const progress: number[] = [];
+      const file = new File(['123456'], 'aula.mp4', { type: 'video/mp4' });
+
+      const result = await api.curriculum.setLessonVideo(
+        'l1',
+        { provider: 'local', file },
+        { onProgress: (fraction) => progress.push(fraction) },
+      );
+
+      expect(result).toEqual(api.course);
+      expect(api.parts).toEqual([
+        { url: 'https://s3.test/part-1', size: 4 },
+        { url: 'https://s3.test/part-2', size: 2 },
+      ]);
+      expect(progress).toEqual([0.5, 1]);
+      expect(api.requests).toMatchObject([
+        {
+          method: 'POST',
+          path: '/lessons/l1/video/upload',
+          body: { filename: 'aula.mp4', contentType: 'video/mp4', sizeBytes: 6 },
+        },
+        {
+          method: 'POST',
+          path: '/lessons/l1/video/complete',
+          body: {
+            parts: [
+              { partNumber: 1, etag: '"etag-1"' },
+              { partNumber: 2, etag: '"etag-2"' },
+            ],
+          },
+        },
+      ]);
+    });
+
+    it('stops without completing when the storage refuses a slice or hides its ETag', async () => {
+      for (const answer of [
+        () => new Response(null, { status: 403 }),
+        () => new Response(null, { status: 200 }),
+      ]) {
+        const api = await setupUpload(answer);
+        const file = new File(['123456'], 'aula.mp4', { type: 'video/mp4' });
+        await expect(
+          api.curriculum.setLessonVideo('l1', { provider: 'local', file }),
+        ).rejects.toMatchObject({ code: 'unavailable' });
+        expect(api.requests.map((request) => request.path)).toEqual(['/lessons/l1/video/upload']);
+      }
+    });
   });
 
   it('reorders with the layout as the body and surfaces a conflict', async () => {

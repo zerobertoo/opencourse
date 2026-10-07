@@ -51,14 +51,21 @@ function errorCodeFromStatus(status: number): ServiceErrorCode {
  * is no token handling here: requests just include credentials and the CSRF header.
  */
 export class ApiClient {
+  private readonly origin: string;
   private readonly baseUrl: string;
   private readonly fetchImplementation: typeof fetch;
   /** Shared by concurrent requests: one refresh per expiry, not one per failed call. */
   private refreshInFlight: Promise<boolean> | null = null;
 
   constructor(options: ApiClientOptions) {
-    this.baseUrl = `${options.baseUrl.replace(/\/+$/, '')}/api/v1`;
+    this.origin = options.baseUrl.replace(/\/+$/, '');
+    this.baseUrl = `${this.origin}/api/v1`;
     this.fetchImplementation = options.fetch ?? ((...args) => fetch(...args));
+  }
+
+  /** Full address of a path the API returned (one that already includes `/api/v1`). */
+  absoluteUrl(path: string): string {
+    return `${this.origin}${path}`;
   }
 
   async request<T = void>(

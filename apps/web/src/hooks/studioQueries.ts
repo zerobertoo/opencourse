@@ -180,8 +180,16 @@ export function useCurriculumMutations(courseId: string) {
       onSuccess: sync,
     }),
     setVideo: useMutation({
-      mutationFn: ({ lessonId, source }: { lessonId: string; source: LessonVideoSource }) =>
-        curriculum.setLessonVideo(lessonId, source),
+      mutationFn: ({
+        lessonId,
+        source,
+        onProgress,
+      }: {
+        lessonId: string;
+        source: LessonVideoSource;
+        /** Share of an upload already sent, from 0 to 1. */
+        onProgress?: (fraction: number) => void;
+      }) => curriculum.setLessonVideo(lessonId, source, { onProgress }),
       onSuccess: sync,
     }),
     removeVideo: useMutation({
