@@ -5,10 +5,12 @@ import { forbidden } from '../errors';
 import { authRoutes } from '../modules/auth/routes';
 import { curriculumRoutes } from '../modules/courses/curriculum-routes';
 import { courseRoutes } from '../modules/courses/routes';
+import { enrollmentRoutes } from '../modules/enrollments/routes';
 import { grantRoutes } from '../modules/grants/routes';
 import { inviteRoutes } from '../modules/invites/routes';
 import { meRoutes } from '../modules/me/routes';
 import { progressRoutes } from '../modules/progress/routes';
+import { studioRoutes } from '../modules/studio/routes';
 import { userRoutes } from '../modules/users/routes';
 
 const SAFE_METHODS = new Set(['GET', 'HEAD', 'OPTIONS']);
@@ -33,6 +35,8 @@ export const v1Routes: FastifyPluginAsyncZod<{ config: Config }> = async (app, {
   await app.register(curriculumRoutes);
   await app.register(grantRoutes);
   await app.register(progressRoutes);
+  await app.register(enrollmentRoutes);
+  await app.register(studioRoutes);
   await app.register(userRoutes);
   await app.register(inviteRoutes, { config });
 };

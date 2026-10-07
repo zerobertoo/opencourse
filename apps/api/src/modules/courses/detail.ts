@@ -10,6 +10,7 @@ import {
   type CourseTranslationRow,
   type LessonRow,
   type LessonTranslationRow,
+  users,
 } from '../../db/schema';
 import { toLocale } from '../../mappers';
 import type { Database } from '../../plugins/db';
@@ -115,8 +116,14 @@ export async function loadCourseDetails(db: Reader, rows: CourseRow[]): Promise<
         .where(inArray(lessonTranslations.lessonId, lessonIds))
     : [];
 
+  const teachers = await db
+    .select({ id: users.id, name: users.name })
+    .from(users)
+    .where(inArray(users.id, [...new Set(rows.map((row) => row.instructorId))]));
+
   return rows.map((course) => ({
     ...toCourse(course, courseTexts),
+    instructor: teachers.find((teacher) => teacher.id === course.instructorId),
     modules: moduleRows
       .filter((row) => row.courseId === course.id)
       .map((row) => ({

@@ -210,4 +210,82 @@ describe('stack: courses and grants', () => {
     );
     expect(mine.myGrant).toMatchObject({ source: 'invite', status: 'active' });
   });
+
+  scenario(
+    'lets a student study: complete a lesson, pass the quiz and finish the course',
+    async () => {
+      const student = await registerStudent('learner');
+      await instructor.call('POST', '/grants', { userId: student.id, courseId, expiresAt: null });
+
+      const home = await student.browser.call('GET', '/me/courses');
+      const enrolled = home.body.courses.find(
+        (item: { course: { id: string } }) => item.course.id === courseId,
+      );
+      expect(enrolled.progress).toMatchObject({
+        completedCount: 0,
+        totalCount: 2,
+        isComplete: false,
+      });
+      expect((await student.browser.call('GET', '/me/continue-learning')).body.item).toBeNull();
+
+      // the student sees the lessons; only the instructor knows which option is right
+      const lessons = (await student.browser.call('GET', `/courses/${courseId}`)).body.course
+        .modules[0].lessons;
+      const textLesson = lessons.find((lesson: { type: string }) => lesson.type === 'text');
+      const quizLesson = lessons.find((lesson: { type: string }) => lesson.type === 'quiz');
+      const answerKey = (
+        await instructor.call('GET', `/courses/${courseId}`)
+      ).body.course.modules[0].lessons.find((lesson: { type: string }) => lesson.type === 'quiz')
+        .quiz.questions[0];
+      const right = answerKey.options.find((option: { isCorrect: boolean }) => option.isCorrect);
+      const wrong = answerKey.options.find((option: { isCorrect: boolean }) => !option.isCorrect);
+
+      // a quiz lesson cannot be completed by hand
+      const manual = await student.browser.call('PUT', `/lessons/${quizLesson.id}/progress`, {
+        completed: true,
+      });
+      expect(manual.status).toBe(400);
+
+      const done = await student.browser.call('PUT', `/lessons/${textLesson.id}/progress`, {
+        completed: true,
+      });
+      expect(done.body.progress.completed).toBe(true);
+      const resume = (await student.browser.call('GET', '/me/continue-learning')).body.item;
+      expect(resume.lesson.id).toBe(quizLesson.id);
+      expect(resume.lesson).not.toHaveProperty('quiz');
+
+      const failed = await student.browser.call('POST', `/quizzes/${quizLesson.id}/attempts`, {
+        answers: { [answerKey.id]: wrong.id },
+      });
+      expect(failed.status).toBe(201);
+      expect(failed.body.feedback.passed).toBe(false);
+      expect(JSON.stringify(failed.body)).not.toContain(right.id);
+
+      const passed = await student.browser.call('POST', `/quizzes/${quizLesson.id}/attempts`, {
+        answers: { [answerKey.id]: right.id },
+      });
+      expect(passed.body.feedback.passed).toBe(true);
+      expect(passed.body.feedback.results[answerKey.id].correctOptionId).toBe(right.id);
+
+      const after = (await student.browser.call('GET', '/me/courses')).body.courses.find(
+        (item: { course: { id: string } }) => item.course.id === courseId,
+      );
+      expect(after.progress).toMatchObject({ completedCount: 2, isComplete: true });
+      expect((await student.browser.call('GET', '/me/continue-learning')).body.item).toBeNull();
+      expect(
+        (await student.browser.call('GET', `/quizzes/${quizLesson.id}/attempts`)).body.attempts,
+      ).toHaveLength(2);
+
+      // the instructor sees the student and the completion on the dashboard
+      const roster = (await instructor.call('GET', `/courses/${courseId}/students`)).body.students;
+      expect(
+        roster.find((item: { user: { id: string } }) => item.user.id === student.id),
+      ).toMatchObject({ progress: { isComplete: true } });
+      const metrics = (await instructor.call('GET', '/studio/metrics')).body;
+      expect(
+        metrics.courses.find((course: { courseId: string }) => course.courseId === courseId)
+          .completedStudents,
+      ).toBeGreaterThanOrEqual(1);
+    },
+  );
 });

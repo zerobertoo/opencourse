@@ -3,7 +3,6 @@ import {
   courseResponseSchema,
   courseSlugParamsSchema,
   createCourseRequestSchema,
-  getCourseSummaryStats,
   listCoursesQuerySchema,
   listCoursesResponseSchema,
   updateCourseRequestSchema,
@@ -18,6 +17,7 @@ import { escapeLike } from '../../sql';
 import { requireManagedCourse, resolveCourseAccess } from './access';
 import { toGrant } from '../grants/mappers';
 import { loadCourseDetail, loadCourseDetails } from './detail';
+import { toListedCourse } from './listed';
 import { assertPublishable } from './publish';
 import { redactQuizAnswers } from './redact';
 import { slugify } from './slug';
@@ -106,15 +106,8 @@ export const courseRoutes: FastifyPluginAsyncZod = async (app) => {
         );
       return {
         courses: details.map((detail) => {
-          // the curriculum stays out of lists: only its stats travel
-          const { modules, ...course } = detail;
-          void modules;
-          const ownGrant = ownGrants.find((grant) => grant.courseId === course.id);
-          return {
-            ...course,
-            ...getCourseSummaryStats(detail),
-            myGrant: ownGrant ? toGrant(ownGrant, now) : null,
-          };
+          const ownGrant = ownGrants.find((grant) => grant.courseId === detail.id);
+          return toListedCourse(detail, ownGrant ? toGrant(ownGrant, now) : null);
         }),
       };
     },
