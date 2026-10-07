@@ -6,8 +6,6 @@
 .impeccable
 .rtk
 docs
-apps/web/*
-!apps/web/package.json
-.env
-.env.*
-!.env.example
+**/.env
+**/.env.*
+!**/.env.example
