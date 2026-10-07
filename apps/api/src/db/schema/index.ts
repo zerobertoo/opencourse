@@ -5,3 +5,4 @@ export * from './settings';
 export * from './users';
 export * from './courses';
 export * from './grants';
+export * from './progress';

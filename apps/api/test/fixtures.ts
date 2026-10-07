@@ -1,3 +1,4 @@
+import { randomUUID } from 'node:crypto';
 import type { CourseStatus, LessonType, Locale, Quiz } from '@opencourse/shared';
 import type { FastifyInstance } from 'fastify';
 import {
@@ -8,6 +9,7 @@ import {
   lessonTranslations,
   moduleTranslations,
   modules,
+  progress,
   type CourseRow,
   type GrantRow,
   type LessonRow,
@@ -147,4 +149,44 @@ export async function insertGrant(
     .returning();
   if (!row) throw new Error('insertGrant failed');
   return row;
+}
+
+/** Writes a progress row directly, so scenarios do not depend on the progress routes. */
+export async function insertProgress(
+  app: FastifyInstance,
+  input: {
+    userId: string;
+    lessonId: string;
+    completed?: boolean;
+    videoPositionSeconds?: number;
+    updatedAt?: Date;
+  },
+) {
+  await app.db.insert(progress).values({
+    completed: true,
+    videoPositionSeconds: 0,
+    updatedAt: new Date(),
+    ...input,
+  });
+}
+
+/** A two-question quiz: the first option of each question is the right one. Pass mark 50. */
+export function buildQuiz() {
+  const questionIds = [randomUUID(), randomUUID()];
+  const correct = [randomUUID(), randomUUID()];
+  const wrong = [randomUUID(), randomUUID()];
+  const quiz: Quiz = {
+    passingScore: 50,
+    questions: questionIds.map((id, index) => ({
+      id,
+      translations: [
+        { locale: 'en', prompt: `Question ${index + 1}`, explanation: `Why ${index + 1}` },
+      ],
+      options: [
+        { id: correct[index]!, isCorrect: true, translations: [{ locale: 'en', text: 'Right' }] },
+        { id: wrong[index]!, isCorrect: false, translations: [{ locale: 'en', text: 'Wrong' }] },
+      ],
+    })),
+  };
+  return { quiz, questionIds, correct, wrong };
 }
