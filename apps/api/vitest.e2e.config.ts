@@ -5,6 +5,7 @@ export default defineConfig({
   test: {
     environment: 'node',
     include: ['e2e/**/*.e2e.test.ts'],
+    globalSetup: ['e2e/global-setup.ts'],
     // the resilience test stops and restarts services, so nothing may run alongside it
     fileParallelism: false,
     testTimeout: 15_000,
