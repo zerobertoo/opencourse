@@ -56,7 +56,9 @@ export function CoursePage() {
   const accessQuery = useCourseAccess(course?.id);
   const hasAccess = accessQuery.data === true;
   const progressQuery = useCourseProgress(course?.id, hasAccess);
-  const instructorQuery = useUserById(course?.instructorId);
+  // students cannot read other users, so the course carries its instructor's name; the lookup is
+  // only for sources that do not (the demo mock)
+  const instructorQuery = useUserById(course?.instructor ? undefined : course?.instructorId);
 
   if (courseQuery.isPending) return <CoursePageSkeleton />;
   if (courseQuery.isError) {
@@ -123,7 +125,9 @@ export function CoursePage() {
             <div className="flex gap-1.5">
               <dt className="text-muted-foreground">{t('course.instructor')}</dt>
               <dd className="font-medium">
-                {instructorQuery.data?.name ?? (instructorQuery.isPending ? '…' : '—')}
+                {courseQuery.data.instructor?.name ??
+                  instructorQuery.data?.name ??
+                  (instructorQuery.isPending ? '…' : '—')}
               </dd>
             </div>
             <div className="flex gap-1.5">

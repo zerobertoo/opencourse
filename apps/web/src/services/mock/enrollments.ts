@@ -1,10 +1,11 @@
-import { flattenLessons } from '@opencourse/shared';
-import type {
-  ContinueLearningItem,
-  CourseStudent,
-  EnrolledCourse,
-  EnrollmentService,
-} from '../enrollments';
+import {
+  flattenLessons,
+  getCourseSummaryStats,
+  type CourseDetail,
+  type EnrolledCourseItem,
+  type User,
+} from '@opencourse/shared';
+import type { ContinueLearningItem, CourseStudent, EnrollmentService } from '../enrollments';
 import { ServiceError } from '../errors';
 import type { MockContext } from './context';
 import {
@@ -19,30 +20,38 @@ import {
 } from './helpers';
 import { clone } from './store';
 
+/** What a manager sees of a student. */
+function toStudentUser(user: User) {
+  return { id: user.id, name: user.name, email: user.email };
+}
+
 export function createMockEnrollmentService(context: MockContext): EnrollmentService {
   const { store } = context;
 
   /** Courses with an active grant for the user, from most recent to oldest. */
-  function enrolledCourses(userId: string): EnrolledCourse[] {
+  function enrolledCourses(
+    userId: string,
+  ): Array<{ detail: CourseDetail; item: EnrolledCourseItem }> {
     const db = store.db;
     const now = context.now();
     return db.courses
-      .flatMap((course) => {
-        if (course.status === 'draft') return [];
-        const grant = findActiveGrant(db, userId, course.id, now);
+      .flatMap((detail) => {
+        if (detail.status === 'draft') return [];
+        const grant = findActiveGrant(db, userId, detail.id, now);
         if (!grant) return [];
-        return [
-          {
-            course,
-            grant,
-            progress: summarizeUserCourse(db, userId, course),
-            lastActivityAt: getLastActivityAt(db, userId, course),
-          },
-        ];
+        const { modules, instructor, ...summary } = detail;
+        void [modules, instructor];
+        const item: EnrolledCourseItem = {
+          course: { ...summary, ...getCourseSummaryStats(detail), myGrant: grant },
+          grant,
+          progress: summarizeUserCourse(db, userId, detail),
+          lastActivityAt: getLastActivityAt(db, userId, detail),
+        };
+        return [{ detail, item }];
       })
       .sort((a, b) =>
-        (b.lastActivityAt ?? b.grant.createdAt).localeCompare(
-          a.lastActivityAt ?? a.grant.createdAt,
+        (b.item.lastActivityAt ?? b.item.grant.createdAt).localeCompare(
+          a.item.lastActivityAt ?? a.item.grant.createdAt,
         ),
       );
   }
@@ -51,19 +60,19 @@ export function createMockEnrollmentService(context: MockContext): EnrollmentSer
     listMyCourses: () =>
       context.run('enrollments.listMyCourses', () => {
         const user = context.requireUser();
-        return clone(enrolledCourses(user.id));
+        return clone(enrolledCourses(user.id).map(({ item }) => item));
       }),
 
     getContinueLearning: () =>
       context.run('enrollments.getContinueLearning', () => {
         const user = context.requireUser();
         const inProgress = enrolledCourses(user.id).find(
-          (entry) => entry.lastActivityAt !== null && !entry.progress.isComplete,
+          ({ item }) => item.lastActivityAt !== null && !item.progress.isComplete,
         );
-        if (!inProgress?.progress.nextLessonId) return null;
+        if (!inProgress?.item.progress.nextLessonId) return null;
 
-        const lesson = flattenLessons(inProgress.course).find(
-          (candidate) => candidate.id === inProgress.progress.nextLessonId,
+        const lesson = flattenLessons(inProgress.detail).find(
+          (candidate) => candidate.id === inProgress.item.progress.nextLessonId,
         );
         if (!lesson) return null;
 
@@ -71,9 +80,14 @@ export function createMockEnrollmentService(context: MockContext): EnrollmentSer
           (entry) => entry.userId === user.id && entry.lessonId === lesson.id,
         );
         const item: ContinueLearningItem = {
-          course: inProgress.course,
-          lesson,
-          progress: inProgress.progress,
+          course: inProgress.item.course,
+          lesson: {
+            id: lesson.id,
+            type: lesson.type,
+            durationSeconds: lesson.durationSeconds,
+            translations: lesson.translations.map(({ locale, title }) => ({ locale, title })),
+          },
+          progress: inProgress.item.progress,
           videoPositionSeconds: saved?.videoPositionSeconds ?? 0,
         };
         return clone(item);
@@ -105,7 +119,7 @@ export function createMockEnrollmentService(context: MockContext): EnrollmentSer
           const effective =
             findActiveGrant(db, grant.userId, courseId, now) ?? withEffectiveStatus(grant, now);
           students.push({
-            user: findUserById(db, grant.userId),
+            user: toStudentUser(findUserById(db, grant.userId)),
             grant: effective,
             progress: summarizeUserCourse(db, grant.userId, course),
             lastActivityAt: getLastActivityAt(db, grant.userId, course),

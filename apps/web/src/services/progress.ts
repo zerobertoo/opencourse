@@ -1,9 +1,12 @@
-import type { Progress, QuizAttempt, QuizScore } from '@opencourse/shared';
+import type { Progress, QuizAttempt, QuizFeedback } from '@opencourse/shared';
 
 export interface QuizSubmission {
   attempt: QuizAttempt;
-  /** Detailed grading per question, used to show feedback. */
-  score: QuizScore;
+  /**
+   * Grading per question. The right option is only revealed once the attempt passed, so a failed
+   * attempt does not hand out the answers.
+   */
+  feedback: QuizFeedback;
 }
 
 export interface ProgressService {

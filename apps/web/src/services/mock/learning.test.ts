@@ -206,16 +206,15 @@ describe('mock progress service', () => {
   describe('quizzes', () => {
     it('fails below the minimum score, keeps the lesson incomplete and returns per question feedback', async () => {
       const { services } = await createServicesSignedInAs('camila');
-      const { attempt, score } = await services.progress.submitQuizAttempt(demoId('les-js-1-4'), {
+      const { attempt, feedback } = await services.progress.submitQuizAttempt(demoId('les-js-1-4'), {
         [demoId('q-js-1')]: demoId('q-js-1-b'),
         [demoId('q-js-2')]: demoId('q-js-2-b'),
       });
       expect(attempt).toMatchObject({ score: 33, passed: false, userId: demoId('user-camila') });
-      expect(score.results[demoId('q-js-1')]).toMatchObject({
-        isCorrect: false,
-        correctOptionId: demoId('q-js-1-a'),
-      });
-      expect(score.results[demoId('q-js-3')]?.selectedOptionId).toBeNull();
+      expect(feedback.results[demoId('q-js-1')]).toMatchObject({ isCorrect: false });
+      // a failed attempt does not hand out the right options
+      expect(feedback.results[demoId('q-js-1')]).not.toHaveProperty('correctOptionId');
+      expect(feedback.results[demoId('q-js-3')]?.selectedOptionId).toBeNull();
 
       const progress = await services.progress.getCourseProgress(demoId('course-javascript'));
       expect(progress.some((entry) => entry.lessonId === demoId('les-js-1-4') && entry.completed)).toBe(

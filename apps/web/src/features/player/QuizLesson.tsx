@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useQuizAttempts, useSubmitQuiz } from '@/hooks/queries';
-import { localizeOption, localizeQuestion } from '@/lib/content';
+import { localizeExplanation, localizeOption, localizeQuestion } from '@/lib/content';
 import { useFormatters } from '@/lib/intl';
 import { useServiceErrorMessage } from '@/lib/serviceError';
 import { cn } from '@/lib/utils';
@@ -43,7 +43,7 @@ export function QuizLesson({
 
   const answeredCount = quiz.questions.filter((question) => answers[question.id]).length;
   const isComplete = answeredCount === quiz.questions.length;
-  const result = submission?.score;
+  const result = submission?.feedback;
 
   if (quiz.questions.length === 0) {
     return <p className="text-sm text-muted-foreground">{t('quiz.noQuestions')}</p>;
@@ -54,7 +54,7 @@ export function QuizLesson({
     submit.mutate(answers, {
       onSuccess: (data) => {
         setSubmission(data);
-        if (data.score.passed) toast.success(t('quiz.passedToast'));
+        if (data.feedback.passed) toast.success(t('quiz.passedToast'));
       },
       onError: (error) => toast.error(describeError(error)),
     });
@@ -98,6 +98,9 @@ export function QuizLesson({
         {quiz.questions.map((question, index) => {
           const content = localizeQuestion(question, locale, defaultLocale);
           const questionResult = result?.results[question.id];
+          const explanation = questionResult
+            ? localizeExplanation(questionResult.explanation, locale, defaultLocale)
+            : '';
           return (
             <li key={question.id}>
               <fieldset disabled={result !== undefined} className="min-w-0 space-y-3">
@@ -108,8 +111,13 @@ export function QuizLesson({
                 <div className="space-y-2">
                   {question.options.map((option) => {
                     const isSelected = answers[question.id] === option.id;
-                    const isCorrectOption = questionResult?.correctOptionId === option.id;
-                    const isWrongSelection = questionResult && isSelected && !isCorrectOption;
+                    // the right option is only revealed once the attempt passed; before that a
+                    // right answer shows through the student's own pick
+                    const isCorrectOption =
+                      questionResult?.correctOptionId === option.id ||
+                      (questionResult?.isCorrect === true && isSelected);
+                    const isWrongSelection =
+                      questionResult && isSelected && questionResult.isCorrect === false;
                     return (
                       <label
                         key={option.id}
@@ -150,10 +158,10 @@ export function QuizLesson({
                     );
                   })}
                 </div>
-                {questionResult && content.explanation ? (
+                {questionResult && explanation ? (
                   <p className="rounded-md bg-muted p-3 text-sm">
                     <span className="font-medium">{t('quiz.explanation')}: </span>
-                    {content.explanation}
+                    {explanation}
                   </p>
                 ) : null}
               </fieldset>

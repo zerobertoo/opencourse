@@ -2,6 +2,7 @@ import { screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import i18n from '@/i18n';
+import { ServiceError } from '@/services';
 import { renderApp } from '@/test/render';
 import { demoId } from '@/services/mock/seed/ids';
 
@@ -121,6 +122,27 @@ describe('student home', () => {
 });
 
 describe('course page', () => {
+  it("shows the instructor's name from the course when students cannot read users", async () => {
+    // the real API closes GET /users/:id to students and sends the name with the course
+    const lookup = vi.fn(() => Promise.reject(new ServiceError('forbidden', 'closed to students')));
+    await renderApp('/courses/fundamentos-de-javascript', {
+      signInAs: 'student',
+      override: (services) => ({
+        courses: {
+          ...services.courses,
+          getBySlug: async (slug) => ({
+            ...(await services.courses.getBySlug(slug)),
+            instructor: { id: demoId('user-rafael'), name: 'Prof. Real' },
+          }),
+        },
+        users: { ...services.users, getById: lookup },
+      }),
+    });
+    expect(await screen.findByText('Prof. Real')).toBeVisible();
+    // no request that would only be refused
+    expect(lookup).not.toHaveBeenCalled();
+  });
+
   it('lists modules, lessons with type and status, and the learning outcomes', async () => {
     await renderApp('/courses/fundamentos-de-javascript', { signInAs: 'student' });
 
@@ -219,14 +241,66 @@ describe('lesson player', () => {
     await user.click(submit);
 
     expect(await screen.findByText('Ainda não foi desta vez')).toBeVisible();
-    expect(screen.getAllByText('Resposta correta').length).toBe(3);
+    // a failed attempt marks the wrong picks but does not hand out the right options
+    expect(screen.getAllByText('Sua resposta').length).toBe(3);
+    expect(screen.queryByText('Resposta correta')).not.toBeInTheDocument();
+    // the explanation of each question comes with the feedback
+    expect(screen.getAllByText(/Explicação:/).length).toBe(3);
     expect(screen.getByRole('button', { name: 'Tentar de novo' })).toBeVisible();
   });
 
-  it('blocks locked lessons reached by URL in sequential courses', async () => {
-    await renderApp(`/courses/design-de-interfaces-na-pratica/lessons/${demoId('les-design-2-1')}`, {
+  it('marks the right pick of a failed attempt without revealing the other answers', async () => {
+    const user = userEvent.setup();
+    await renderApp(`/courses/fundamentos-de-javascript/lessons/${demoId('les-js-1-4')}`, {
       signInAs: 'student',
     });
+
+    await screen.findByRole('heading', { level: 1, name: 'Quiz: tipos e variáveis' });
+    const [first, second, third] = screen.getAllByRole('group');
+    const pick = async (group: HTMLElement, optionKey: string) => {
+      const radio = within(group)
+        .getAllByRole('radio')
+        .find((candidate) => (candidate as HTMLInputElement).value === demoId(optionKey));
+      await user.click(radio!);
+    };
+    await pick(first!, 'q-js-1-a');
+    await pick(second!, 'q-js-2-a');
+    await pick(third!, 'q-js-3-a');
+    await user.click(screen.getByRole('button', { name: 'Enviar respostas' }));
+
+    expect(await screen.findByText('Ainda não foi desta vez')).toBeVisible();
+    expect(screen.getAllByText('Resposta correta').length).toBe(1);
+    expect(screen.getAllByText('Sua resposta').length).toBe(2);
+  });
+
+  it('reveals the right options once the quiz is passed', async () => {
+    const user = userEvent.setup();
+    await renderApp(`/courses/fundamentos-de-javascript/lessons/${demoId('les-js-1-4')}`, {
+      signInAs: 'student',
+    });
+
+    await screen.findByRole('heading', { level: 1, name: 'Quiz: tipos e variáveis' });
+    const groups = screen.getAllByRole('group');
+    const rightOptions = ['q-js-1-a', 'q-js-2-b', 'q-js-3-b'].map((key) => demoId(key));
+    for (const [index, group] of groups.entries()) {
+      const radio = within(group)
+        .getAllByRole('radio')
+        .find((candidate) => (candidate as HTMLInputElement).value === rightOptions[index]);
+      await user.click(radio!);
+    }
+    await user.click(screen.getByRole('button', { name: 'Enviar respostas' }));
+
+    expect(await screen.findByText('Aprovado!')).toBeVisible();
+    expect(screen.getAllByText('Resposta correta').length).toBe(3);
+  });
+
+  it('blocks locked lessons reached by URL in sequential courses', async () => {
+    await renderApp(
+      `/courses/design-de-interfaces-na-pratica/lessons/${demoId('les-design-2-1')}`,
+      {
+        signInAs: 'student',
+      },
+    );
     expect(await screen.findByText('Aula bloqueada')).toBeVisible();
   });
 

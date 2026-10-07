@@ -45,7 +45,6 @@ describe('hybrid services', () => {
   it('signs in through the API and mirrors the user into the mock session', async () => {
     const { services, mock } = setup({
       'POST /auth/login': () => json(200, { user: realUser }),
-      'GET /courses': () => json(200, { courses: [] }),
     });
 
     const user = await services.auth.signIn('maria@example.com', 'secret-password');
@@ -53,16 +52,12 @@ describe('hybrid services', () => {
 
     // mocked screens ask the mock who is signed in, and must now get the real user
     expect(await mock.auth.getCurrentUser()).toMatchObject({ id: realUser.id });
-    await expect(services.enrollments.listMyCourses()).resolves.toEqual(expect.any(Array));
+    await expect(services.certificates.listMine()).resolves.toEqual(expect.any(Array));
   });
 
   it('keeps mocked services locked until someone signs in', async () => {
-    // the real API answers 401 to the catalog request of someone who is not signed in
-    const { services } = setup({
-      'GET /courses': () =>
-        json(401, { error: { code: 'unauthorized', message: 'Authentication required' } }),
-    });
-    const error = await services.enrollments.listMyCourses().catch((caught: unknown) => caught);
+    const { services } = setup({});
+    const error = await services.certificates.listMine().catch((caught: unknown) => caught);
     expect(isServiceError(error) && error.code).toBe('unauthorized');
   });
 
@@ -88,7 +83,6 @@ describe('hybrid services', () => {
     const { services, mock } = setup({
       'POST /auth/login': () => json(200, { user: realUser }),
       'POST /auth/logout': () => json(500, { error: { code: 'internal', message: 'boom' } }),
-      'GET /courses': () => json(200, { courses: [] }),
     });
     await services.auth.signIn('maria@example.com', 'secret-password');
 
@@ -96,7 +90,7 @@ describe('hybrid services', () => {
     // the real cookies are still valid and the UI still shows the user, so the mock must agree:
     // otherwise every mocked screen would answer "unauthorized" to a user who looks signed in
     expect(await mock.auth.getCurrentUser()).toMatchObject({ id: realUser.id });
-    await expect(services.enrollments.listMyCourses()).resolves.toEqual(expect.any(Array));
+    await expect(services.certificates.listMine()).resolves.toEqual(expect.any(Array));
   });
 
   it('signs the mock out once the API confirms the sign out', async () => {

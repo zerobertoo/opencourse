@@ -1,27 +1,17 @@
-import type { CourseDetail, CourseProgressSummary, Grant, Lesson, User } from '@opencourse/shared';
+import type {
+  ContinueLearningResponseItem,
+  CourseStudentItem,
+  EnrolledCourseItem,
+} from '@opencourse/shared';
 
-export interface EnrolledCourse {
-  course: CourseDetail;
-  grant: Grant;
-  progress: CourseProgressSummary;
-  /** The student's latest activity in the course, if any. */
-  lastActivityAt: string | null;
-}
+/** A course with an active grant: a summary of the course (no curriculum), the grant and the progress. */
+export type EnrolledCourse = EnrolledCourseItem;
 
-export interface ContinueLearningItem {
-  course: CourseDetail;
-  lesson: Lesson;
-  progress: CourseProgressSummary;
-  /** Saved video position, in seconds. */
-  videoPositionSeconds: number;
-}
+/** Next lesson to study, as a summary (no body) with the saved video position. */
+export type ContinueLearningItem = ContinueLearningResponseItem;
 
-export interface CourseStudent {
-  user: User;
-  grant: Grant;
-  progress: CourseProgressSummary;
-  lastActivityAt: string | null;
-}
+/** A person with a grant to the course. Only id, name and e-mail travel: that is all a manager needs. */
+export type CourseStudent = CourseStudentItem;
 
 export interface EnrollmentService {
   /** Courses with an active grant for the user, with the progress of each one. */

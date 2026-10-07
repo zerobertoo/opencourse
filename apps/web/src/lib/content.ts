@@ -2,7 +2,6 @@ import {
   resolveTranslation,
   type CourseDetail,
   type CourseModuleWithLessons,
-  type Lesson,
   type Locale,
   type QuizOption,
   type QuizQuestion,
@@ -57,7 +56,7 @@ export interface LocalizedLesson {
 }
 
 export function localizeLesson(
-  lesson: Lesson,
+  lesson: { translations: ReadonlyArray<{ locale: Locale; title: string; content?: string }> },
   locale: Locale,
   defaultLocale: Locale,
 ): LocalizedLesson {
@@ -80,4 +79,13 @@ export function localizeQuestion(question: QuizQuestion, locale: Locale, default
 
 export function localizeOption(option: QuizOption, locale: Locale, defaultLocale: Locale): string {
   return resolveTranslation(option.translations, locale, defaultLocale)?.translation.text ?? '';
+}
+
+/** Explanation sent back with the quiz feedback, in the requested language or the default one. */
+export function localizeExplanation(
+  explanation: ReadonlyArray<{ locale: Locale; text: string }>,
+  locale: Locale,
+  defaultLocale: Locale,
+): string {
+  return resolveTranslation(explanation, locale, defaultLocale)?.translation.text ?? '';
 }

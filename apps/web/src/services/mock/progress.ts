@@ -1,7 +1,7 @@
 import {
   flattenLessons,
   getUnlockedLessonIds,
-  scoreQuiz,
+  gradeQuiz,
   type Lesson,
   type Progress,
 } from '@opencourse/shared';
@@ -101,19 +101,19 @@ export function createMockProgressService(context: MockContext): ProgressService
           throw new ServiceError('validation', 'This lesson is not a quiz');
         }
 
-        const score = scoreQuiz(lesson.quiz, answers);
+        const feedback = gradeQuiz(lesson.quiz, answers);
         const attempt = {
           id: store.nextId('attempt'),
           userId: user.id,
           lessonId,
           answers: { ...answers },
-          score: score.score,
-          passed: score.passed,
+          score: feedback.score,
+          passed: feedback.passed,
           createdAt: context.now().toISOString(),
         };
         store.mutate((db) => db.quizAttempts.push(attempt));
-        if (score.passed) markCompleted(user.id, lesson, course.id);
-        return clone({ attempt, score });
+        if (feedback.passed) markCompleted(user.id, lesson, course.id);
+        return clone({ attempt, feedback });
       }),
 
     listQuizAttempts: (lessonId) =>
