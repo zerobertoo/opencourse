@@ -19,6 +19,7 @@ import { inviteEmail } from '../../mail/templates';
 import { effectiveInviteStatus, toLocale, toPublicInvite, toPublicUser } from '../../mappers';
 import { createUser } from '../../users/create-user';
 import { resolveCourseAccess } from '../courses/access';
+import { createGrantRow } from '../grants/service';
 
 const DEFAULT_INVITE_TTL_MS = 14 * 24 * 60 * 60 * 1000;
 const ACCEPT_LIMIT = { max: 10, timeWindow: '1 minute' };
@@ -172,7 +173,7 @@ export const inviteRoutes: FastifyPluginAsyncZod<{ config: Config }> = async (ap
           .returning({ id: invites.id });
         if (claimed.length === 0) throw conflict('Invite is no longer pending');
 
-        return createUser(tx, {
+        const created = await createUser(tx, {
           name: request.body.name,
           email: invite.email,
           passwordHash,
@@ -180,6 +181,26 @@ export const inviteRoutes: FastifyPluginAsyncZod<{ config: Config }> = async (ap
           timeZone: request.body.timeZone,
           promoteFirstUserToAdmin: false,
         });
+        // access comes with the account, in the same commit; a course removed meanwhile (the
+        // invite column is set to null on delete) leaves the invite without a course
+        if (invite.courseId) {
+          const [course] = await tx
+            .select({ id: courses.id })
+            .from(courses)
+            .where(eq(courses.id, invite.courseId));
+          if (course) {
+            await createGrantRow(tx, {
+              userId: created.id,
+              courseId: course.id,
+              source: 'invite',
+              createdById: invite.createdById,
+              actorId: created.id,
+              expiresAt: null,
+              metadata: { inviteId: invite.id },
+            });
+          }
+        }
+        return created;
       });
 
       await app.startSession(request, reply, user);

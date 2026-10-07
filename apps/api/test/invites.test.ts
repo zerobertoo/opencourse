@@ -1,8 +1,8 @@
 import { apiErrorSchema, createInviteResponseSchema, inviteSchema } from '@opencourse/shared';
 import { eq } from 'drizzle-orm';
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
-import { invites } from '../src/db/schema';
-import { insertCourse } from './fixtures';
+import { auditLog, courses, grants, invites } from '../src/db/schema';
+import { insertCourse, insertCourseWithLesson } from './fixtures';
 import {
   createTestApp,
   extractLink,
@@ -236,6 +236,102 @@ describe('invites', () => {
 
     const [row] = await ctx.app.db.select().from(invites).where(eq(invites.id, created.id));
     expect(row!.status).toBe('pending');
+  });
+
+  it('creates a grant when the invite carries a course, even for a draft or archived one', async () => {
+    for (const status of ['published', 'draft', 'archived'] as const) {
+      await resetDatabase(ctx.app);
+      const { instructor } = await createCast();
+      const course = await insertCourse(ctx.app, { instructorId: instructor.userId, status });
+      const { token } = await invite(instructor.client, 'new@example.com', {
+        courseId: course.id,
+      });
+
+      const accepted = await new TestClient(ctx.app).post(`/api/v1/invites/${token}/accept`, {
+        name: 'New Person',
+        password: STRONG_PASSWORD,
+      });
+      expect(accepted.statusCode).toBe(201);
+      const userId = accepted.json().user.id;
+
+      const rows = await ctx.app.db.select().from(grants).where(eq(grants.userId, userId));
+      expect(rows).toHaveLength(1);
+      expect(rows[0]).toMatchObject({
+        courseId: course.id,
+        source: 'invite',
+        createdById: instructor.userId,
+        expiresAt: null,
+        revokedAt: null,
+      });
+      const entries = await ctx.app.db
+        .select()
+        .from(auditLog)
+        .where(eq(auditLog.targetId, rows[0]!.id));
+      expect(entries).toHaveLength(1);
+      expect(entries[0]).toMatchObject({
+        action: 'grant.created',
+        actorId: userId,
+        metadata: { source: 'invite', courseId: course.id },
+      });
+    }
+  });
+
+  it('creates no grant for an invite without a course', async () => {
+    const { instructor } = await createCast();
+    const { token } = await invite(instructor.client, 'new@example.com');
+    const accepted = await new TestClient(ctx.app).post(`/api/v1/invites/${token}/accept`, {
+      name: 'New Person',
+      password: STRONG_PASSWORD,
+    });
+    expect(accepted.statusCode).toBe(201);
+    expect(await ctx.app.db.select().from(grants)).toHaveLength(0);
+  });
+
+  it('still creates the account when the course vanished after the invite was sent', async () => {
+    const { instructor } = await createCast();
+    const course = await insertCourse(ctx.app, { instructorId: instructor.userId });
+    const { token } = await invite(instructor.client, 'new@example.com', { courseId: course.id });
+    await ctx.app.db.delete(courses).where(eq(courses.id, course.id));
+
+    const accepted = await new TestClient(ctx.app).post(`/api/v1/invites/${token}/accept`, {
+      name: 'New Person',
+      password: STRONG_PASSWORD,
+    });
+    expect(accepted.statusCode).toBe(201);
+    expect(await ctx.app.db.select().from(grants)).toHaveLength(0);
+  });
+
+  it('lets the invited student read the course content straight after accepting', async () => {
+    const { instructor } = await createCast();
+    const { course } = await insertCourseWithLesson(ctx.app, {
+      instructorId: instructor.userId,
+      status: 'published',
+    });
+    const { token } = await invite(instructor.client, 'new@example.com', { courseId: course.id });
+    const guest = new TestClient(ctx.app);
+    await guest.post(`/api/v1/invites/${token}/accept`, {
+      name: 'New Person',
+      password: STRONG_PASSWORD,
+    });
+    const response = await guest.get(`/api/v1/courses/${course.id}`);
+    expect(response.statusCode).toBe(200);
+    expect(response.body).toContain('"modules"');
+  });
+
+  it('leaves no grant behind when the account cannot be created', async () => {
+    const { instructor } = await createCast();
+    const course = await insertCourse(ctx.app, { instructorId: instructor.userId });
+    const { token } = await invite(instructor.client, 'twin@example.com', {
+      courseId: course.id,
+    });
+    await registerClient(ctx.app, 'twin@example.com', 'Twin');
+
+    const response = await new TestClient(ctx.app).post(`/api/v1/invites/${token}/accept`, {
+      name: 'Late',
+      password: STRONG_PASSWORD,
+    });
+    expect(response.statusCode).toBe(409);
+    expect(await ctx.app.db.select().from(grants)).toHaveLength(0);
   });
 
   it('applies the password policy when accepting', async () => {

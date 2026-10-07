@@ -44,21 +44,6 @@ function toCourse(row: CourseRow, translations: CourseTranslationRow[]): Course 
   };
 }
 
-/** Courses without their curriculum, translations loaded in one query. */
-export async function loadCourseSummaries(db: Reader, rows: CourseRow[]): Promise<Course[]> {
-  if (rows.length === 0) return [];
-  const translations = await db
-    .select()
-    .from(courseTranslations)
-    .where(
-      inArray(
-        courseTranslations.courseId,
-        rows.map((row) => row.id),
-      ),
-    );
-  return rows.map((row) => toCourse(row, translations));
-}
-
 function toLesson(row: LessonRow, translations: LessonTranslationRow[]): Lesson {
   const base = {
     id: row.id,
@@ -86,13 +71,27 @@ function toLesson(row: LessonRow, translations: LessonTranslationRow[]): Lesson 
 
 /** The course with modules and lessons in study order. */
 export async function loadCourseDetail(db: Reader, course: CourseRow): Promise<CourseDetail> {
-  const [summary] = await loadCourseSummaries(db, [course]);
-  if (!summary) throw new Error('Course summary missing');
+  const [detail] = await loadCourseDetails(db, [course]);
+  if (!detail) throw new Error('Course detail missing');
+  return detail;
+}
+
+/**
+ * Courses with their curriculum, in the order given. The number of queries is fixed (one per
+ * table), however many courses are loaded, so lists do not pay one query set per course.
+ */
+export async function loadCourseDetails(db: Reader, rows: CourseRow[]): Promise<CourseDetail[]> {
+  if (rows.length === 0) return [];
+  const courseIds = rows.map((row) => row.id);
+  const courseTexts = await db
+    .select()
+    .from(courseTranslations)
+    .where(inArray(courseTranslations.courseId, courseIds));
 
   const moduleRows = await db
     .select()
     .from(modules)
-    .where(inArray(modules.courseId, [course.id]))
+    .where(inArray(modules.courseId, courseIds))
     .orderBy(asc(modules.position));
   const moduleIds = moduleRows.map((row) => row.id);
   const moduleTitles = moduleIds.length
@@ -116,19 +115,21 @@ export async function loadCourseDetail(db: Reader, course: CourseRow): Promise<C
         .where(inArray(lessonTranslations.lessonId, lessonIds))
     : [];
 
-  return {
-    ...summary,
-    modules: moduleRows.map((row) => ({
-      id: row.id,
-      courseId: row.courseId,
-      order: row.position,
-      translations: moduleTitles
-        .filter((item) => item.moduleId === row.id)
-        .sort(byLocale)
-        .map((item) => ({ locale: toLocale(item.locale), title: item.title })),
-      lessons: lessonRows
-        .filter((lesson) => lesson.moduleId === row.id)
-        .map((lesson) => toLesson(lesson, lessonTexts)),
-    })),
-  };
+  return rows.map((course) => ({
+    ...toCourse(course, courseTexts),
+    modules: moduleRows
+      .filter((row) => row.courseId === course.id)
+      .map((row) => ({
+        id: row.id,
+        courseId: row.courseId,
+        order: row.position,
+        translations: moduleTitles
+          .filter((item) => item.moduleId === row.id)
+          .sort(byLocale)
+          .map((item) => ({ locale: toLocale(item.locale), title: item.title })),
+        lessons: lessonRows
+          .filter((lesson) => lesson.moduleId === row.id)
+          .map((lesson) => toLesson(lesson, lessonTexts)),
+      })),
+  }));
 }

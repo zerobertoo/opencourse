@@ -1,4 +1,5 @@
 import { courseResponseSchema, listCoursesResponseSchema } from '@opencourse/shared';
+import { eq } from 'drizzle-orm';
 import type { LightMyRequestResponse } from 'fastify';
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import { grants } from '../src/db/schema';
@@ -98,6 +99,74 @@ describe('reading courses', () => {
     expect(response.body).not.toContain('"modules"');
   });
 
+  it('lists summaries with curriculum stats and the caller own open grant', async () => {
+    const { cast, published } = await scenario();
+    const find = (response: LightMyRequestResponse) =>
+      (response.json().courses as Array<Record<string, unknown>>).find(
+        (course) => course.id === published.id,
+      )!;
+
+    const granted = find(await cast.student.client.get('/api/v1/courses'));
+    expect(granted).toMatchObject({
+      moduleCount: 1,
+      lessonCount: 1,
+      durationSeconds: 60,
+      completeLocales: ['en'],
+      myGrant: { userId: cast.student.userId, courseId: published.id, status: 'active' },
+    });
+    // nobody else's grant leaks into the list
+    expect(find(await cast.otherStudent.client.get('/api/v1/courses')).myGrant).toBeNull();
+    expect(find(await cast.admin.client.get('/api/v1/courses')).myGrant).toBeNull();
+    // the managed scope carries the same stats
+    expect(find(await cast.instructorA.client.get('/api/v1/courses?scope=managed'))).toMatchObject({
+      moduleCount: 1,
+      lessonCount: 1,
+    });
+
+    await ctx.app.db
+      .update(grants)
+      .set({ expiresAt: new Date(Date.now() - 1000) })
+      .where(eq(grants.userId, cast.student.userId));
+    expect(find(await cast.student.client.get('/api/v1/courses')).myGrant).toMatchObject({
+      status: 'expired',
+    });
+
+    await ctx.app.db
+      .update(grants)
+      .set({ revokedAt: new Date() })
+      .where(eq(grants.userId, cast.student.userId));
+    expect(find(await cast.student.client.get('/api/v1/courses')).myGrant).toBeNull();
+  });
+
+  it('counts the curriculum of every listed course, not just the first', async () => {
+    const { cast } = await scenario();
+    const second = await insertCourse(ctx.app, {
+      instructorId: cast.instructorA.userId,
+      title: 'Second',
+      slug: 'second',
+    });
+    const first = await insertModule(ctx.app, second.id, 0, 'One');
+    const other = await insertModule(ctx.app, second.id, 1, 'Two');
+    await insertLesson(ctx.app, first.id, 0, { title: 'A', durationSeconds: 100 });
+    await insertLesson(ctx.app, first.id, 1, { title: 'B', durationSeconds: 200 });
+    await insertLesson(ctx.app, other.id, 0, { title: 'C', durationSeconds: 300 });
+
+    const response = await cast.admin.client.get('/api/v1/courses?scope=managed');
+    const byTitle = Object.fromEntries(
+      (
+        response.json().courses as Array<{
+          translations: Array<{ title: string }>;
+          moduleCount: number;
+          lessonCount: number;
+          durationSeconds: number;
+        }>
+      ).map((course) => [course.translations[0]?.title, course]),
+    );
+    expect(byTitle.Second).toMatchObject({ moduleCount: 2, lessonCount: 3, durationSeconds: 600 });
+    expect(byTitle.Published).toMatchObject({ moduleCount: 1, lessonCount: 1 });
+    expect(byTitle.Draft).toMatchObject({ moduleCount: 0, lessonCount: 0, durationSeconds: 0 });
+  });
+
   it('lists managed courses: all for admins, own for instructors, forbidden for students', async () => {
     const { cast } = await scenario();
     const url = '/api/v1/courses?scope=managed';
@@ -133,9 +202,7 @@ describe('reading courses', () => {
       expect((await client.get('/api/v1/courses/by-slug/draft')).statusCode).toBe(404);
       expect((await client.get(`/api/v1/courses/${archived.id}`)).statusCode).toBe(404);
     }
-    expect((await cast.instructorA.client.get(`/api/v1/courses/${draft.id}`)).statusCode).toBe(
-      200,
-    );
+    expect((await cast.instructorA.client.get(`/api/v1/courses/${draft.id}`)).statusCode).toBe(200);
     expect((await cast.admin.client.get(`/api/v1/courses/${draft.id}`)).statusCode).toBe(200);
   });
 

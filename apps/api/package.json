@@ -12,6 +12,7 @@
     "test": "vitest run",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "tsx --env-file-if-exists=../../.env src/db/migrate.ts",
+    "db:seed:demo": "tsx --env-file-if-exists=../../.env src/db/seed-demo.ts",
     "test:e2e": "vitest run --config vitest.e2e.config.ts"
   },
   "dependencies": {
