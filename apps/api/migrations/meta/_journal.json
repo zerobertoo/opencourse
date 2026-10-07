@@ -57,6 +57,13 @@
       "when": 1791345820062,
       "tag": "0007_confused_gambit",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1791410815933,
+      "tag": "0008_far_puff_adder",
+      "breakpoints": true
     }
   ]
 }

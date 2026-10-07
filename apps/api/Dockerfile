@@ -18,6 +18,8 @@ RUN pnpm --filter @opencourse/api build \
 
 FROM node:22-alpine
 ENV NODE_ENV=production
+# the worker encodes uploaded videos; the API shares the image, so it carries ffmpeg too
+RUN apk add --no-cache ffmpeg
 WORKDIR /app
 COPY --from=build /out/node_modules ./node_modules
 COPY --from=build /repo/apps/api/dist ./dist

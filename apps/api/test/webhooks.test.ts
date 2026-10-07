@@ -428,7 +428,7 @@ describe('outbound webhooks', () => {
       const post = (body: unknown) => admin.client.post('/api/v1/admin/webhooks', body);
       expect((await post({ url: 'nope', events: ['user.created'] })).statusCode).toBe(400);
       expect((await post({ url: receiver.url, events: [] })).statusCode).toBe(400);
-      expect((await post({ url: receiver.url, events: ['video.processed'] })).statusCode).toBe(400);
+      expect((await post({ url: receiver.url, events: ['made.up'] })).statusCode).toBe(400);
       expect(
         (await admin.client.patch(`/api/v1/admin/webhooks/${randomUUID()}`, {})).statusCode,
       ).toBe(404);

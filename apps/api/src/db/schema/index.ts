@@ -9,3 +9,4 @@ export * from './progress';
 export * from './certificates';
 export * from './outbox';
 export * from './webhooks';
+export * from './video';

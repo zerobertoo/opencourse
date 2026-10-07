@@ -7,15 +7,19 @@ const quiz = { passingScore: 50, questions: [] };
 type Args = Parameters<typeof toLessonColumns>;
 
 describe('toLessonColumns', () => {
-  it('turns an external link into a ready video and null into no video', () => {
-    expect(toLessonColumns('video', { video: { url: 'https://vimeo.com/1' } })).toEqual({
+  it('turns a provider link into a ready video and null into no video', () => {
+    expect(toLessonColumns('video', { video: { url: 'https://vimeo.com/76979871' } })).toEqual({
       video: {
         provider: 'external',
-        externalId: 'https://vimeo.com/1',
+        plugin: 'vimeo',
+        externalId: '76979871',
+        embedUrl: 'https://player.vimeo.com/video/76979871',
         status: 'ready',
-        playbackUrl: 'https://vimeo.com/1',
       },
     });
+    expect(() => toLessonColumns('video', { video: { url: 'https://example.com/a.mp4' } })).toThrow(
+      HttpError,
+    );
     expect(toLessonColumns('video', { video: null })).toEqual({ video: null });
   });
 
@@ -25,7 +29,7 @@ describe('toLessonColumns', () => {
       ['video', { quiz }],
       ['text', { video: null }],
       ['quiz', { captions: [] }],
-      ['file', { video: { url: 'https://x.test/v' } }],
+      ['file', { video: { url: 'https://youtu.be/dQw4w9WgXcQ' } }],
     ];
     for (const [type, body] of cases) {
       expect(() => toLessonColumns(type, body)).toThrow(HttpError);

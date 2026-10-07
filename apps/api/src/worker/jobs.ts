@@ -3,6 +3,11 @@ import type { AddDeliveryJob } from '../modules/webhooks/delivery';
 
 /** Queue shared by the worker and the API process, which adds the occasional job (manual retries). */
 export const QUEUE_NAME = 'jobs';
+/**
+ * Queue for video transcoding. It has its own worker with concurrency 1, so a long encode neither
+ * runs beside another one nor delays e-mails and webhooks.
+ */
+export const VIDEO_QUEUE_NAME = 'video';
 export const DEFAULT_QUEUE_PREFIX = 'opencourse:queue';
 
 /** Data carried by every queue job: which outbox event it answers, and its payload. */

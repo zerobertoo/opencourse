@@ -20,6 +20,8 @@ import { errorHandlerPlugin } from './plugins/error-handler';
 import { mailerPlugin } from './plugins/mailer';
 import { rateLimitPlugin } from './plugins/rate-limit';
 import { redisPlugin } from './plugins/redis';
+import { storagePlugin } from './plugins/storage';
+import { createS3Storage, type Storage } from './storage/s3';
 import { v1Routes } from './routes/v1';
 
 /** Pino options: pretty output in development, secrets redacted everywhere. */
@@ -46,6 +48,8 @@ export interface AppDependencies {
   mailer?: Mailer;
   /** Receives the log lines instead of stdout. Tests use it to inspect what gets logged. */
   logStream?: NodeJS.WritableStream;
+  /** Replaces the S3 storage. Tests use a real bucket, so this is rarely needed. */
+  storage?: Storage;
   /** Isolates the job queue keys the API adds to (webhook retries); tests give each file its own. */
   queuePrefix?: string;
 }
@@ -93,6 +97,7 @@ export async function buildApp(
 
   await app.register(dbPlugin, { databaseUrl: config.DATABASE_URL });
   await app.register(redisPlugin, { redisUrl: config.REDIS_URL });
+  await app.register(storagePlugin, { storage: dependencies.storage ?? createS3Storage(config) });
   await app.register(backgroundPlugin);
   await app.register(mailerPlugin, { mailer: dependencies.mailer ?? createSmtpMailer(config) });
   await app.register(authPlugin, { config });

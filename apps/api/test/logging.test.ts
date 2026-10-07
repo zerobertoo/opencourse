@@ -17,6 +17,15 @@ describe('maskSensitiveUrl', () => {
     );
   });
 
+  it('hides the playback token of a video playlist and keeps the other parameters', () => {
+    expect(maskSensitiveUrl('/api/v1/videos/abc/master.m3u8?token=pb1.a.b.1.sig')).toBe(
+      '/api/v1/videos/abc/master.m3u8?token=[redacted]',
+    );
+    expect(maskSensitiveUrl('/api/v1/videos/abc/720p.m3u8?x=1&token=secret&y=2')).toBe(
+      '/api/v1/videos/abc/720p.m3u8?x=1&token=[redacted]&y=2',
+    );
+  });
+
   it('leaves other URLs alone, including the invite listing', () => {
     expect(maskSensitiveUrl('/api/v1/invites')).toBe('/api/v1/invites');
     expect(maskSensitiveUrl('/api/v1/invites?courseId=abc')).toBe('/api/v1/invites?courseId=abc');

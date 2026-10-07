@@ -1,3 +1,4 @@
+import { DEFAULT_VIDEO_MAX_UPLOAD_BYTES } from '@opencourse/shared';
 import { z } from 'zod';
 
 /** Development-only secret. */
@@ -66,6 +67,21 @@ const configSchema = z
       .transform((value) => value === 'true')
       .default(false),
 
+    /** S3-compatible storage, as the API and the worker reach it. */
+    S3_ENDPOINT: z.string().url().default('http://localhost:9000'),
+    /** How browsers reach the storage (uploads and video segments go there); defaults to S3_ENDPOINT. */
+    S3_PUBLIC_URL: z.string().url().optional(),
+    S3_REGION: z.string().default('us-east-1'),
+    S3_BUCKET: z.string().min(1).default('opencourse'),
+    S3_ACCESS_KEY: z.string().min(1).default('opencourse'),
+    S3_SECRET_KEY: z.string().min(1).default('opencourse-secret'),
+    /** Largest video file an instructor may upload, in bytes. */
+    VIDEO_MAX_UPLOAD_BYTES: z.coerce
+      .number()
+      .int()
+      .positive()
+      .default(DEFAULT_VIDEO_MAX_UPLOAD_BYTES),
+
     SMTP_HOST: z.string().default('localhost'),
     SMTP_PORT: z.coerce.number().int().min(1).max(65535).default(1025),
     SMTP_USER: z.string().optional(),
@@ -82,6 +98,7 @@ const configSchema = z
   .transform((env) => ({
     ...env,
     COOKIE_SECURE: env.COOKIE_SECURE ?? env.NODE_ENV === 'production',
+    S3_PUBLIC_URL: env.S3_PUBLIC_URL ?? env.S3_ENDPOINT,
   }));
 
 export type Config = z.infer<typeof configSchema>;

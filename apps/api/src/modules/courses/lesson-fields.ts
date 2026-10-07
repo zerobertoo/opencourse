@@ -1,4 +1,10 @@
-import type { LessonType, Quiz, UpdateLessonRequest } from '@opencourse/shared';
+import {
+  resolveVideoUrl,
+  type ExternalVideoAsset,
+  type LessonType,
+  type Quiz,
+  type UpdateLessonRequest,
+} from '@opencourse/shared';
 import type { LessonRow } from '../../db/schema';
 import { badRequest } from '../../errors';
 
@@ -26,16 +32,14 @@ export function toLessonColumns(type: LessonType, body: UpdateLessonRequest): Le
   if (body.captions !== undefined) columns.captions = body.captions;
   if (body.quiz !== undefined) columns.quiz = body.quiz;
   if (body.video !== undefined) {
-    // external links play as they are; uploads arrive with the video adapters (milestone 6)
-    columns.video =
-      body.video === null
-        ? null
-        : {
-            provider: 'external',
-            externalId: body.video.url,
-            status: 'ready',
-            playbackUrl: body.video.url,
-          };
+    columns.video = body.video === null ? null : toExternalVideo(body.video.url);
   }
   return columns;
+}
+
+/** The stored form of a pasted link; a link no provider plugin recognises is refused. */
+export function toExternalVideo(url: string): ExternalVideoAsset {
+  const resolved = resolveVideoUrl(url);
+  if (!resolved) throw badRequest('Not a link from a supported video provider');
+  return { provider: 'external', status: 'ready', ...resolved };
 }

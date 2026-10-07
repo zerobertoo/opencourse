@@ -1,4 +1,4 @@
-import type { Caption, CertificateTemplate, Quiz, VideoAsset } from '@opencourse/shared';
+import type { Caption, CertificateTemplate, ExternalVideoAsset, Quiz } from '@opencourse/shared';
 import {
   boolean,
   index,
@@ -87,8 +87,8 @@ export const lessons = pgTable(
     position: integer('position').notNull(),
     type: lessonType('type').notNull(),
     durationSeconds: integer('duration_seconds').notNull().default(0),
-    /** Video lessons only; external links for now. */
-    video: jsonb('video').$type<VideoAsset>(),
+    /** Video lessons only: a link to an external provider. Uploaded files live in `video_assets`. */
+    video: jsonb('video').$type<ExternalVideoAsset>(),
     captions: jsonb('captions').$type<Caption[]>().notNull().default([]),
     /** Quiz lessons only; moves to relational tables in milestone 5. */
     quiz: jsonb('quiz').$type<Quiz>(),

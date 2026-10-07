@@ -1,11 +1,14 @@
 import type { FastifyRequest } from 'fastify';
 
 /**
- * Replaces the secret in `/invites/<token>` URLs. The token is a bearer credential (whoever has
- * it can accept the invite), and request logs are readable by far more people than the e-mail.
+ * Replaces the secrets in `/invites/<token>` paths and `?token=` query values (video playback
+ * addresses). Both are bearer credentials, and request logs are readable by far more people than
+ * the e-mail or the page that held them.
  */
 export function maskSensitiveUrl(url: string): string {
-  return url.replace(/(\/invites\/)[^/?#]+/, '$1[redacted]');
+  return url
+    .replace(/(\/invites\/)[^/?#]+/, '$1[redacted]')
+    .replace(/([?&]token=)[^&#]*/g, '$1[redacted]');
 }
 
 /** Same fields as Fastify's default request serializer, with the URL masked. */

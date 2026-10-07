@@ -11,9 +11,12 @@ import {
   type LessonRow,
   type LessonTranslationRow,
   users,
+  videoAssets,
+  type VideoAssetRow,
 } from '../../db/schema';
 import { toLocale } from '../../mappers';
 import type { Database } from '../../plugins/db';
+import { readExternalVideo, toLocalVideoAsset } from '../video/service';
 
 type Reader = Pick<Database, 'select'>;
 
@@ -45,7 +48,11 @@ function toCourse(row: CourseRow, translations: CourseTranslationRow[]): Course 
   };
 }
 
-function toLesson(row: LessonRow, translations: LessonTranslationRow[]): Lesson {
+function toLesson(
+  row: LessonRow,
+  translations: LessonTranslationRow[],
+  uploads: VideoAssetRow[],
+): Lesson {
   const base = {
     id: row.id,
     moduleId: row.moduleId,
@@ -59,8 +66,15 @@ function toLesson(row: LessonRow, translations: LessonTranslationRow[]): Lesson 
       .map((item) => ({ locale: toLocale(item.locale), title: item.title, content: item.content })),
   };
   switch (row.type) {
-    case 'video':
-      return { ...base, type: 'video', video: row.video, captions: row.captions };
+    case 'video': {
+      const upload = uploads.find((asset) => asset.lessonId === row.id);
+      return {
+        ...base,
+        type: 'video',
+        video: upload ? toLocalVideoAsset(upload) : readExternalVideo(row.video),
+        captions: row.captions,
+      };
+    }
     case 'text':
       return { ...base, type: 'text' };
     case 'file':
@@ -116,6 +130,10 @@ export async function loadCourseDetails(db: Reader, rows: CourseRow[]): Promise<
         .where(inArray(lessonTranslations.lessonId, lessonIds))
     : [];
 
+  const uploadRows = lessonIds.length
+    ? await db.select().from(videoAssets).where(inArray(videoAssets.lessonId, lessonIds))
+    : [];
+
   const teachers = await db
     .select({ id: users.id, name: users.name })
     .from(users)
@@ -136,7 +154,7 @@ export async function loadCourseDetails(db: Reader, rows: CourseRow[]): Promise<
           .map((item) => ({ locale: toLocale(item.locale), title: item.title })),
         lessons: lessonRows
           .filter((lesson) => lesson.moduleId === row.id)
-          .map((lesson) => toLesson(lesson, lessonTexts)),
+          .map((lesson) => toLesson(lesson, lessonTexts, uploadRows)),
       })),
   }));
 }

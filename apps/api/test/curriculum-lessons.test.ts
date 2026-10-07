@@ -82,7 +82,7 @@ describe('lesson routes', () => {
 
     const video = await insertLesson(ctx.app, courseModule.id, 1, { title: 'V', type: 'video' });
     const linked = await cast.instructorA.client.patch(`/api/v1/lessons/${video.id}`, {
-      video: { url: 'https://www.youtube.com/watch?v=abc' },
+      video: { url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ' },
       captions: [{ locale: 'en', url: 'https://cdn.example.com/en.vtt' }],
     });
     expect(linked.statusCode).toBe(200);
@@ -113,7 +113,7 @@ describe('lesson routes', () => {
     const url = `/api/v1/lessons/${lesson.id}`;
     for (const body of [
       { quiz: validQuiz() },
-      { video: { url: 'https://youtu.be/x' } },
+      { video: { url: 'https://youtu.be/dQw4w9WgXcQ' } },
       { captions: [] },
       { durationSeconds: 1.5 },
       { durationSeconds: 1, attachments: [] },
@@ -139,7 +139,7 @@ describe('lesson routes', () => {
 
     const video = await insertLesson(ctx.app, lesson.moduleId, 2, { title: 'V', type: 'video' });
     const insecure = await cast.instructorA.client.patch(`/api/v1/lessons/${video.id}`, {
-      video: { url: 'http://youtu.be/x' },
+      video: { url: 'http://youtu.be/dQw4w9WgXcQ' },
     });
     expect(insecure.statusCode).toBe(400);
   });

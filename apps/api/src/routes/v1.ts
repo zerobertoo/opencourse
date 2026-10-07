@@ -13,6 +13,7 @@ import { meRoutes } from '../modules/me/routes';
 import { progressRoutes } from '../modules/progress/routes';
 import { studioRoutes } from '../modules/studio/routes';
 import { userRoutes } from '../modules/users/routes';
+import { videoRoutes } from '../modules/video/routes';
 import { webhookRoutes } from '../modules/webhooks/routes';
 
 const SAFE_METHODS = new Set(['GET', 'HEAD', 'OPTIONS']);
@@ -45,5 +46,6 @@ export const v1Routes: FastifyPluginAsyncZod<{
   await app.register(studioRoutes);
   await app.register(userRoutes);
   await app.register(inviteRoutes, { config });
+  await app.register(videoRoutes, { config, queuePrefix });
   await app.register(webhookRoutes, { config, queuePrefix });
 };

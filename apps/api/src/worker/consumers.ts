@@ -13,13 +13,19 @@ import { certificateEmail } from '../mail/templates';
 import { toLocale } from '../mappers';
 import { issueCertificate } from '../modules/certificates/service';
 import { deliverWebhook, fanOutWebhooks, type AddDeliveryJob } from '../modules/webhooks/delivery';
+import type { Logger } from 'pino';
 import type { Database } from '../plugins/db';
+import type { Storage } from '../storage/s3';
+import { processVideo } from '../modules/video/process';
 
 const deliveryJobPayloadSchema = z.object({ deliveryId: z.uuid() });
+const transcodeJobPayloadSchema = z.object({ assetId: z.uuid() });
 
 export interface WorkerContext {
   db: Database;
   mailer: Mailer;
+  storage: Storage;
+  log: Logger;
   /** Public address of the web app, used to build links in e-mails. */
   webBaseUrl: string;
   /** Queues a webhook delivery. */
@@ -119,5 +125,19 @@ export const consumers: readonly Consumer[] = [
         timeoutMs: webhookTimeoutMs,
         isLastAttempt: job.isLastAttempt,
       }),
+  },
+
+  // queued by the API when an upload completes, on the video queue (one encode at a time)
+  {
+    name: 'transcode-video',
+    events: [],
+    run: ({ db, storage, log }, payload, job) =>
+      processVideo(
+        db,
+        storage,
+        transcodeJobPayloadSchema.parse(payload).assetId,
+        job.isLastAttempt,
+        log,
+      ),
   },
 ];

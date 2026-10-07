@@ -1,13 +1,15 @@
 import { setTimeout as sleep } from 'node:timers/promises';
 import type { DomainEventName } from '@opencourse/shared';
-import { Queue, Worker } from 'bullmq';
+import { Queue, Worker, type Job } from 'bullmq';
 import { count, isNull } from 'drizzle-orm';
 import { Redis } from 'ioredis';
 import pino, { type Logger } from 'pino';
 import type { Config } from '../config';
 import { outboxEvents } from '../db/schema';
 import { createSmtpMailer, type Mailer } from '../mail/mailer';
+import { removeStaleUploads } from '../modules/video/service';
 import { openDatabase } from '../plugins/db';
+import { createS3Storage, type Storage } from '../storage/s3';
 import { consumers } from './consumers';
 import {
   DEFAULT_QUEUE_PREFIX,
@@ -15,6 +17,7 @@ import {
   deliveryJobAdder,
   JOB_ATTEMPTS,
   QUEUE_NAME,
+  VIDEO_QUEUE_NAME,
   type JobData,
 } from './jobs';
 import { purgeDispatchedEvents, relayPendingEvents } from './relay';
@@ -24,6 +27,8 @@ const PURGE_EVERY_MS = 60 * 60 * 1000;
 export interface WorkerOptions {
   /** Replaces the SMTP mailer, so tests can read what would have been sent. */
   mailer?: Mailer;
+  /** Replaces the S3 storage. */
+  storage?: Storage;
   logger?: Logger;
   /** Isolates the queue keys; tests give each file its own. */
   queuePrefix?: string;
@@ -52,6 +57,7 @@ export async function startWorker(
   const pollIntervalMs = options.pollIntervalMs ?? 1000;
   const retryDelayMs = options.retryDelayMs ?? DEFAULT_RETRY_DELAY_MS;
   const mailer = options.mailer ?? createSmtpMailer(config);
+  const storage = options.storage ?? createS3Storage(config);
 
   const { db, close: closeDatabase } = openDatabase(config.DATABASE_URL, 5);
   // adding a job must fail fast when Redis is down (the relay holds a transaction open);
@@ -65,35 +71,49 @@ export async function startWorker(
   const context = {
     db,
     mailer,
+    storage,
+    log,
     webBaseUrl: config.WEB_BASE_URL,
     addDeliveryJob: deliveryJobAdder(queue, retryDelayMs),
     allowPrivateNetworks: config.WEBHOOKS_ALLOW_PRIVATE_NETWORKS,
     webhookTimeoutMs: options.webhookTimeoutMs ?? 10_000,
   };
 
-  const worker = new Worker<JobData>(
-    QUEUE_NAME,
-    async (job) => {
-      const consumer = consumers.find((candidate) => candidate.name === job.name);
-      if (!consumer) throw new Error(`No consumer named ${job.name}`);
-      await consumer.run(context, job.data.payload, {
-        eventId: job.data.eventId,
-        // deliver-webhook jobs carry no domain event; their consumer never reads this
-        eventName: job.data.eventName as DomainEventName,
-        eventCreatedAt: job.data.eventCreatedAt,
-        isLastAttempt: job.attemptsMade + 1 >= (job.opts.attempts ?? JOB_ATTEMPTS),
-      });
-    },
-    { connection: workerConnection, prefix, concurrency: 5 },
-  );
-  worker.on('error', (error) => log.error({ err: error }, 'queue worker error'));
-  worker.on('failed', (job, error) => {
+  const handleJob = async (job: Job<JobData>): Promise<void> => {
+    const consumer = consumers.find((candidate) => candidate.name === job.name);
+    if (!consumer) throw new Error(`No consumer named ${job.name}`);
+    await consumer.run(context, job.data.payload, {
+      eventId: job.data.eventId,
+      // jobs queued by consumers or by the API carry no domain event; their consumers never read this
+      eventName: job.data.eventName as DomainEventName,
+      eventCreatedAt: job.data.eventCreatedAt,
+      isLastAttempt: job.attemptsMade + 1 >= (job.opts.attempts ?? JOB_ATTEMPTS),
+    });
+  };
+  const logFailure = (job: Job<JobData> | undefined, error: Error) => {
     const exhausted = job !== undefined && job.attemptsMade >= (job.opts.attempts ?? 1);
     log.error(
       { err: error, job: job?.name, jobId: job?.id, attempt: job?.attemptsMade, exhausted },
       exhausted ? 'job failed for good' : 'job failed, will retry',
     );
+  };
+
+  const worker = new Worker<JobData>(QUEUE_NAME, handleJob, {
+    connection: workerConnection,
+    prefix,
+    concurrency: 5,
   });
+  // encoding is heavy: one video at a time, on its own queue so it never delays e-mails or webhooks
+  const videoQueue = new Queue<JobData>(VIDEO_QUEUE_NAME, { connection: queueConnection, prefix });
+  const videoWorker = new Worker<JobData>(VIDEO_QUEUE_NAME, handleJob, {
+    connection: workerConnection,
+    prefix,
+    concurrency: 1,
+  });
+  for (const runner of [worker, videoWorker]) {
+    runner.on('error', (error) => log.error({ err: error }, 'queue worker error'));
+    runner.on('failed', logFailure);
+  }
 
   const relayOnce = async (): Promise<number> => {
     try {
@@ -116,6 +136,9 @@ export async function startWorker(
         await purgeDispatchedEvents(db).catch((error: unknown) =>
           log.error({ err: error }, 'outbox purge failed'),
         );
+        await removeStaleUploads(db, storage, log).catch((error: unknown) =>
+          log.error({ err: error }, 'stale upload cleanup failed'),
+        );
       }
       await sleep(pollIntervalMs, undefined, { signal: stopSignal.signal }).catch(() => undefined);
     }
@@ -126,8 +149,12 @@ export async function startWorker(
       .select({ value: count() })
       .from(outboxEvents)
       .where(isNull(outboxEvents.dispatchedAt));
-    const jobs = await queue.getJobCounts('waiting', 'active', 'delayed', 'prioritized');
-    return pending!.value === 0 && Object.values(jobs).every((value) => value === 0);
+    const states = ['waiting', 'active', 'delayed', 'prioritized'] as const;
+    const jobs = [
+      ...Object.values(await queue.getJobCounts(...states)),
+      ...Object.values(await videoQueue.getJobCounts(...states)),
+    ];
+    return pending!.value === 0 && jobs.every((value) => value === 0);
   };
 
   return {
@@ -135,7 +162,9 @@ export async function startWorker(
       stopSignal.abort();
       await loop;
       await worker.close();
+      await videoWorker.close();
       await queue.close();
+      await videoQueue.close();
       queueConnection.disconnect();
       workerConnection.disconnect();
       await closeDatabase();

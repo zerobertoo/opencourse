@@ -6,6 +6,7 @@ import { and, eq, inArray } from 'drizzle-orm';
 import { drizzle } from 'drizzle-orm/postgres-js';
 import postgres from 'postgres';
 import { hashPassword } from '../auth/passwords';
+import { toExternalVideo } from '../modules/courses/lesson-fields';
 import type { Database } from '../plugins/db';
 import * as schema from './schema';
 import {
@@ -78,7 +79,7 @@ const COURSES: CourseSeed[] = [
             content: { en: 'What you will build.', 'pt-BR': 'O que você vai construir.' },
             durationSeconds: 600,
             // the player uses a plain <video> element, so the link must be a direct video file
-            videoUrl: 'https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4',
+            videoUrl: 'https://www.youtube.com/watch?v=YE7VzlLtp-4',
           },
           text(
             { en: 'Variables', 'pt-BR': 'Variáveis' },
@@ -287,14 +288,7 @@ export async function seedDemoData(db: Database): Promise<void> {
               position: lessonIndex,
               type: lessonSpec.type,
               durationSeconds: lessonSpec.durationSeconds,
-              video: lessonSpec.videoUrl
-                ? {
-                    provider: 'external',
-                    externalId: lessonSpec.videoUrl,
-                    status: 'ready',
-                    playbackUrl: lessonSpec.videoUrl,
-                  }
-                : null,
+              video: lessonSpec.videoUrl ? toExternalVideo(lessonSpec.videoUrl) : null,
               quiz: lessonSpec.quiz ? buildQuiz(lessonSpec.quiz) : null,
             })
             .returning({ id: lessons.id });

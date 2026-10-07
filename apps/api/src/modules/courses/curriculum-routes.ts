@@ -14,8 +14,16 @@ import {
 import { eq, inArray } from 'drizzle-orm';
 import type { FastifyRequest } from 'fastify';
 import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod';
-import { courses, lessons, lessonTranslations, moduleTranslations, modules } from '../../db/schema';
+import {
+  courses,
+  lessons,
+  lessonTranslations,
+  moduleTranslations,
+  modules,
+  videoAssets,
+} from '../../db/schema';
 import { conflict } from '../../errors';
+import { deleteVideoFiles, videoAssetIdsOfLessons } from '../video/service';
 import { requireManagedCourse } from './access';
 import {
   changeCurriculum,
@@ -135,15 +143,20 @@ export const curriculumRoutes: FastifyPluginAsyncZod = async (app) => {
     async (request) => {
       const moduleId = request.params.id;
       const course = await managedCourseOfModule(request, moduleId);
+      const lessonIds = (
+        await app.db.select({ id: lessons.id }).from(lessons).where(eq(lessons.moduleId, moduleId))
+      ).map((row) => row.id);
+      const videoIds = await videoAssetIdsOfLessons(app.db, lessonIds);
       const { course: detail } = await changeCurriculum(
         app.db,
         course.id,
         { checkPublish: true },
         async (tx) => {
-          // lessons and translations go with it (on delete cascade)
+          // lessons, translations and uploaded videos go with it (on delete cascade)
           await tx.delete(modules).where(eq(modules.id, moduleId));
         },
       );
+      await deleteVideoFiles(app.storage, videoIds, request.log);
       return { course: detail };
     },
   );
@@ -212,12 +225,18 @@ export const curriculumRoutes: FastifyPluginAsyncZod = async (app) => {
       const { translations, ...fields } = request.body;
       // validate before opening the transaction
       const columns = toLessonColumns(lesson.type, fields);
+      // a pasted link (or removing the video) replaces an uploaded file, so its files go too
+      const replacedVideoIds =
+        fields.video !== undefined ? await videoAssetIdsOfLessons(app.db, [lesson.id]) : [];
 
       const { course: detail } = await changeCurriculum(
         app.db,
         course.id,
         { checkPublish: true },
         async (tx) => {
+          if (fields.video !== undefined) {
+            await tx.delete(videoAssets).where(eq(videoAssets.lessonId, lesson.id));
+          }
           if (Object.keys(columns).length > 0) {
             await tx.update(lessons).set(columns).where(eq(lessons.id, lesson.id));
           }
@@ -232,6 +251,7 @@ export const curriculumRoutes: FastifyPluginAsyncZod = async (app) => {
           }
         },
       );
+      await deleteVideoFiles(app.storage, replacedVideoIds, request.log);
       return { course: detail };
     },
   );
@@ -249,6 +269,7 @@ export const curriculumRoutes: FastifyPluginAsyncZod = async (app) => {
     },
     async (request) => {
       const { course, lesson } = await managedLesson(request, request.params.id);
+      const videoIds = await videoAssetIdsOfLessons(app.db, [lesson.id]);
       const { course: detail } = await changeCurriculum(
         app.db,
         course.id,
@@ -257,6 +278,7 @@ export const curriculumRoutes: FastifyPluginAsyncZod = async (app) => {
           await tx.delete(lessons).where(eq(lessons.id, lesson.id));
         },
       );
+      await deleteVideoFiles(app.storage, videoIds, request.log);
       return { course: detail };
     },
   );
