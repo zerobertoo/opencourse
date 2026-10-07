@@ -154,6 +154,8 @@ export type CourseModuleWithLessons = z.infer<typeof moduleWithLessonsSchema>;
 /** Course with its full curriculum (orderable modules and lessons). */
 export const courseDetailSchema = courseSchema.extend({
   modules: z.array(moduleWithLessonsSchema),
+  /** Who teaches it, so students need not read the user (`GET /users/:id` is closed to them). */
+  instructor: z.object({ id: idSchema, name: z.string() }).optional(),
 });
 export type CourseDetail = z.infer<typeof courseDetailSchema>;
 
