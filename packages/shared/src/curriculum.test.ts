@@ -65,11 +65,17 @@ describe('curriculum schemas', () => {
 
   it('accepts lesson updates with https video links only, and refuses empty or unknown fields', () => {
     expect(
-      updateLessonRequestSchema.safeParse({ video: { url: 'https://youtu.be/x' } }).success,
+      updateLessonRequestSchema.safeParse({ video: { url: 'https://youtu.be/dQw4w9WgXcQ' } })
+        .success,
     ).toBe(true);
     expect(updateLessonRequestSchema.safeParse({ video: null }).success).toBe(true);
     expect(
-      updateLessonRequestSchema.safeParse({ video: { url: 'http://youtu.be/x' } }).success,
+      updateLessonRequestSchema.safeParse({ video: { url: 'https://example.com/clip.mp4' } })
+        .success,
+    ).toBe(false);
+    expect(
+      updateLessonRequestSchema.safeParse({ video: { url: 'http://youtu.be/dQw4w9WgXcQ' } })
+        .success,
     ).toBe(false);
     expect(
       updateLessonRequestSchema.safeParse({

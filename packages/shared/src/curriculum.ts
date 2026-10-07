@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { idSchema, localeSchema } from './base';
 import { httpsUrlSchema } from './courses';
+import { resolveVideoUrl } from './video-providers';
 import {
   captionSchema,
   courseDetailSchema,
@@ -91,8 +92,16 @@ export const updateLessonRequestSchema = z
       .array(captionSchema.extend({ url: httpsUrlSchema }).strict())
       .max(10)
       .refine(hasUniqueLocales, UNIQUE_LOCALES),
-    /** Video lessons only: an external link, or null to remove the video. */
-    video: z.object({ url: httpsUrlSchema }).strict().nullable(),
+    /** Video lessons only: a link a video provider plugin recognises, or null to remove the video. */
+    video: z
+      .object({
+        url: httpsUrlSchema.refine(
+          (url) => resolveVideoUrl(url) !== null,
+          'Not a link from a supported video provider',
+        ),
+      })
+      .strict()
+      .nullable(),
     /** Quiz lessons only. */
     quiz: quizInputSchema,
   })

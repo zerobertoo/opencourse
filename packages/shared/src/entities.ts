@@ -96,14 +96,33 @@ export const lessonTranslationSchema = z.object({
 });
 export type LessonTranslation = z.infer<typeof lessonTranslationSchema>;
 
-export const videoAssetSchema = z.object({
-  provider: z.enum(['local', 'external']),
-  /** Identifier at the external provider (embed id or URL); null for the local adapter. */
-  externalId: z.string().nullable(),
+/** A video sent to this instance: transcoded to HLS by the worker and played through the API. */
+export const localVideoAssetSchema = z.object({
+  provider: z.literal('local'),
+  assetId: idSchema,
   status: z.enum(['uploading', 'processing', 'ready', 'error']),
-  /** Resolved by the service (signed and expiring on the local adapter); null until ready. */
-  playbackUrl: z.string().nullable(),
+  /** Why processing failed; only set when the status is `error`. */
+  errorMessage: z.string().nullable(),
+  durationSeconds: z.number().nonnegative().nullable(),
 });
+export type LocalVideoAsset = z.infer<typeof localVideoAssetSchema>;
+
+/** A link to a provider handled by a video provider plugin (see `video-providers`). */
+export const externalVideoAssetSchema = z.object({
+  provider: z.literal('external'),
+  /** Id of the plugin that recognised the link, e.g. `youtube`. */
+  plugin: z.string().min(1),
+  externalId: z.string().min(1),
+  embedUrl: z.string(),
+  /** Always ready: the provider does the processing. */
+  status: z.literal('ready'),
+});
+export type ExternalVideoAsset = z.infer<typeof externalVideoAssetSchema>;
+
+export const videoAssetSchema = z.discriminatedUnion('provider', [
+  localVideoAssetSchema,
+  externalVideoAssetSchema,
+]);
 export type VideoAsset = z.infer<typeof videoAssetSchema>;
 
 export const captionSchema = z.object({ locale: localeSchema, url: z.string() });
@@ -245,9 +264,6 @@ export type Certificate = z.infer<typeof certificateSchema>;
 
 // ---------- Instance settings ----------
 
-export const videoAdapterSchema = z.enum(['local', 'bunny', 'vimeo', 'cloudflare']);
-export type VideoAdapter = z.infer<typeof videoAdapterSchema>;
-
 export const platformSettingsSchema = z.object({
   brand: z.object({
     name: z.string().min(1),
@@ -256,8 +272,6 @@ export const platformSettingsSchema = z.object({
   }),
   enabledLocales: z.array(localeSchema).min(1),
   defaultLocale: localeSchema,
-  /** Video adapter used for new uploads. */
-  videoAdapter: videoAdapterSchema,
   email: z.object({
     host: z.string(),
     port: z.number().int().min(1).max(65535),

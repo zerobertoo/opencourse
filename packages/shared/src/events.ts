@@ -1,6 +1,7 @@
 import { idSchema, isoDateSchema, localeSchema } from './base';
 import { certificateIssuedEventSchema, type CertificateIssuedEvent } from './certificates';
 import { grantSourceSchema } from './entities';
+import { videoProcessedEventSchema, type VideoProcessedEvent } from './video';
 import { z } from 'zod';
 
 /** Typed domain events carried by the internal bus (PRD section 10). */
@@ -42,7 +43,7 @@ export const grantRevokedEventSchema = z.object({
 });
 export type GrantRevokedEvent = z.infer<typeof grantRevokedEventSchema>;
 
-/** Event name to payload (`certificate.issued` is defined with the certificate schemas). New events are added here so emitters and listeners stay typed. */
+/** Event name to payload (`certificate.issued` and `video.processed` are defined with their own schemas). New events are added here so emitters and listeners stay typed. */
 export interface DomainEventMap {
   'lesson.completed': LessonCompletedEvent;
   'course.completed': CourseCompletedEvent;
@@ -50,6 +51,7 @@ export interface DomainEventMap {
   'user.created': UserCreatedEvent;
   'enrollment.granted': EnrollmentGrantedEvent;
   'grant.revoked': GrantRevokedEvent;
+  'video.processed': VideoProcessedEvent;
 }
 export type DomainEventName = keyof DomainEventMap;
 
@@ -61,6 +63,7 @@ export const domainEventPayloadSchemas = {
   'user.created': userCreatedEventSchema,
   'enrollment.granted': enrollmentGrantedEventSchema,
   'grant.revoked': grantRevokedEventSchema,
+  'video.processed': videoProcessedEventSchema,
 } satisfies { [Name in DomainEventName]: z.ZodType<DomainEventMap[Name]> };
 
 export const domainEventNameSchema = z.enum(

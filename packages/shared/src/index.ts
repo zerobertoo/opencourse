@@ -11,3 +11,5 @@ export * from './certificates';
 export * from './events';
 export * from './progress';
 export * from './webhooks';
+export * from './video';
+export * from './video-providers';
