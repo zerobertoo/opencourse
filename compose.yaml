@@ -115,6 +115,9 @@ services:
     depends_on:
       migrate:
         condition: service_completed_successfully
+      # `up --wait` treats a one-shot that nothing waits on as a failure when it exits
+      storage-init:
+        condition: service_completed_successfully
       redis:
         condition: service_healthy
     healthcheck:
