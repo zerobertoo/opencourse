@@ -23,7 +23,7 @@ import {
   videoAssets,
 } from '../../db/schema';
 import { conflict } from '../../errors';
-import { deleteVideoFiles, videoAssetIdsOfLessons } from '../video/service';
+import { deleteVideoFiles, videoAssetsOfLessons } from '../video/service';
 import { requireManagedCourse } from './access';
 import {
   changeCurriculum,
@@ -146,7 +146,7 @@ export const curriculumRoutes: FastifyPluginAsyncZod = async (app) => {
       const lessonIds = (
         await app.db.select({ id: lessons.id }).from(lessons).where(eq(lessons.moduleId, moduleId))
       ).map((row) => row.id);
-      const videoIds = await videoAssetIdsOfLessons(app.db, lessonIds);
+      const videoIds = await videoAssetsOfLessons(app.db, lessonIds);
       const { course: detail } = await changeCurriculum(
         app.db,
         course.id,
@@ -227,7 +227,7 @@ export const curriculumRoutes: FastifyPluginAsyncZod = async (app) => {
       const columns = toLessonColumns(lesson.type, fields);
       // a pasted link (or removing the video) replaces an uploaded file, so its files go too
       const replacedVideoIds =
-        fields.video !== undefined ? await videoAssetIdsOfLessons(app.db, [lesson.id]) : [];
+        fields.video !== undefined ? await videoAssetsOfLessons(app.db, [lesson.id]) : [];
 
       const { course: detail } = await changeCurriculum(
         app.db,
@@ -269,7 +269,7 @@ export const curriculumRoutes: FastifyPluginAsyncZod = async (app) => {
     },
     async (request) => {
       const { course, lesson } = await managedLesson(request, request.params.id);
-      const videoIds = await videoAssetIdsOfLessons(app.db, [lesson.id]);
+      const videoIds = await videoAssetsOfLessons(app.db, [lesson.id]);
       const { course: detail } = await changeCurriculum(
         app.db,
         course.id,

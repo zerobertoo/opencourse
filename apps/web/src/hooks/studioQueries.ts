@@ -35,9 +35,9 @@ function hasVideoInProgress(course: CourseDetail | undefined): boolean {
   return (
     course?.modules.some((courseModule) =>
       courseModule.lessons.some(
-        (lesson) =>
-          lesson.type === 'video' &&
-          (lesson.video?.status === 'processing' || lesson.video?.status === 'uploading'),
+        // an upload in flight is tracked by the editor itself; one abandoned halfway stays
+        // `uploading` for a day, and polling it would only cost requests
+        (lesson) => lesson.type === 'video' && lesson.video?.status === 'processing',
       ),
     ) ?? false
   );

@@ -1,7 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import { signPlaybackToken, verifyPlaybackToken } from '../src/modules/video/playback-token';
 import { rewriteMasterPlaylist, rewriteRenditionPlaylist } from '../src/modules/video/playlist';
-import { buildMasterPlaylist, chooseRenditions } from '../src/modules/video/transcode';
+import {
+  buildMasterPlaylist,
+  chooseRenditions,
+  playlistDurationSeconds,
+} from '../src/modules/video/transcode';
 
 const SECRET = 'a-secret-with-at-least-thirty-two-characters';
 const CLAIMS = { assetId: 'asset-1', userId: 'user-1' };
@@ -49,6 +53,15 @@ describe('playlist rewriting', () => {
     for (const bad of ['../../other/segment.ts', 'sub/segment.ts']) {
       await expect(rewriteRenditionPlaylist(`#EXTM3U\n${bad}\n`, async (f) => f)).rejects.toThrow();
     }
+  });
+});
+
+describe('playlistDurationSeconds', () => {
+  it('adds the segment durations, which is the length when the container reports none', () => {
+    const playlist =
+      '#EXTM3U\n#EXTINF:6.000000,\nsegment_00000.ts\n#EXTINF:3.500000,\nsegment_00001.ts\n#EXT-X-ENDLIST\n';
+    expect(playlistDurationSeconds(playlist)).toBeCloseTo(9.5);
+    expect(playlistDurationSeconds('#EXTM3U\n')).toBe(0);
   });
 });
 

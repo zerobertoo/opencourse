@@ -41,6 +41,10 @@ Encoding is CPU heavy. Give the worker enough cores and temporary disk for the o
 
 Self-hosting cannot stop a determined person from saving a video. Anyone who can watch it can also fetch its segments and rebuild the file, and the short-lived addresses only limit sharing links, not copying. If your content needs strong protection (DRM, forensic watermarking, domain locking), use an external provider that sells it and paste its link.
 
+### Upgrading from link-only videos
+
+Before provider plugins, a video lesson held any `https` address. Those lessons are converted when read: an address from a supported provider becomes a proper embed, and anything else (a direct `.mp4` link, for instance) shows as no video, which a published course reports as a video that is not ready. Upload those files, or paste a link from a supported provider, to fix the affected lessons.
+
 ## Links from external providers
 
 Pasting a link in the Studio picks the provider automatically from the address. The platform stores the provider, the video identifier and the embed address, and shows the provider's player in an iframe. The provider does the processing, so the status is always ready. These players report no position, so students mark such lessons complete themselves. A link that no provider recognises is refused, because embedding arbitrary pages would let an instructor put any content in front of students.

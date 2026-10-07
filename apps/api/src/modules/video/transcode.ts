@@ -1,5 +1,5 @@
 import { execFile, spawn } from 'node:child_process';
-import { mkdir, readdir, writeFile } from 'node:fs/promises';
+import { mkdir, readdir, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { promisify } from 'node:util';
 import type { Storage } from '../../storage/s3';
@@ -27,7 +27,8 @@ export class UnreadableVideoError extends Error {
 export interface VideoProbe {
   width: number;
   height: number;
-  durationSeconds: number;
+  /** Null when the container reports none (browser-recorded WebM, for one); it is measured later. */
+  durationSeconds: number | null;
 }
 
 export interface Rendition {
@@ -55,16 +56,25 @@ export async function probeVideo(file: string): Promise<VideoProbe> {
     throw new UnreadableVideoError('The file is not a video that can be read');
   }
   const info = JSON.parse(output) as {
-    streams?: Array<{ codec_type?: string; width?: number; height?: number }>;
+    streams?: Array<{ codec_type?: string; width?: number; height?: number; duration?: string }>;
     format?: { duration?: string };
   };
   const video = info.streams?.find((stream) => stream.codec_type === 'video');
-  const duration = Number(info.format?.duration);
-  if (!video?.width || !video.height || !Number.isFinite(duration) || duration <= 0) {
+  if (!video?.width || !video.height) {
     throw new UnreadableVideoError('The file has no playable video stream');
   }
+  // ffprobe prints "N/A" when it does not know: the stream may still say, otherwise it stays null
+  const known = [info.format?.duration, video.duration].map(Number).find((n) => n > 0);
   // ponytail: rotation metadata (phone videos) is not read; renditions keep the stored size
-  return { width: video.width, height: video.height, durationSeconds: duration };
+  return { width: video.width, height: video.height, durationSeconds: known ?? null };
+}
+
+/** Length of an HLS playlist: the sum of its segment durations. */
+export function playlistDurationSeconds(playlist: string): number {
+  return [...playlist.matchAll(/^#EXTINF:([\d.]+)/gm)].reduce(
+    (total, match) => total + Number(match[1]),
+    0,
+  );
 }
 
 /** Renditions to produce: every ladder step up to the source height, or one at the source height. */
@@ -178,9 +188,13 @@ export async function transcodeVideo(
   // start clean, so a retry never leaves segments of an earlier attempt behind
   await storage.deletePrefix(`${videoKeys.prefix(assetId)}hls/`);
 
+  let durationSeconds = probe.durationSeconds;
   for (const rendition of renditions) {
     const outputDir = path.join(workDir, rendition.name);
     await encodeRendition(sourcePath, rendition, outputDir);
+    durationSeconds ??= playlistDurationSeconds(
+      await readFile(path.join(outputDir, 'index.m3u8'), 'utf8'),
+    );
     for (const file of await readdir(outputDir)) {
       await storage.uploadFile(
         videoKeys.segment(assetId, rendition.name, file),
@@ -194,8 +208,11 @@ export async function transcodeVideo(
   await writeFile(masterPath, buildMasterPlaylist(probe, renditions));
   await storage.uploadFile(videoKeys.masterPlaylist(assetId), masterPath, contentTypeOf('.m3u8'));
 
+  if (!durationSeconds || durationSeconds <= 0) {
+    throw new UnreadableVideoError('The file has no playable video stream');
+  }
   return {
-    durationSeconds: Math.round(probe.durationSeconds),
+    durationSeconds: Math.round(durationSeconds),
     renditions: renditions.map((rendition) => rendition.name),
   };
 }

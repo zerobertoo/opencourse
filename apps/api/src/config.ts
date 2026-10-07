@@ -1,4 +1,8 @@
-import { DEFAULT_VIDEO_MAX_UPLOAD_BYTES } from '@opencourse/shared';
+import {
+  DEFAULT_VIDEO_MAX_UPLOAD_BYTES,
+  VIDEO_UPLOAD_MAX_PARTS,
+  VIDEO_UPLOAD_PART_BYTES,
+} from '@opencourse/shared';
 import { z } from 'zod';
 
 /** Development-only secret. */
@@ -80,6 +84,10 @@ const configSchema = z
       .number()
       .int()
       .positive()
+      .max(
+        VIDEO_UPLOAD_PART_BYTES * VIDEO_UPLOAD_MAX_PARTS,
+        'must fit in 10,000 upload parts (about 156 GiB)',
+      )
       .default(DEFAULT_VIDEO_MAX_UPLOAD_BYTES),
 
     SMTP_HOST: z.string().default('localhost'),

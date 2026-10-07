@@ -42,6 +42,16 @@ jobs:
           --health-interval 5s
           --health-timeout 3s
           --health-retries 10
+      # S3-compatible storage for the video tests: the API's defaults point at it (localhost:9000)
+      storage:
+        image: rustfs/rustfs:1.0.1
+        env:
+          RUSTFS_ACCESS_KEY: opencourse
+          RUSTFS_SECRET_KEY: opencourse-secret
+          RUSTFS_VOLUMES: /data
+          RUSTFS_ADDRESS: ':9000'
+        ports:
+          - 9000:9000
     env:
       DATABASE_URL: postgres://opencourse:opencourse@localhost:5432/opencourse
       REDIS_URL: redis://localhost:6379
@@ -55,6 +65,22 @@ jobs:
         with:
           node-version-file: .nvmrc
           cache: pnpm
+
+      # the video tests encode a small clip
+      - run: sudo apt-get update && sudo apt-get install -y --no-install-recommends ffmpeg
+
+      - name: Create the storage bucket
+        env:
+          AWS_ACCESS_KEY_ID: opencourse
+          AWS_SECRET_ACCESS_KEY: opencourse-secret
+          AWS_DEFAULT_REGION: us-east-1
+        run: |
+          # the storage container has no health check, so wait until it answers
+          for attempt in $(seq 1 30); do
+            aws --endpoint-url http://localhost:9000 s3api list-buckets >/dev/null 2>&1 && break
+            sleep 2
+          done
+          aws --endpoint-url http://localhost:9000 s3api create-bucket --bucket opencourse
 
       - run: pnpm install --frozen-lockfile
       - run: pnpm lint

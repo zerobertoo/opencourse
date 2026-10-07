@@ -11,7 +11,7 @@ import {
   type CreateVideoUploadResponse,
 } from '@opencourse/shared';
 import { eq } from 'drizzle-orm';
-import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { grants, lessons, outboxEvents, videoAssets } from '../src/db/schema';
 import { processVideo } from '../src/modules/video/process';
 import { removeStaleUploads } from '../src/modules/video/service';
@@ -452,5 +452,85 @@ describe('video upload, processing and playback', () => {
       embedUrl: 'https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ',
     });
     expect(second.video).toBeNull();
+  });
+
+  it('encodes a WebM whose container reports no duration, measuring it from the result', async () => {
+    const { cast, lesson } = await setup();
+    // written to a pipe, WebM cannot go back and store its length: the case of browser recordings
+    const { stdout } = await run(
+      'ffmpeg',
+      [
+        '-loglevel',
+        'error',
+        '-f',
+        'lavfi',
+        '-i',
+        'testsrc=duration=3:size=320x240:rate=24',
+        '-c:v',
+        'libvpx',
+        '-f',
+        'webm',
+        'pipe:1',
+      ],
+      { encoding: 'buffer', maxBuffer: 50 * 1024 * 1024 },
+    );
+    const { upload } = await sendFile(cast.instructorA.client, lesson.id, stdout, 'video/webm');
+    await worker.drain(60_000);
+
+    const status = await cast.instructorA.client.get(`/api/v1/videos/${upload.assetId}/status`);
+    const video = videoStatusResponseSchema.parse(status.json()).video;
+    expect(video.status).toBe('ready');
+    expect(video.durationSeconds).toBeGreaterThanOrEqual(2);
+    expect(video.durationSeconds).toBeLessThanOrEqual(4);
+  }, 90_000);
+
+  it('answers a repeated complete without breaking the video, and never with a 500', async () => {
+    const { cast, lesson } = await setup();
+    const client = cast.instructorA.client;
+    const started = await client.post(`/api/v1/lessons/${lesson.id}/video/upload`, {
+      filename: 'clip.mp4',
+      contentType: 'video/mp4',
+      sizeBytes: clip.length,
+    });
+    const upload = createVideoUploadResponseSchema.parse(started.json());
+    const put = await fetch(upload.parts[0]!.url, { method: 'PUT', body: clip });
+    const body = { parts: [{ partNumber: 1, etag: put.headers.get('etag')! }] };
+    const complete = () => client.post(`/api/v1/lessons/${lesson.id}/video/complete`, body);
+
+    // a double click: whichever call loses the claim gets a conflict, not a server error
+    const together = await Promise.all([complete(), complete()]);
+    expect(together.map((response) => response.statusCode).sort()).toSatisfy(
+      (codes: number[]) =>
+        codes.includes(200) && codes.every((code) => code === 200 || code === 409),
+    );
+    // asking again later (a timeout on the first answer) is harmless
+    expect((await complete()).statusCode).toBe(200);
+
+    await worker.drain(60_000);
+    const [asset] = await ctx.app.db.select().from(videoAssets);
+    expect(asset).toMatchObject({ id: upload.assetId, status: 'ready' });
+  }, 90_000);
+
+  it('aborts the unfinished upload of a video that is removed before it was completed', async () => {
+    const { cast, lesson, courseModule } = await setup();
+    // a published course keeps at least one lesson
+    await insertLesson(ctx.app, courseModule.id, 1, { title: 'Other', type: 'text' });
+    const started = await cast.instructorA.client.post(
+      `/api/v1/lessons/${lesson.id}/video/upload`,
+      {
+        filename: 'clip.mp4',
+        contentType: 'video/mp4',
+        sizeBytes: clip.length,
+      },
+    );
+    const upload = createVideoUploadResponseSchema.parse(started.json());
+    const [asset] = await ctx.app.db.select().from(videoAssets);
+    const abort = vi.spyOn(ctx.app.storage, 'abortMultipartUpload');
+
+    const response = await cast.instructorA.client.delete(`/api/v1/lessons/${lesson.id}`);
+
+    expect(response.statusCode).toBe(200);
+    expect(abort).toHaveBeenCalledWith(`videos/${upload.assetId}/source`, asset!.uploadId);
+    abort.mockRestore();
   });
 });

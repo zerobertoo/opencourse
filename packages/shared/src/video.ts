@@ -9,6 +9,9 @@ export const DEFAULT_VIDEO_MAX_UPLOAD_BYTES = 2 * 1024 ** 3;
 /** Size of every upload part but the last (S3 requires at least 5 MiB). */
 export const VIDEO_UPLOAD_PART_BYTES = 16 * 1024 ** 2;
 
+/** Most parts one multipart upload can have (an S3 limit), which caps the size of a video. */
+export const VIDEO_UPLOAD_MAX_PARTS = 10_000;
+
 export const videoAssetParamsSchema = z.object({ assetId: idSchema });
 /** `file` is `master.m3u8` or `<rendition>.m3u8`. */
 export const videoPlaylistParamsSchema = z.object({
@@ -43,7 +46,7 @@ export const completeVideoUploadRequestSchema = z
         z.object({ partNumber: z.number().int().positive(), etag: z.string().min(1) }).strict(),
       )
       .min(1)
-      .max(10_000),
+      .max(VIDEO_UPLOAD_MAX_PARTS),
   })
   .strict();
 export type CompleteVideoUploadRequest = z.infer<typeof completeVideoUploadRequestSchema>;

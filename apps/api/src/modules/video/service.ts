@@ -60,30 +60,38 @@ export async function findAssetContext(
   return found;
 }
 
-/** Ids of the uploaded videos in these lessons; read before a delete so the files can follow it. */
-export async function videoAssetIdsOfLessons(
+/** An uploaded video to clean up: its id and the multipart upload still open at the storage, if any. */
+export interface VideoAssetRef {
+  id: string;
+  uploadId: string | null;
+}
+
+/** The uploaded videos in these lessons; read before a delete so the files can follow it. */
+export async function videoAssetsOfLessons(
   db: Pick<Database, 'select'>,
   lessonIds: string[],
-): Promise<string[]> {
+): Promise<VideoAssetRef[]> {
   if (lessonIds.length === 0) return [];
-  const rows = await db
-    .select({ id: videoAssets.id })
+  return db
+    .select({ id: videoAssets.id, uploadId: videoAssets.uploadId })
     .from(videoAssets)
     .where(inArray(videoAssets.lessonId, lessonIds));
-  return rows.map((row) => row.id);
 }
 
 /**
- * Deletes the stored files of these assets. Runs after the database change committed, and a
- * failure is only logged: the row is already gone, so a leftover file wastes space but nothing else.
+ * Deletes the stored files of these assets, and aborts an upload that never finished (its parts
+ * are not objects, so deleting the prefix would not find them). Runs after the database change
+ * committed, and a failure is only logged: the row is already gone, so a leftover file wastes
+ * space but nothing else.
  */
 export async function deleteVideoFiles(
   storage: Storage,
-  assetIds: string[],
+  assets: VideoAssetRef[],
   log: Pick<Logger, 'warn'>,
 ): Promise<void> {
-  for (const assetId of assetIds) {
+  for (const { id: assetId, uploadId } of assets) {
     try {
+      if (uploadId) await storage.abortMultipartUpload(videoKeys.source(assetId), uploadId);
       await storage.deletePrefix(videoKeys.prefix(assetId));
     } catch (error) {
       log.warn({ err: error, assetId }, 'could not delete the files of a removed video');

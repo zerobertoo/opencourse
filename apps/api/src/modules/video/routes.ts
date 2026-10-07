@@ -13,11 +13,11 @@ import {
 } from '@opencourse/shared';
 import { randomUUID } from 'node:crypto';
 import { Queue } from 'bullmq';
-import { eq } from 'drizzle-orm';
+import { and, eq } from 'drizzle-orm';
 import type { FastifyRequest } from 'fastify';
 import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod';
 import type { Config } from '../../config';
-import { lessons, users, videoAssets } from '../../db/schema';
+import { lessons, users, videoAssets, type CourseRow, type VideoAssetRow } from '../../db/schema';
 import { badRequest, conflict, forbidden, notFound, unauthorized } from '../../errors';
 import {
   DEFAULT_QUEUE_PREFIX,
@@ -44,7 +44,8 @@ import {
   deleteVideoFiles,
   findAssetContext,
   toLocalVideoAsset,
-  videoAssetIdsOfLessons,
+  videoAssetsOfLessons,
+  type VideoAssetRef,
 } from './service';
 
 const PLAYLIST_CONTENT_TYPE = 'application/vnd.apple.mpegurl';
@@ -72,6 +73,28 @@ export const videoRoutes: FastifyPluginAsyncZod<VideoRoutesOptions> = async (
     }));
   app.addHook('onClose', async () => {
     await queue?.close();
+  });
+
+  /** Queues the encode of an uploaded video; the fixed job id makes asking twice harmless. */
+  const queueTranscode = (assetId: string) =>
+    getQueue().add(
+      'transcode-video',
+      {
+        eventId: assetId,
+        eventName: 'video.upload',
+        eventCreatedAt: new Date().toISOString(),
+        payload: { assetId },
+      },
+      {
+        ...jobOptions(DEFAULT_RETRY_DELAY_MS),
+        attempts: 2,
+        jobId: `transcode-video-${assetId}`,
+      },
+    );
+
+  const completed = async (course: CourseRow, asset: VideoAssetRow) => ({
+    video: toLocalVideoAsset(asset),
+    course: await loadCourseDetail(app.db, course),
   });
 
   /** A video lesson the caller may edit; invisible and unknown lessons look the same. */
@@ -117,10 +140,10 @@ export const videoRoutes: FastifyPluginAsyncZod<VideoRoutesOptions> = async (
 
       // Under the course lock, like every curriculum edit: two uploads to one lesson queue up, and
       // swapping a ready video for one that is not ready yet is refused on a published course.
-      let replacedIds: string[] = [];
+      let replaced: VideoAssetRef[] = [];
       try {
         await changeCurriculum(app.db, course.id, { checkPublish: true }, async (tx) => {
-          replacedIds = await videoAssetIdsOfLessons(tx, [lesson.id]);
+          replaced = await videoAssetsOfLessons(tx, [lesson.id]);
           await tx.delete(videoAssets).where(eq(videoAssets.lessonId, lesson.id));
           await tx.update(lessons).set({ video: null }).where(eq(lessons.id, lesson.id));
           await tx
@@ -135,7 +158,7 @@ export const videoRoutes: FastifyPluginAsyncZod<VideoRoutesOptions> = async (
           );
         throw error;
       }
-      await deleteVideoFiles(app.storage, replacedIds, request.log);
+      await deleteVideoFiles(app.storage, replaced, request.log);
 
       const partCount = Math.max(1, Math.ceil(sizeBytes / VIDEO_UPLOAD_PART_BYTES));
       const parts = await Promise.all(
@@ -172,47 +195,61 @@ export const videoRoutes: FastifyPluginAsyncZod<VideoRoutesOptions> = async (
         .select()
         .from(videoAssets)
         .where(eq(videoAssets.lessonId, lesson.id));
+      // a repeated call (after a timeout, say) finds the video waiting and makes sure its job exists
+      if (asset?.status === 'processing') {
+        await queueTranscode(asset.id);
+        return await completed(course, asset);
+      }
       if (asset?.status !== 'uploading' || !asset.uploadId) {
         throw conflict('There is no upload in progress for this lesson');
       }
 
+      // Claim the upload, so two calls (a double click) cannot both finish it.
+      const [claimed] = await app.db
+        .update(videoAssets)
+        .set({ uploadId: null, updatedAt: new Date() })
+        .where(
+          and(
+            eq(videoAssets.id, asset.id),
+            eq(videoAssets.status, 'uploading'),
+            eq(videoAssets.uploadId, asset.uploadId),
+          ),
+        )
+        .returning({ id: videoAssets.id });
+      if (!claimed) throw conflict('This upload is already being finished');
+
       const key = videoKeys.source(asset.id);
-      await app.storage.completeMultipartUpload(key, asset.uploadId, request.body.parts);
-      const stored = await app.storage.sizeOf(key);
-      if (stored !== asset.sizeBytes) {
-        await deleteVideoFiles(app.storage, [asset.id], request.log);
+      const failUpload = async (message: string) => {
         await app.db
           .update(videoAssets)
-          .set({
-            status: 'error',
-            uploadId: null,
-            errorMessage: 'The file that arrived is not the size announced. Upload it again.',
-            updatedAt: new Date(),
-          })
+          .set({ status: 'error', errorMessage: message, updatedAt: new Date() })
           .where(eq(videoAssets.id, asset.id));
+      };
+      try {
+        await app.storage.completeMultipartUpload(key, asset.uploadId, request.body.parts);
+      } catch (error) {
+        await failUpload('The storage could not finish the upload. Upload the file again.');
+        throw error;
+      }
+      const stored = await app.storage.sizeOf(key);
+      if (stored !== asset.sizeBytes) {
+        await deleteVideoFiles(app.storage, [{ id: asset.id, uploadId: null }], request.log);
+        await failUpload('The file that arrived is not the size announced. Upload it again.');
         throw badRequest('The uploaded file does not match the announced size');
       }
 
       const [updated] = await app.db
         .update(videoAssets)
-        .set({ status: 'processing', uploadId: null, errorMessage: null, updatedAt: new Date() })
-        .where(eq(videoAssets.id, asset.id))
+        .set({ status: 'processing', errorMessage: null, updatedAt: new Date() })
+        .where(and(eq(videoAssets.id, asset.id), eq(videoAssets.status, 'uploading')))
         .returning();
-      await getQueue().add(
-        'transcode-video',
-        {
-          eventId: asset.id,
-          eventName: 'video.upload',
-          eventCreatedAt: new Date().toISOString(),
-          payload: { assetId: asset.id },
-        },
-        {
-          ...jobOptions(DEFAULT_RETRY_DELAY_MS),
-          attempts: 2,
-          jobId: `transcode-video-${asset.id}`,
-        },
-      );
-      return { video: toLocalVideoAsset(updated!), course: await loadCourseDetail(app.db, course) };
+      if (!updated) {
+        // the video was replaced or removed while the file was being assembled
+        await deleteVideoFiles(app.storage, [{ id: asset.id, uploadId: null }], request.log);
+        throw conflict('This upload was replaced while it was being finished');
+      }
+      await queueTranscode(asset.id);
+      return await completed(course, updated);
     },
   );
 

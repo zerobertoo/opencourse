@@ -18,6 +18,15 @@ describe('loadConfig', () => {
     expect(() => loadConfig({})).toThrow(/DATABASE_URL[\s\S]*REDIS_URL[\s\S]*AUTH_SECRET/);
   });
 
+  it('caps the video size at what 10,000 upload parts can hold', () => {
+    expect(loadConfig({ ...required, VIDEO_MAX_UPLOAD_BYTES: '1073741824' })).toMatchObject({
+      VIDEO_MAX_UPLOAD_BYTES: 1073741824,
+    });
+    expect(() => loadConfig({ ...required, VIDEO_MAX_UPLOAD_BYTES: '999999999999999' })).toThrow(
+      /VIDEO_MAX_UPLOAD_BYTES/,
+    );
+  });
+
   it('rejects an out-of-range port', () => {
     expect(() => loadConfig({ ...required, PORT: '70000' })).toThrow(/PORT/);
   });
