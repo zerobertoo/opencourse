@@ -46,6 +46,8 @@ export interface AppDependencies {
   mailer?: Mailer;
   /** Receives the log lines instead of stdout. Tests use it to inspect what gets logged. */
   logStream?: NodeJS.WritableStream;
+  /** Isolates the job queue keys the API adds to (webhook retries); tests give each file its own. */
+  queuePrefix?: string;
 }
 
 /** Builds the Fastify instance without listening, so tests can use `app.inject()`. */
@@ -97,7 +99,11 @@ export async function buildApp(
   await app.register(rateLimitPlugin, { disabled: config.RATE_LIMIT_DISABLED });
 
   await app.register(healthRoutes);
-  await app.register(v1Routes, { prefix: '/api/v1', config });
+  await app.register(v1Routes, {
+    prefix: '/api/v1',
+    config,
+    queuePrefix: dependencies.queuePrefix,
+  });
 
   return app;
 }

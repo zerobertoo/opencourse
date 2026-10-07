@@ -1,4 +1,5 @@
 import { setTimeout as sleep } from 'node:timers/promises';
+import type { DomainEventName } from '@opencourse/shared';
 import { Queue, Worker } from 'bullmq';
 import { count, isNull } from 'drizzle-orm';
 import { Redis } from 'ioredis';
@@ -8,9 +9,15 @@ import { outboxEvents } from '../db/schema';
 import { createSmtpMailer, type Mailer } from '../mail/mailer';
 import { openDatabase } from '../plugins/db';
 import { consumers } from './consumers';
-import { purgeDispatchedEvents, relayPendingEvents, type JobData } from './relay';
+import {
+  DEFAULT_QUEUE_PREFIX,
+  deliveryJobAdder,
+  JOB_ATTEMPTS,
+  QUEUE_NAME,
+  type JobData,
+} from './jobs';
+import { purgeDispatchedEvents, relayPendingEvents } from './relay';
 
-const QUEUE_NAME = 'jobs';
 const PURGE_EVERY_MS = 60 * 60 * 1000;
 
 export interface WorkerOptions {
@@ -23,6 +30,8 @@ export interface WorkerOptions {
   pollIntervalMs?: number;
   /** First retry delay; each further retry doubles it. */
   retryDelayMs?: number;
+  /** Time a webhook receiver gets to answer. */
+  webhookTimeoutMs?: number;
 }
 
 export interface WorkerRuntime {
@@ -38,7 +47,7 @@ export async function startWorker(
   options: WorkerOptions = {},
 ): Promise<WorkerRuntime> {
   const log = options.logger ?? pino({ level: config.LOG_LEVEL });
-  const prefix = options.queuePrefix ?? 'opencourse:queue';
+  const prefix = options.queuePrefix ?? DEFAULT_QUEUE_PREFIX;
   const pollIntervalMs = options.pollIntervalMs ?? 1000;
   const retryDelayMs = options.retryDelayMs ?? 30_000;
   const mailer = options.mailer ?? createSmtpMailer(config);
@@ -52,14 +61,27 @@ export async function startWorker(
     connection.on('error', (error) => log.warn({ err: error }, 'redis connection error'));
   }
   const queue = new Queue<JobData>(QUEUE_NAME, { connection: queueConnection, prefix });
-  const context = { db, mailer, webBaseUrl: config.WEB_BASE_URL };
+  const context = {
+    db,
+    mailer,
+    webBaseUrl: config.WEB_BASE_URL,
+    addDeliveryJob: deliveryJobAdder(queue, retryDelayMs),
+    allowPrivateNetworks: config.WEBHOOKS_ALLOW_PRIVATE_NETWORKS,
+    webhookTimeoutMs: options.webhookTimeoutMs ?? 10_000,
+  };
 
   const worker = new Worker<JobData>(
     QUEUE_NAME,
     async (job) => {
       const consumer = consumers.find((candidate) => candidate.name === job.name);
       if (!consumer) throw new Error(`No consumer named ${job.name}`);
-      await consumer.run(context, job.data.payload);
+      await consumer.run(context, job.data.payload, {
+        eventId: job.data.eventId,
+        // deliver-webhook jobs carry no domain event; their consumer never reads this
+        eventName: job.data.eventName as DomainEventName,
+        eventCreatedAt: job.data.eventCreatedAt,
+        isLastAttempt: job.attemptsMade + 1 >= (job.opts.attempts ?? JOB_ATTEMPTS),
+      });
     },
     { connection: workerConnection, prefix, concurrency: 5 },
   );

@@ -57,6 +57,15 @@ const configSchema = z
       .transform((value) => value === 'true')
       .default(false),
 
+    /**
+     * Lets webhooks reach loopback, private and link-local addresses, and use plain http. Off by
+     * default so an admin account cannot be used to probe the internal network or cloud metadata.
+     */
+    WEBHOOKS_ALLOW_PRIVATE_NETWORKS: z
+      .enum(['true', 'false'])
+      .transform((value) => value === 'true')
+      .default(false),
+
     SMTP_HOST: z.string().default('localhost'),
     SMTP_PORT: z.coerce.number().int().min(1).max(65535).default(1025),
     SMTP_USER: z.string().optional(),

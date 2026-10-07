@@ -7,7 +7,8 @@ import { certificates, outboxEvents } from '../src/db/schema';
 import type { Mail } from '../src/mail/mailer';
 import { issueCertificate } from '../src/modules/certificates/service';
 import { enqueueEvents } from '../src/outbox';
-import { relayPendingEvents, type JobData } from '../src/worker/relay';
+import type { JobData } from '../src/worker/jobs';
+import { relayPendingEvents } from '../src/worker/relay';
 import { createCast, insertCourse, insertGrant, insertLesson, insertModule } from './fixtures';
 import {
   createTestApp,
@@ -124,7 +125,7 @@ describe('outbox and worker', () => {
       await ctx.app.db.transaction((tx) =>
         enqueueEvents(tx, [
           { name: 'course.completed', payload },
-          // nobody consumes lesson.completed yet: it is stamped without a job
+          // only the webhook fan-out consumes lesson.completed
           { name: 'lesson.completed', payload: { ...payload, lessonId: randomUUID() } },
         ]),
       );
@@ -132,12 +133,13 @@ describe('outbox and worker', () => {
       expect(await relayPendingEvents(ctx.app.db, queue, 10)).toBe(2);
       expect(await relayPendingEvents(ctx.app.db, queue, 10)).toBe(0);
       expect((await outboxRows()).every((row) => row.dispatchedAt !== null)).toBe(true);
-      expect(await queue.getJobCountByTypes('waiting')).toBe(1);
+      // course.completed: issue-certificate and the webhook fan-out; lesson.completed: the fan-out
+      expect(await queue.getJobCountByTypes('waiting')).toBe(3);
 
       // a crash between adding the jobs and stamping the rows delivers the same event again
       await ctx.app.db.update(outboxEvents).set({ dispatchedAt: null });
       await relayPendingEvents(ctx.app.db, queue, 10);
-      expect(await queue.getJobCountByTypes('waiting')).toBe(1);
+      expect(await queue.getJobCountByTypes('waiting')).toBe(3);
     });
   });
 

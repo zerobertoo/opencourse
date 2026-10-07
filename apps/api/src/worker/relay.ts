@@ -1,28 +1,12 @@
 import { asc, inArray, isNull, lt, sql } from 'drizzle-orm';
 import type { Queue } from 'bullmq';
-import { outboxEvents } from '../db/schema';
+import { outboxEvents, webhookDeliveries } from '../db/schema';
 import type { Database } from '../plugins/db';
 import { consumers } from './consumers';
-
-/** Data carried by every queue job: which outbox event it answers, and its payload. */
-export interface JobData {
-  eventId: string;
-  payload: unknown;
-}
+import { jobOptions, type JobData } from './jobs';
 
 const BATCH_SIZE = 100;
 const KEEP_DISPATCHED_DAYS = 7;
-
-/** Retry policy shared by every job: 5 attempts, doubling the wait each time. */
-export function jobOptions(retryDelayMs: number) {
-  return {
-    attempts: 5,
-    backoff: { type: 'exponential' as const, delay: retryDelayMs },
-    // completed ids stay for a day so a re-added id is still ignored
-    removeOnComplete: { age: 24 * 3600 },
-    removeOnFail: { count: 1000 },
-  };
-}
 
 /**
  * Hands pending outbox events to the queue, one job per consumer, and stamps them dispatched.
@@ -44,10 +28,15 @@ export async function relayPendingEvents(
       .limit(BATCH_SIZE)
       .for('update', { skipLocked: true });
     for (const row of rows) {
-      for (const consumer of consumers.filter((candidate) => candidate.event === row.name)) {
+      for (const consumer of consumers.filter((candidate) => candidate.events.includes(row.name))) {
         await queue.add(
           consumer.name,
-          { eventId: row.id, payload: row.payload },
+          {
+            eventId: row.id,
+            eventName: row.name,
+            eventCreatedAt: row.createdAt.toISOString(),
+            payload: row.payload,
+          },
           { ...jobOptions(retryDelayMs), jobId: `${row.id}-${consumer.name}` },
         );
       }
@@ -67,11 +56,9 @@ export async function relayPendingEvents(
   });
 }
 
-/** Deletes events dispatched more than a week ago. */
+/** Deletes events and webhook deliveries older than a week (events: since dispatch). */
 export async function purgeDispatchedEvents(db: Database): Promise<void> {
-  await db
-    .delete(outboxEvents)
-    .where(
-      lt(outboxEvents.dispatchedAt, sql`now() - make_interval(days => ${KEEP_DISPATCHED_DAYS})`),
-    );
+  const cutoff = sql`now() - make_interval(days => ${KEEP_DISPATCHED_DAYS})`;
+  await db.delete(outboxEvents).where(lt(outboxEvents.dispatchedAt, cutoff));
+  await db.delete(webhookDeliveries).where(lt(webhookDeliveries.createdAt, cutoff));
 }

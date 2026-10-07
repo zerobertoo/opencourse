@@ -13,6 +13,7 @@ import { meRoutes } from '../modules/me/routes';
 import { progressRoutes } from '../modules/progress/routes';
 import { studioRoutes } from '../modules/studio/routes';
 import { userRoutes } from '../modules/users/routes';
+import { webhookRoutes } from '../modules/webhooks/routes';
 
 const SAFE_METHODS = new Set(['GET', 'HEAD', 'OPTIONS']);
 
@@ -20,7 +21,10 @@ const SAFE_METHODS = new Set(['GET', 'HEAD', 'OPTIONS']);
  * Versioned REST API, mounted under `/api/v1`.
  * Domain modules (auth, courses, grants...) register here as their milestones land.
  */
-export const v1Routes: FastifyPluginAsyncZod<{ config: Config }> = async (app, { config }) => {
+export const v1Routes: FastifyPluginAsyncZod<{
+  config: Config;
+  queuePrefix?: string | undefined;
+}> = async (app, { config, queuePrefix }) => {
   // CSRF defense for cookie sessions: a state-changing request must carry a custom header,
   // which a cross-site form or image request cannot add (and CORS blocks for scripts)
   app.addHook('onRequest', async (request) => {
@@ -41,4 +45,5 @@ export const v1Routes: FastifyPluginAsyncZod<{ config: Config }> = async (app, {
   await app.register(studioRoutes);
   await app.register(userRoutes);
   await app.register(inviteRoutes, { config });
+  await app.register(webhookRoutes, { config, queuePrefix });
 };

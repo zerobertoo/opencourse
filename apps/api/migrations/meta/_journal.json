@@ -50,6 +50,13 @@
       "when": 1791343573082,
       "tag": "0006_nostalgic_nebula",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1791345820062,
+      "tag": "0007_confused_gambit",
+      "breakpoints": true
     }
   ]
 }

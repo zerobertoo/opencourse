@@ -1,4 +1,5 @@
 import {
+  domainEventNameSchema,
   domainEventPayloadSchemas,
   pickCertificateTitle,
   type DomainEventMap,
@@ -10,6 +11,7 @@ import type { Mailer } from '../mail/mailer';
 import { certificateEmail } from '../mail/templates';
 import { toLocale } from '../mappers';
 import { issueCertificate } from '../modules/certificates/service';
+import { deliverWebhook, fanOutWebhooks, type AddDeliveryJob } from '../modules/webhooks/delivery';
 import type { Database } from '../plugins/db';
 
 export interface WorkerContext {
@@ -17,14 +19,29 @@ export interface WorkerContext {
   mailer: Mailer;
   /** Public address of the web app, used to build links in e-mails. */
   webBaseUrl: string;
+  /** Queues a webhook delivery. */
+  addDeliveryJob: AddDeliveryJob;
+  allowPrivateNetworks: boolean;
+  webhookTimeoutMs: number;
+}
+
+/** What a consumer may need to know about the job that is running it. */
+export interface JobInfo {
+  eventId: string;
+  eventName: DomainEventName;
+  /** When the event was written, as ISO 8601. */
+  eventCreatedAt: string;
+  /** True when the queue will not retry this job again. */
+  isLastAttempt: boolean;
 }
 
 export interface Consumer {
   /** Queue job name; also part of the job id, so keep it stable. */
   name: string;
-  event: DomainEventName;
+  /** Events this consumer answers; empty for jobs that other consumers queue themselves. */
+  events: readonly DomainEventName[];
   /** Parses the stored payload, then runs. A throw makes the queue retry the job. */
-  run(context: WorkerContext, payload: unknown): Promise<void>;
+  run(context: WorkerContext, payload: unknown, job: JobInfo): Promise<void>;
 }
 
 function consumer<Name extends DomainEventName>(
@@ -34,7 +51,7 @@ function consumer<Name extends DomainEventName>(
 ): Consumer {
   return {
     name,
-    event,
+    events: [event],
     run: (context, payload) =>
       handle(context, domainEventPayloadSchemas[event].parse(payload) as DomainEventMap[Name]),
   };
@@ -71,4 +88,33 @@ export const consumers: readonly Consumer[] = [
         .where(eq(certificates.id, certificateId));
     },
   ),
+
+  // one delivery per subscribed endpoint; the HTTP call itself is `deliver-webhook`
+  {
+    name: 'fan-out-webhooks',
+    events: domainEventNameSchema.options,
+    run: ({ db, addDeliveryJob }, payload, job) =>
+      fanOutWebhooks(
+        db,
+        {
+          eventId: job.eventId,
+          eventName: job.eventName,
+          createdAt: job.eventCreatedAt,
+          data: domainEventPayloadSchemas[job.eventName].parse(payload),
+        },
+        addDeliveryJob,
+      ),
+  },
+
+  // queued by `fan-out-webhooks` and by the manual retry, never by the relay
+  {
+    name: 'deliver-webhook',
+    events: [],
+    run: ({ db, allowPrivateNetworks, webhookTimeoutMs }, payload, job) =>
+      deliverWebhook(db, (payload as { deliveryId: string }).deliveryId, {
+        allowPrivateNetworks,
+        timeoutMs: webhookTimeoutMs,
+        isLastAttempt: job.isLastAttempt,
+      }),
+  },
 ];

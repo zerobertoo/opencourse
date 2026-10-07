@@ -108,6 +108,7 @@ services:
       TRUST_PROXY: ${TRUST_PROXY:-false}
       # automated tests only: never enable this on a real deployment
       RATE_LIMIT_DISABLED: ${RATE_LIMIT_DISABLED:-false}
+      WEBHOOKS_ALLOW_PRIVATE_NETWORKS: ${WEBHOOKS_ALLOW_PRIVATE_NETWORKS:-false}
       SMTP_HOST: mailpit
       SMTP_PORT: 1025
     ports:
@@ -146,6 +147,7 @@ services:
       WEB_BASE_URL: ${WEB_BASE_URL:-http://localhost:5173}
       # the shared config requires it, although the worker never signs anything
       AUTH_SECRET: ${AUTH_SECRET:-}
+      WEBHOOKS_ALLOW_PRIVATE_NETWORKS: ${WEBHOOKS_ALLOW_PRIVATE_NETWORKS:-false}
       SMTP_HOST: mailpit
       SMTP_PORT: 1025
     depends_on:

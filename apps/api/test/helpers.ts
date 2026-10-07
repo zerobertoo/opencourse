@@ -28,10 +28,13 @@ export interface TestApp {
   mailer: FakeMailer;
 }
 
-export async function createTestApp(env: Record<string, string> = {}): Promise<TestApp> {
+export async function createTestApp(
+  env: Record<string, string> = {},
+  options: { queuePrefix?: string } = {},
+): Promise<TestApp> {
   const config = loadConfig({ ...process.env, ...env });
   const mailer = new FakeMailer();
-  const app = await buildApp(config, { mailer });
+  const app = await buildApp(config, { mailer, ...options });
   await app.ready();
   return { app, config, mailer };
 }
@@ -44,15 +47,18 @@ export interface TestWorker extends WorkerRuntime {
 /** Starts a worker on a queue of its own (fast polling and retries) that sends through `mailer`. */
 export async function startTestWorker(
   mailer: Mailer,
-  options: Pick<WorkerOptions, 'retryDelayMs'> = {},
+  options: Pick<WorkerOptions, 'retryDelayMs' | 'webhookTimeoutMs' | 'queuePrefix'> & {
+    env?: Record<string, string>;
+  } = {},
 ): Promise<TestWorker> {
-  const config = loadConfig(process.env);
-  const queuePrefix = `opencourse:test-queue:${randomUUID()}`;
+  const config = loadConfig({ ...process.env, ...options.env });
+  const queuePrefix = options.queuePrefix ?? `opencourse:test-queue:${randomUUID()}`;
   const worker = await startWorker(config, {
     mailer,
     queuePrefix,
     pollIntervalMs: 20,
     retryDelayMs: options.retryDelayMs ?? 20,
+    ...(options.webhookTimeoutMs ? { webhookTimeoutMs: options.webhookTimeoutMs } : {}),
   });
   return {
     ...worker,
@@ -69,7 +75,7 @@ export async function startTestWorker(
 /** Empties every table the API writes to, so each test starts from a fresh instance. */
 export async function resetDatabase(app: FastifyInstance): Promise<void> {
   await app.db.execute(
-    sql`truncate table users, sessions, password_reset_tokens, invites, courses, grants, audit_log, outbox_events restart identity cascade`,
+    sql`truncate table users, sessions, password_reset_tokens, invites, courses, grants, audit_log, outbox_events, webhook_endpoints, webhook_deliveries restart identity cascade`,
   );
 }
 
