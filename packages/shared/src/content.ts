@@ -1,4 +1,4 @@
-import type { Locale } from './base';
+import { SUPPORTED_LOCALES, type Locale } from './base';
 import type { CourseDetail, Grant, GrantStatus, Lesson, Quiz } from './entities';
 
 // ---------- Content translation ----------
@@ -74,6 +74,26 @@ export function getTranslationCoverage(course: CourseDetail, locale: Locale): Tr
     total,
     ratio: total === 0 ? 1 : translated / total,
     isComplete: translated === total,
+  };
+}
+
+/** What a course list needs from the curriculum, so listing never has to ship the curriculum. */
+export interface CourseSummaryStats {
+  moduleCount: number;
+  lessonCount: number;
+  durationSeconds: number;
+  /** Supported languages in which the whole course is translated (title down to quiz options). */
+  completeLocales: Locale[];
+}
+
+export function getCourseSummaryStats(course: CourseDetail): CourseSummaryStats {
+  return {
+    moduleCount: course.modules.length,
+    lessonCount: flattenLessons(course).length,
+    durationSeconds: getCourseDurationSeconds(course),
+    completeLocales: SUPPORTED_LOCALES.filter(
+      (locale) => getTranslationCoverage(course, locale).isComplete,
+    ),
   };
 }
 

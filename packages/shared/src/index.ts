@@ -6,3 +6,4 @@ export * from './health';
 export * from './auth';
 export * from './courses';
 export * from './curriculum';
+export * from './grants';

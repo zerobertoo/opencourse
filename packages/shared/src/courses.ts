@@ -6,6 +6,7 @@ import {
   courseSchema,
   courseStatusSchema,
   courseTranslationSchema,
+  grantSchema,
 } from './entities';
 
 export const courseIdParamsSchema = z.object({ id: idSchema });
@@ -19,8 +20,21 @@ export const listCoursesQuerySchema = z.object({
 });
 export type ListCoursesQuery = z.infer<typeof listCoursesQuerySchema>;
 
-/** Summaries: the course without its curriculum. */
-export const listCoursesResponseSchema = z.object({ courses: z.array(courseSchema) });
+/**
+ * A course in a list: no curriculum, but enough to draw a card. `myGrant` is the caller's own open
+ * grant (its effective status included) or null, so a student's list says what they can open
+ * without a second request.
+ */
+export const listedCourseSchema = courseSchema.extend({
+  moduleCount: z.number().int().nonnegative(),
+  lessonCount: z.number().int().nonnegative(),
+  durationSeconds: z.number().int().nonnegative(),
+  completeLocales: z.array(localeSchema),
+  myGrant: grantSchema.nullable(),
+});
+export type ListedCourse = z.infer<typeof listedCourseSchema>;
+
+export const listCoursesResponseSchema = z.object({ courses: z.array(listedCourseSchema) });
 export const courseResponseSchema = z.object({ course: courseDetailSchema });
 
 /** Links to files hosted elsewhere: https only until the storage adapter exists (milestone 4b). */
