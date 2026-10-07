@@ -2,7 +2,7 @@
 
 Open source, self-hosted course platform. Full specification in [docs/PRD.md](docs/PRD.md).
 
-Current state: the backend (`apps/api`) has accounts, sessions, roles, invites, an audit log, courses with modules, lessons and translations, and access grants, lesson progress, graded quizzes, personal notes, enrollments and certificates. The frontend (`apps/web`) can run fully mocked (demo mode) or use the real API for everything except settings, which are still mocked until their milestone. File uploads (cover images, attachments, local video and caption files) wait for the storage adapter.
+Current state: the backend (`apps/api`, plus its background worker) has accounts, sessions, roles, invites, an audit log, courses with modules, lessons and translations, and access grants, lesson progress, graded quizzes, personal notes, enrollments and certificates. The frontend (`apps/web`) can run fully mocked (demo mode) or use the real API for everything except settings, which are still mocked until their milestone. File uploads (cover images, attachments, local video and caption files) wait for the storage adapter.
 
 ## Requirements
 
@@ -23,10 +23,10 @@ pnpm build
 
 ## Backend
 
-The whole stack (API, Postgres, Redis, S3-compatible storage, Mailpit) runs with Docker Compose:
+The whole stack (API, worker, Postgres, Redis, S3-compatible storage, Mailpit) runs with Docker Compose:
 
 ```bash
-docker compose up -d --build   # applies migrations, then starts the API
+docker compose up -d --build   # applies migrations, then starts the API and the worker
 curl localhost:3000/health     # dependency status; /health/live is the cheap liveness probe
 ```
 
@@ -55,6 +55,7 @@ To work on the API with hot reload and run its tests, start only the data servic
 docker compose up -d --wait postgres redis
 pnpm --filter @opencourse/api db:migrate
 pnpm --filter @opencourse/api dev
+pnpm --filter @opencourse/api dev:worker   # in another terminal: certificates and e-mails need it
 pnpm --filter @opencourse/api test
 ```
 
@@ -78,8 +79,8 @@ Tags `progress`, `me` and `studio` in the OpenAPI reference.
 - **Access changes.** Revoking or letting a grant expire hides the course and its progress but deletes nothing; granting again brings it all back.
 - **Enrollments.** `GET /me/courses` lists active grants (archived courses included) with a progress summary; `GET /me/continue-learning` points to the next lesson with the saved video position. Managers get `GET /courses/:id/students` and `GET /studio/metrics` (active students, completion rate).
 - **Notes.** `GET`/`PUT /lessons/:id/note`: private to their author; blank text erases the note.
-- **Events.** Completing a lesson or a course emits `lesson.completed` and `course.completed` on an in-process typed bus (`app.events`). The certificate listener consumes `course.completed`. Progress and these events are not audited.
-- **Certificates.** Finishing a course (with the course certificate template enabled) issues one certificate per student and course, forever: `UNIQUE (user_id, course_id)` and `ON CONFLICT DO NOTHING` make repeated `course.completed` events harmless, and only the insert that wins emits `certificate.issued`. The holder name, course titles and template are copied into the row, so later edits never change a verifiable certificate. The row and its audit entry (no actor) commit together; the student e-mail is one best-effort attempt, and `email_sent_at` stays null when it fails (no retry loop yet). `GET /me/certificates` lists the caller's; `GET /certificates/verify/:code` is public and rate limited, answers the same 404 for malformed and unknown codes, and exposes no e-mail or ids. Codes look like `OC-XXXX-XXXX`. The PDF is rendered by the web client from the stored data (names outside Latin-1 print as `?`); a server-side PDF waits for the worker. People who finished before this existed, or while the API was down, get theirs with `pnpm --filter @opencourse/api certificates:backfill` (idempotent, sends no e-mail). There is no revocation or reissue yet.
+- **Events and the worker.** Completing a lesson or a course writes `lesson.completed` and `course.completed` to the `outbox_events` table in the same transaction as the progress row (typed in `packages/shared`), so an event exists exactly when the change does. The worker (`apps/api/src/worker.ts`, same image as the API, `node dist/worker.js`) polls the outbox about once a second, adds one BullMQ job per consumer (Redis) and stamps the event dispatched; stamped rows are deleted after 7 days. Consumers live in `src/worker/consumers.ts`; failed jobs are retried 5 times with exponential backoff and then kept for inspection. Delivery is at-least-once, so consumers must be idempotent. Without a running worker nothing is lost: events wait in the outbox. Progress and these events are not audited.
+- **Certificates.** Finishing a course (with the course certificate template enabled) issues one certificate per student and course, forever: `UNIQUE (user_id, course_id)` and `ON CONFLICT DO NOTHING` make repeated `course.completed` events harmless, and only the insert that wins records `certificate.issued`. The holder name, course titles and template are copied into the row, so later edits never change a verifiable certificate. The row, its audit entry (no actor) and the `certificate.issued` event commit together. The worker issues it right after the course is completed (up to about a second later) and e-mails the student with retries; `email_sent_at` is set once the e-mail went out and stays null if every attempt fails, and a crash between sending and recording can mail twice. `GET /me/certificates` lists the caller's; `GET /certificates/verify/:code` is public and rate limited, answers the same 404 for malformed and unknown codes, and exposes no e-mail or ids. Codes look like `OC-XXXX-XXXX`. The PDF is rendered by the web client from the stored data (names outside Latin-1 print as `?`); a server-side PDF waits for the storage adapter. People who finished before the outbox existed get theirs with `pnpm --filter @opencourse/api certificates:backfill` (idempotent, sends no e-mail). There is no revocation or reissue yet.
 
 ## Demo data in the real database
 
