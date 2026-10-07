@@ -2,7 +2,7 @@
 
 Open source, self-hosted course platform. Full specification in [docs/PRD.md](docs/PRD.md).
 
-Current state: the backend (`apps/api`) has accounts, sessions, roles, invites, an audit log, courses with modules, lessons and translations, and access grants. The frontend (`apps/web`) can run fully mocked (demo mode) or use the real API for sign-in, users, invites, courses, curriculum and grants; enrollments, progress, notes, certificates, settings and the Studio dashboard are still mocked until their milestones. File uploads (cover images, attachments, local video and caption files) wait for the storage adapter.
+Current state: the backend (`apps/api`) has accounts, sessions, roles, invites, an audit log, courses with modules, lessons and translations, and access grants, lesson progress, graded quizzes, personal notes and enrollments. The frontend (`apps/web`) can run fully mocked (demo mode) or use the real API for everything except certificates and settings, which are still mocked until their milestones. File uploads (cover images, attachments, local video and caption files) wait for the storage adapter.
 
 ## Requirements
 
@@ -69,6 +69,17 @@ Course routes live under `/api/v1` and are documented in the OpenAPI reference a
 - **Grants.** Access to a course is always a grant. Instructors (for their own courses) and admins create, list, revoke and extend grants. A user has at most one open grant per course: granting again extends it instead of stacking, and revoking twice is harmless. Accepting an invite that names a course creates the grant in the same transaction as the account.
 - **Audit.** Course status changes and grant creation, extension and revocation are written to the audit log.
 
+## Studying: progress, quizzes, notes
+
+Tags `progress`, `me` and `studio` in the OpenAPI reference.
+
+- **Progress.** `PUT /lessons/:id/progress` marks a lesson completed (or not) and saves the video position; `GET /courses/:id/progress` lists the caller's records. Only people who can read the course may write. In courses with sequential order the server refuses to complete, save a position or take a quiz on a locked lesson. Video lessons complete only when the client asks (the player decides when, for instance at ~90%); quiz lessons complete only by passing.
+- **Quizzes.** `POST /quizzes/:lessonId/attempts` grades on the server: the student never receives `isCorrect`, only per-question feedback after submitting, and the right option is revealed only once the attempt passed. Attempts are unlimited and all kept; the pass mark is the quiz's own; passing completes the lesson for good.
+- **Access changes.** Revoking or letting a grant expire hides the course and its progress but deletes nothing; granting again brings it all back.
+- **Enrollments.** `GET /me/courses` lists active grants (archived courses included) with a progress summary; `GET /me/continue-learning` points to the next lesson with the saved video position. Managers get `GET /courses/:id/students` and `GET /studio/metrics` (active students, completion rate).
+- **Notes.** `GET`/`PUT /lessons/:id/note`: private to their author; blank text erases the note.
+- **Events.** Completing a lesson or a course emits `lesson.completed` and `course.completed` on an in-process typed bus (`app.events`). Nothing consumes them yet; the certificate milestone will. Progress and these events are not audited.
+
 ## Demo data in the real database
 
 ```bash
@@ -89,7 +100,7 @@ docker compose up -d --build --wait
 pnpm --filter @opencourse/web dev
 ```
 
-Without `VITE_API_URL` the app stays in demo mode. With it, the demo sign-in buttons disappear and the mock starts empty (under its own storage keys, so demo and real data never mix). The signed-in user, and the courses and grants the app reads or changes, are mirrored into the mock so the not-yet-migrated screens (enrollments, progress, certificates) keep working; the mirror is cleared when the account changes. A new instructor starts with an empty Studio: create courses there, or run the demo seed above. Attachments and local video or caption uploads are hidden until the storage adapter exists; videos are added by `https` link (a direct video file, since the player is a plain `<video>`). Quizzes cannot be graded for students yet: the API never sends the correct answers, and grading arrives with its own backend milestone, so submitting a quiz answers "unavailable" in this mode.
+Without `VITE_API_URL` the app stays in demo mode. With it, the demo sign-in buttons disappear and the mock starts empty (under its own storage keys, so demo and real data never mix). Everything except certificates and settings goes to the API; only the signed-in user is mirrored into the mock, so those two keep working. Certificates are therefore **not issued** in this mode until their milestone (finishing a course shows 100% but no certificate). A new instructor starts with an empty Studio: create courses there, or run the demo seed above. Attachments and local video or caption uploads are hidden until the storage adapter exists; videos are added by `https` link (a direct video file, since the player is a plain `<video>`).
 
 ## Tests
 
