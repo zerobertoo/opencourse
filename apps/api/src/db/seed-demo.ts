@@ -2,7 +2,7 @@ import { randomUUID } from 'node:crypto';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import type { Locale, Quiz, Role } from '@opencourse/shared';
-import { and, eq } from 'drizzle-orm';
+import { and, eq, inArray } from 'drizzle-orm';
 import { drizzle } from 'drizzle-orm/postgres-js';
 import postgres from 'postgres';
 import { hashPassword } from '../auth/passwords';
@@ -200,10 +200,15 @@ function buildQuiz(spec: NonNullable<LessonSeed['quiz']>): Quiz {
   };
 }
 
-/** Throws when the environment looks like production: demo accounts share a public password. */
+/**
+ * Throws when the environment looks like production: demo accounts share a public password.
+ * `ALLOW_DEMO_SEED=true` is the explicit opt-in for a throwaway deployment (a test server).
+ */
 export function assertNotProduction(env: NodeJS.ProcessEnv): void {
-  if (env.NODE_ENV === 'production') {
-    throw new Error('db:seed:demo refuses to run when NODE_ENV=production');
+  if (env.NODE_ENV === 'production' && env.ALLOW_DEMO_SEED !== 'true') {
+    throw new Error(
+      'db:seed:demo refuses to run when NODE_ENV=production (set ALLOW_DEMO_SEED=true to override)',
+    );
   }
 }
 
@@ -338,29 +343,56 @@ export async function seedDemoData(db: Database): Promise<void> {
   });
 }
 
+/**
+ * Undoes `seedDemoData`: deletes the demo courses (and with them modules, lessons, grants,
+ * progress and certificates) and then the demo accounts (with their sessions, notes and grants).
+ * Anything else is left alone. It fails, changing nothing, when real data still points at a demo
+ * account (a course it instructs, an invite or grant it created).
+ */
+export async function removeDemoData(db: Database): Promise<void> {
+  await db.transaction(async (tx) => {
+    await tx.delete(courses).where(
+      inArray(
+        courses.slug,
+        COURSES.map((spec) => spec.slug),
+      ),
+    );
+    await tx.delete(users).where(
+      inArray(
+        users.email,
+        DEMO_ACCOUNTS.map((account) => account.email),
+      ),
+    );
+  });
+}
+
 /** Opens its own connection, refusing first when the environment looks like production. */
 export async function runSeedDemo(
   databaseUrl: string,
   env: NodeJS.ProcessEnv = process.env,
+  mode: 'seed' | 'remove' = 'seed',
 ): Promise<void> {
   assertNotProduction(env);
   const client = postgres(databaseUrl, { max: 1, onnotice: () => {} });
   try {
-    await seedDemoData(drizzle(client, { schema }));
+    const db = drizzle(client, { schema });
+    await (mode === 'remove' ? removeDemoData(db) : seedDemoData(db));
   } finally {
     await client.end();
   }
 }
 
-// run as a script (`pnpm --filter @opencourse/api db:seed:demo`)
+// run as a script (`pnpm --filter @opencourse/api db:seed:demo`, add `--remove` to undo it)
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   const databaseUrl = process.env.DATABASE_URL;
   if (!databaseUrl) {
     console.error('DATABASE_URL is required to seed the demo data');
     process.exit(1);
   }
-  runSeedDemo(databaseUrl)
+  const remove = process.argv.includes('--remove');
+  runSeedDemo(databaseUrl, process.env, remove ? 'remove' : 'seed')
     .then(() => {
+      if (remove) return console.log('Demo accounts and courses removed.');
       console.log('Demo data ready. Sign in with any of these accounts:');
       for (const account of DEMO_ACCOUNTS)
         console.log(`  ${account.role.padEnd(10)} ${account.email}`);

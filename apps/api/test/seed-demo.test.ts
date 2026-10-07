@@ -2,7 +2,13 @@ import { courseResponseSchema, getPublishIssues } from '@opencourse/shared';
 import { eq } from 'drizzle-orm';
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import { courses, grants, users } from '../src/db/schema';
-import { DEMO_ACCOUNTS, DEMO_PASSWORD, runSeedDemo, seedDemoData } from '../src/db/seed-demo';
+import {
+  DEMO_ACCOUNTS,
+  DEMO_PASSWORD,
+  removeDemoData,
+  runSeedDemo,
+  seedDemoData,
+} from '../src/db/seed-demo';
 import { loadCourseDetail } from '../src/modules/courses/detail';
 import { createTestApp, resetDatabase, TestClient, type TestApp } from './helpers';
 
@@ -127,5 +133,32 @@ describe('demo seed', () => {
     await expect(
       runSeedDemo('postgres://nobody:nothing@127.0.0.1:1/none', { NODE_ENV: 'production' }),
     ).rejects.toThrow(/production/);
+  });
+
+  it('lets ALLOW_DEMO_SEED=true override the production refusal', async () => {
+    // reaches the connection (and fails there), which proves the guard let it through
+    await expect(
+      runSeedDemo('postgres://nobody:nothing@127.0.0.1:1/none', {
+        NODE_ENV: 'production',
+        ALLOW_DEMO_SEED: 'true',
+      }),
+    ).rejects.not.toThrow(/production/);
+  });
+
+  it('removes only the demo data and leaves real accounts and courses alone', async () => {
+    const [real] = await ctx.app.db
+      .insert(users)
+      .values({ email: 'real@example.com', name: 'Real', role: 'student', passwordHash: 'x' })
+      .returning({ id: users.id });
+    await seedDemoData(ctx.app.db);
+
+    await removeDemoData(ctx.app.db);
+
+    expect((await ctx.app.db.select().from(users)).map((user) => user.id)).toEqual([real?.id]);
+    expect(await ctx.app.db.select().from(courses)).toHaveLength(0);
+    expect(await ctx.app.db.select().from(grants)).toHaveLength(0);
+    // and it can be seeded again afterwards
+    await seedDemoData(ctx.app.db);
+    expect(await ctx.app.db.select().from(courses)).toHaveLength(3);
   });
 });

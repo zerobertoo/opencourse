@@ -89,7 +89,16 @@ Tags `progress`, `me` and `studio` in the OpenAPI reference.
 pnpm --filter @opencourse/api db:seed:demo
 ```
 
-Creates four accounts (`admin@`, `instructor@`, `student@` and `student2@opencourse.example`, all with the development password `demo-password-123`), three courses (two published, one draft) and a few grants (active, expiring, expired and revoked). It is safe to run again: existing accounts and courses are never overwritten. It refuses to run when `NODE_ENV=production`.
+Creates four accounts (`admin@`, `instructor@`, `student@` and `student2@opencourse.example`, all with the development password `demo-password-123`), three courses (two published, one draft) and a few grants (active, expiring, expired and revoked). It is safe to run again: existing accounts and courses are never overwritten. It refuses to run when `NODE_ENV=production`, unless `ALLOW_DEMO_SEED=true` is set (for a throwaway test server only: the accounts share a public password).
+
+To undo it, run the same script with `--remove`: it deletes the demo courses and accounts (and their grants, progress and certificates) and nothing else. It fails, changing nothing, if real data still points at a demo account.
+
+On a deployed stack the built script is in the API image, so open a terminal in the `api` container (Dokploy: Docker Compose, Terminal) and run:
+
+```bash
+ALLOW_DEMO_SEED=true node dist/seed-demo.js            # load
+ALLOW_DEMO_SEED=true node dist/seed-demo.js --remove   # undo
+```
 
 ## Authentication
 
