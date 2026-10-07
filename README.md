@@ -2,7 +2,7 @@
 
 Open source, self-hosted course platform. Full specification in [docs/PRD.md](docs/PRD.md).
 
-Current state: the backend (`apps/api`) has accounts, sessions, roles, invites, an audit log, courses with modules, lessons and translations, and access grants, lesson progress, graded quizzes, personal notes and enrollments. The frontend (`apps/web`) can run fully mocked (demo mode) or use the real API for everything except certificates and settings, which are still mocked until their milestones. File uploads (cover images, attachments, local video and caption files) wait for the storage adapter.
+Current state: the backend (`apps/api`) has accounts, sessions, roles, invites, an audit log, courses with modules, lessons and translations, and access grants, lesson progress, graded quizzes, personal notes, enrollments and certificates. The frontend (`apps/web`) can run fully mocked (demo mode) or use the real API for everything except settings, which are still mocked until their milestone. File uploads (cover images, attachments, local video and caption files) wait for the storage adapter.
 
 ## Requirements
 
@@ -78,7 +78,8 @@ Tags `progress`, `me` and `studio` in the OpenAPI reference.
 - **Access changes.** Revoking or letting a grant expire hides the course and its progress but deletes nothing; granting again brings it all back.
 - **Enrollments.** `GET /me/courses` lists active grants (archived courses included) with a progress summary; `GET /me/continue-learning` points to the next lesson with the saved video position. Managers get `GET /courses/:id/students` and `GET /studio/metrics` (active students, completion rate).
 - **Notes.** `GET`/`PUT /lessons/:id/note`: private to their author; blank text erases the note.
-- **Events.** Completing a lesson or a course emits `lesson.completed` and `course.completed` on an in-process typed bus (`app.events`). Nothing consumes them yet; the certificate milestone will. Progress and these events are not audited.
+- **Events.** Completing a lesson or a course emits `lesson.completed` and `course.completed` on an in-process typed bus (`app.events`). The certificate listener consumes `course.completed`. Progress and these events are not audited.
+- **Certificates.** Finishing a course (with the course certificate template enabled) issues one certificate per student and course, forever: `UNIQUE (user_id, course_id)` and `ON CONFLICT DO NOTHING` make repeated `course.completed` events harmless, and only the insert that wins emits `certificate.issued`. The holder name, course titles and template are copied into the row, so later edits never change a verifiable certificate. The row and its audit entry (no actor) commit together; the student e-mail is one best-effort attempt, and `email_sent_at` stays null when it fails (no retry loop yet). `GET /me/certificates` lists the caller's; `GET /certificates/verify/:code` is public and rate limited, answers the same 404 for malformed and unknown codes, and exposes no e-mail or ids. Codes look like `OC-XXXX-XXXX`. The PDF is rendered by the web client from the stored data (names outside Latin-1 print as `?`); a server-side PDF waits for the worker. People who finished before this existed, or while the API was down, get theirs with `pnpm --filter @opencourse/api certificates:backfill` (idempotent, sends no e-mail). There is no revocation or reissue yet.
 
 ## Demo data in the real database
 
@@ -100,7 +101,7 @@ docker compose up -d --build --wait
 pnpm --filter @opencourse/web dev
 ```
 
-Without `VITE_API_URL` the app stays in demo mode. With it, the demo sign-in buttons disappear and the mock starts empty (under its own storage keys, so demo and real data never mix). Everything except certificates and settings goes to the API; only the signed-in user is mirrored into the mock, so those two keep working. Certificates are therefore **not issued** in this mode until their milestone (finishing a course shows 100% but no certificate). A new instructor starts with an empty Studio: create courses there, or run the demo seed above. Attachments and local video or caption uploads are hidden until the storage adapter exists; videos are added by `https` link (a direct video file, since the player is a plain `<video>`).
+Without `VITE_API_URL` the app stays in demo mode. With it, the demo sign-in buttons disappear and the mock starts empty (under its own storage keys, so demo and real data never mix). Everything except settings goes to the API; only the signed-in user is mirrored into the mock, so settings keeps working. Finishing a course issues its certificate on the server. A new instructor starts with an empty Studio: create courses there, or run the demo seed above. Attachments and local video or caption uploads are hidden until the storage adapter exists; videos are added by `https` link (a direct video file, since the player is a plain `<video>`).
 
 ## Tests
 
