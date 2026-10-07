@@ -55,6 +55,30 @@ describe('hybrid services', () => {
     await expect(services.settings.get()).resolves.toBeDefined();
   });
 
+  it('manages webhooks through the API and sends the secret only where the API does', async () => {
+    const webhook = {
+      id: '5c1b8a54-6d1e-4c3f-9a7b-2d5e8c1f0a22',
+      url: 'https://example.com/hook',
+      description: '',
+      events: ['user.created'],
+      active: true,
+      createdAt: '2026-10-01T10:00:00.000Z',
+      updatedAt: '2026-10-01T10:00:00.000Z',
+    };
+    const { services, fetchMock } = setup({
+      'GET /admin/webhooks': () => json(200, { webhooks: [webhook] }),
+      'POST /admin/webhooks': () => json(201, { webhook: { ...webhook, secret: 'whsec_abc' } }),
+      [`POST /admin/webhooks/${webhook.id}/test`]: () =>
+        json(200, { succeeded: false, statusCode: 500, error: 'Receiver answered 500' }),
+    });
+
+    expect(await services.webhooks.list()).toEqual([webhook]);
+    const created = await services.webhooks.create({ url: webhook.url, events: ['user.created'] });
+    expect(created.secret).toBe('whsec_abc');
+    expect(await services.webhooks.sendTest(webhook.id)).toMatchObject({ statusCode: 500 });
+    expect(fetchMock).toHaveBeenCalledTimes(3);
+  });
+
   it('reads certificates from the API, not from the mock', async () => {
     const { services, fetchMock } = setup({
       'GET /certificates/verify/OC-ABCD-EFGH': () =>

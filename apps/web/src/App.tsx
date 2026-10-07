@@ -17,6 +17,7 @@ import { AdminGrants } from '@/pages/admin/Grants';
 import { AdminPlugins } from '@/pages/admin/Plugins';
 import { AdminSettings } from '@/pages/admin/Settings';
 import { AdminUsers } from '@/pages/admin/Users';
+import { AdminWebhooks } from '@/pages/admin/Webhooks';
 import { Showcase } from '@/pages/Showcase';
 import { VerifyCertificate } from '@/pages/VerifyCertificate';
 import { CourseEditor } from '@/pages/studio/CourseEditor';
@@ -66,6 +67,7 @@ export function App() {
                 <Route index element={<Navigate to="users" replace />} />
                 <Route path="users" element={<AdminUsers />} />
                 <Route path="grants" element={<AdminGrants />} />
+                <Route path="webhooks" element={<AdminWebhooks />} />
                 <Route path="settings" element={<AdminSettings />} />
                 <Route path="plugins" element={<AdminPlugins />} />
               </Route>

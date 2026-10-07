@@ -1,5 +1,10 @@
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import type { PlatformSettings, Role } from '@opencourse/shared';
+import type {
+  CreateWebhookRequest,
+  PlatformSettings,
+  Role,
+  UpdateWebhookRequest,
+} from '@opencourse/shared';
 import type { CreateInviteInput, GrantFilters, UserFilters } from '@/services';
 import { useServices } from '@/services/ServicesContext';
 import { studioKeys } from './studioQueries';
@@ -107,4 +112,50 @@ export function useUpdateSettings() {
     mutationFn: (patch: Partial<PlatformSettings>) => settings.update(patch),
     onSuccess: (saved) => queryClient.setQueryData(studioKeys.settings, saved),
   });
+}
+
+const webhookKeys = {
+  list: ['admin', 'webhooks'] as const,
+  deliveries: (webhookId: string) => ['admin', 'webhooks', webhookId, 'deliveries'] as const,
+};
+
+export function useWebhooks() {
+  const { webhooks } = useServices();
+  return useQuery({ queryKey: webhookKeys.list, queryFn: () => webhooks.list() });
+}
+
+export function useWebhookDeliveries(webhookId: string) {
+  const { webhooks } = useServices();
+  return useQuery({
+    queryKey: webhookKeys.deliveries(webhookId),
+    queryFn: () => webhooks.listDeliveries(webhookId),
+  });
+}
+
+export function useWebhookMutations() {
+  const { webhooks } = useServices();
+  const queryClient = useQueryClient();
+  const refresh = () => queryClient.invalidateQueries({ queryKey: webhookKeys.list });
+
+  return {
+    create: useMutation({
+      mutationFn: (input: CreateWebhookRequest) => webhooks.create(input),
+      onSuccess: refresh,
+    }),
+    update: useMutation({
+      mutationFn: ({ id, patch }: { id: string; patch: UpdateWebhookRequest }) =>
+        webhooks.update(id, patch),
+      onSuccess: refresh,
+    }),
+    remove: useMutation({ mutationFn: (id: string) => webhooks.remove(id), onSuccess: refresh }),
+    rotateSecret: useMutation({
+      mutationFn: (id: string) => webhooks.rotateSecret(id),
+      onSuccess: refresh,
+    }),
+    sendTest: useMutation({ mutationFn: (id: string) => webhooks.sendTest(id) }),
+    retryDelivery: useMutation({
+      mutationFn: (deliveryId: string) => webhooks.retryDelivery(deliveryId),
+      onSuccess: () => queryClient.invalidateQueries({ queryKey: webhookKeys.list }),
+    }),
+  };
 }

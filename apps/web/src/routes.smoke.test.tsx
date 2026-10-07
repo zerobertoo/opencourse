@@ -28,6 +28,7 @@ const ADMIN_ROUTES = [
   '/admin',
   '/admin/users',
   '/admin/grants',
+  '/admin/webhooks',
   '/admin/settings',
   '/admin/plugins',
 ];

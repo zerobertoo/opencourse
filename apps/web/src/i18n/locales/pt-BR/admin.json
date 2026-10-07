@@ -8,7 +8,8 @@
     "users": "Usuários",
     "grants": "Acessos",
     "settings": "Configurações",
-    "plugins": "Plugins"
+    "plugins": "Plugins",
+    "webhooks": "Webhooks"
   },
   "roles": {
     "student": "Aluno",
@@ -186,6 +187,97 @@
         "name": "Plugin de exemplo",
         "description": "Um ponto de partida documentado para criar sua própria extensão."
       }
+    }
+  },
+  "webhooks": {
+    "title": "Webhooks",
+    "description": "Envie uma requisição HTTP assinada a outro sistema sempre que algo acontecer na plataforma.",
+    "listLabel": "Endereços de webhook",
+    "add": "Adicionar webhook",
+    "emptyTitle": "Nenhum webhook ainda",
+    "emptyDescription": "Adicione um endereço para ser avisado quando alguém se cadastrar, ganhar acesso ou concluir cursos.",
+    "status": {
+      "active": "Ativo",
+      "inactive": "Desativado"
+    },
+    "events": {
+      "userCreated": "Usuário criado",
+      "enrollmentGranted": "Acesso concedido",
+      "grantRevoked": "Acesso revogado",
+      "lessonCompleted": "Aula concluída",
+      "courseCompleted": "Curso concluído",
+      "certificateIssued": "Certificado emitido"
+    },
+    "editFor": "Editar {url}",
+    "edit": "Editar",
+    "test": "Enviar teste",
+    "testFor": "Enviar um teste para {url}",
+    "testSuccess": "Teste entregue: o destino respondeu {status}.",
+    "testFailure": "O teste falhou: {error}",
+    "history": "Histórico",
+    "historyFor": "Histórico de entregas de {url}",
+    "rotate": "Novo segredo",
+    "rotateFor": "Criar um novo segredo para {url}",
+    "enable": "Ativar",
+    "disable": "Desativar",
+    "enableFor": "Ativar {url}",
+    "disableFor": "Desativar {url}",
+    "enabledToast": "Webhook ativado.",
+    "disabledToast": "Webhook desativado.",
+    "delete": "Excluir",
+    "deleteFor": "Excluir {url}",
+    "deletedToast": "Webhook excluído.",
+    "form": {
+      "createTitle": "Adicionar webhook",
+      "editTitle": "Editar webhook",
+      "description": "O OpenCourse envia uma requisição POST com corpo JSON para este endereço.",
+      "url": "Endereço (URL)",
+      "urlHint": "http simples só funciona quando o servidor permite redes privadas.",
+      "note": "Descrição",
+      "noteHint": "Opcional. Ajuda a lembrar para que serve.",
+      "events": "Eventos",
+      "eventsHint": "Escolha o que dispara uma requisição.",
+      "submitCreate": "Adicionar webhook",
+      "submitEdit": "Salvar",
+      "createdToast": "Webhook adicionado.",
+      "updatedToast": "Webhook salvo."
+    },
+    "secret": {
+      "title": "Segredo de assinatura",
+      "description": "Use-o para conferir que uma requisição vem mesmo desta plataforma. Ele aparece só agora: copie antes de fechar.",
+      "label": "Segredo",
+      "copy": "Copiar",
+      "copied": "Copiado",
+      "copyFailed": "Não foi possível copiar. Selecione o texto e copie à mão.",
+      "howTo": "Toda requisição leva o cabeçalho OpenCourse-Signature, com um timestamp (t) e uma assinatura HMAC-SHA256 (v1) do timestamp e do corpo, feita com este segredo.",
+      "done": "Já guardei"
+    },
+    "rotateDialog": {
+      "title": "Criar um novo segredo?",
+      "description": "O segredo atual deixa de funcionar na hora. Atualize o destino com o novo.",
+      "confirm": "Criar novo segredo"
+    },
+    "deleteDialog": {
+      "title": "Excluir este webhook?",
+      "description": "{url} deixa de receber eventos e o histórico de entregas é apagado.",
+      "confirm": "Excluir"
+    },
+    "deliveries": {
+      "title": "Histórico de entregas",
+      "description": "Requisições dos últimos 7 dias, da mais recente para a mais antiga.",
+      "listLabel": "Entregas",
+      "emptyTitle": "Nada enviado ainda",
+      "emptyDescription": "As entregas aparecem aqui depois que um evento acontece.",
+      "status": {
+        "pending": "Pendente",
+        "succeeded": "Entregue",
+        "failed": "Falhou"
+      },
+      "attempts": "{count, plural, one {# tentativa} other {# tentativas}}",
+      "statusCode": "HTTP {code}",
+      "retry": "Tentar de novo",
+      "retryFor": "Tentar de novo {event}",
+      "retriedToast": "Entrega colocada na fila de novo."
     }
   }
 }

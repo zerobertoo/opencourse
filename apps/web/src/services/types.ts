@@ -9,6 +9,7 @@ import type { ProgressService } from './progress';
 import type { SettingsService } from './settings';
 import type { StudioService } from './studio';
 import type { UserService } from './users';
+import type { WebhookService } from './webhooks';
 
 /** All application services. Components depend only on these interfaces. */
 export interface Services {
@@ -23,4 +24,5 @@ export interface Services {
   grants: GrantService;
   settings: SettingsService;
   studio: StudioService;
+  webhooks: WebhookService;
 }

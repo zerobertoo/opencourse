@@ -2,7 +2,7 @@ import { useTranslation } from 'react-i18next';
 import { NavLink, Outlet } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 
-const SECTIONS = ['users', 'grants', 'settings', 'plugins'] as const;
+const SECTIONS = ['users', 'grants', 'webhooks', 'settings', 'plugins'] as const;
 
 /** Shell of the admin area: title and section navigation above the active section. */
 export function AdminLayout() {

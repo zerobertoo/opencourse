@@ -105,7 +105,8 @@
     "color": "Use a color like #2f6f5e.",
     "port": "Enter a port between 1 and 65535.",
     "localeRequired": "Enable at least one language.",
-    "defaultLocaleDisabled": "The default language must be enabled."
+    "defaultLocaleDisabled": "The default language must be enabled.",
+    "eventsRequired": "Choose at least one event."
   },
   "lessonTypes": {
     "video": "Video",

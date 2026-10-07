@@ -8,7 +8,8 @@
     "users": "Users",
     "grants": "Access",
     "settings": "Settings",
-    "plugins": "Plugins"
+    "plugins": "Plugins",
+    "webhooks": "Webhooks"
   },
   "roles": {
     "student": "Student",
@@ -186,6 +187,97 @@
         "name": "Example plugin",
         "description": "A documented starting point for building your own extension."
       }
+    }
+  },
+  "webhooks": {
+    "title": "Webhooks",
+    "description": "Send a signed HTTP request to another system whenever something happens on the platform.",
+    "listLabel": "Webhook endpoints",
+    "add": "Add webhook",
+    "emptyTitle": "No webhooks yet",
+    "emptyDescription": "Add an address to be notified when people sign up, get access or finish courses.",
+    "status": {
+      "active": "Active",
+      "inactive": "Disabled"
+    },
+    "events": {
+      "userCreated": "User created",
+      "enrollmentGranted": "Access granted",
+      "grantRevoked": "Access revoked",
+      "lessonCompleted": "Lesson completed",
+      "courseCompleted": "Course completed",
+      "certificateIssued": "Certificate issued"
+    },
+    "editFor": "Edit {url}",
+    "edit": "Edit",
+    "test": "Send test",
+    "testFor": "Send a test to {url}",
+    "testSuccess": "Test delivered: the receiver answered {status}.",
+    "testFailure": "Test failed: {error}",
+    "history": "History",
+    "historyFor": "Delivery history of {url}",
+    "rotate": "New secret",
+    "rotateFor": "Create a new secret for {url}",
+    "enable": "Enable",
+    "disable": "Disable",
+    "enableFor": "Enable {url}",
+    "disableFor": "Disable {url}",
+    "enabledToast": "Webhook enabled.",
+    "disabledToast": "Webhook disabled.",
+    "delete": "Delete",
+    "deleteFor": "Delete {url}",
+    "deletedToast": "Webhook deleted.",
+    "form": {
+      "createTitle": "Add webhook",
+      "editTitle": "Edit webhook",
+      "description": "OpenCourse sends a POST request with a JSON body to this address.",
+      "url": "Address (URL)",
+      "urlHint": "Plain http only works when the server allows private networks.",
+      "note": "Description",
+      "noteHint": "Optional. Helps you remember what it is for.",
+      "events": "Events",
+      "eventsHint": "Choose what triggers a request.",
+      "submitCreate": "Add webhook",
+      "submitEdit": "Save",
+      "createdToast": "Webhook added.",
+      "updatedToast": "Webhook saved."
+    },
+    "secret": {
+      "title": "Signing secret",
+      "description": "Use it to check that a request really comes from this platform. It is shown only now: copy it before closing.",
+      "label": "Secret",
+      "copy": "Copy",
+      "copied": "Copied",
+      "copyFailed": "Could not copy. Select the text and copy it by hand.",
+      "howTo": "Every request carries an OpenCourse-Signature header with a timestamp (t) and an HMAC-SHA256 signature (v1) of the timestamp and the body, made with this secret.",
+      "done": "I saved it"
+    },
+    "rotateDialog": {
+      "title": "Create a new secret?",
+      "description": "The current secret stops working immediately. Update the receiver with the new one.",
+      "confirm": "Create new secret"
+    },
+    "deleteDialog": {
+      "title": "Delete this webhook?",
+      "description": "{url} stops receiving events and its delivery history is deleted.",
+      "confirm": "Delete"
+    },
+    "deliveries": {
+      "title": "Delivery history",
+      "description": "Requests from the last 7 days, newest first.",
+      "listLabel": "Deliveries",
+      "emptyTitle": "Nothing sent yet",
+      "emptyDescription": "Deliveries show up here after an event happens.",
+      "status": {
+        "pending": "Pending",
+        "succeeded": "Delivered",
+        "failed": "Failed"
+      },
+      "attempts": "{count, plural, one {# attempt} other {# attempts}}",
+      "statusCode": "HTTP {code}",
+      "retry": "Try again",
+      "retryFor": "Try {event} again",
+      "retriedToast": "Delivery queued again."
     }
   }
 }

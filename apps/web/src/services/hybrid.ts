@@ -13,13 +13,14 @@ import {
   createApiStudioService,
 } from './api/learning';
 import { createApiUserService } from './api/users';
+import { createApiWebhookService } from './api/webhooks';
 import type { AuthService } from './auth';
 import type { MockServices } from './mock';
 import type { Services } from './types';
 
 /**
  * Real API for authentication, users, invites, courses, curriculum, grants, enrollments, progress,
- * quizzes, notes, certificates and the Studio dashboard; mock only for what has no backend yet
+ * quizzes, notes, certificates, the Studio dashboard and webhooks; mock only for what has no backend yet
  * (settings).
  *
  * The mocked services decide what a user may do from "who is signed in", so the signed-in user is
@@ -84,5 +85,6 @@ export function createHybridServices(
     certificates: createApiCertificateService(client),
     settings: mock.settings,
     studio: createApiStudioService(client),
+    webhooks: createApiWebhookService(client),
   };
 }

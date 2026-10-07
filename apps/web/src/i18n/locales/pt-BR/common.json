@@ -105,7 +105,8 @@
     "color": "Use uma cor como #2f6f5e.",
     "port": "Informe uma porta entre 1 e 65535.",
     "localeRequired": "Habilite pelo menos um idioma.",
-    "defaultLocaleDisabled": "O idioma padrão precisa estar habilitado."
+    "defaultLocaleDisabled": "O idioma padrão precisa estar habilitado.",
+    "eventsRequired": "Escolha pelo menos um evento."
   },
   "lessonTypes": {
     "video": "Vídeo",

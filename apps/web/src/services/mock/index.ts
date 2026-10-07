@@ -14,6 +14,7 @@ import { createMockStudioService } from './studio';
 import { createEmptyDatabase, createSeedDatabase } from './seed';
 import { clone, type MockDatabase } from './store';
 import { createMockUserService } from './users';
+import { createMockWebhookService } from './webhooks';
 
 export type { MockOptions } from './context';
 export { DEMO_USER_IDS } from './seed';
@@ -79,6 +80,7 @@ export function createMockServices(options: MockOptions = {}): MockServices {
     grants: createMockGrantService(context),
     settings: createMockSettingsService(context),
     studio: createMockStudioService(context),
+    webhooks: createMockWebhookService(context),
     mock: {
       store: context.store,
       upsertUser: (user) => context.store.mutate((db) => upsertInto(db, user)),

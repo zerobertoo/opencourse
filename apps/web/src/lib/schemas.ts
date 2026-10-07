@@ -1,4 +1,5 @@
 import {
+  domainEventNameSchema,
   lessonTypeSchema,
   localeSchema,
   NAME_MAX_LENGTH,
@@ -281,3 +282,16 @@ export const platformSettingsFormSchema = z
     path: ['defaultLocale'],
   });
 export type PlatformSettingsFormValues = z.infer<typeof platformSettingsFormSchema>;
+
+export const webhookFormSchema = z.object({
+  url: z
+    .string()
+    .trim()
+    .refine((value) => /^https?:\/\/\S+$/i.test(value), 'validation.url'),
+  description: z.string().trim().max(200, 'validation.messageTooLong'),
+  // An empty checkbox group may arrive as `false`, so every failure maps to the same message.
+  events: z
+    .array(domainEventNameSchema, 'validation.eventsRequired')
+    .min(1, 'validation.eventsRequired'),
+});
+export type WebhookFormValues = z.infer<typeof webhookFormSchema>;
