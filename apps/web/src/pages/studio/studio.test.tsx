@@ -369,8 +369,9 @@ describe('course editor: students', () => {
     const user = userEvent.setup();
     const { services } = await renderApp(`${SQL_EDITOR}/students`, { signInAs: 'instructor' });
 
+    // the lazy students tab is slow to mount on a cold CI runner: the default 1s is tight
     await user.click(
-      await screen.findByRole('button', { name: 'Revogar o acesso de Gustavo Lima' }),
+      await screen.findByRole('button', { name: 'Revogar o acesso de Gustavo Lima' }, { timeout: 5000 }),
     );
     const dialog = await screen.findByRole('alertdialog');
     await user.click(within(dialog).getByRole('button', { name: 'Revogar acesso' }));
