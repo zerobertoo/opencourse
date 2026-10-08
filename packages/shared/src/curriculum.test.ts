@@ -70,8 +70,7 @@ describe('curriculum schemas', () => {
     ).toBe(true);
     expect(updateLessonRequestSchema.safeParse({ video: null }).success).toBe(true);
     expect(
-      updateLessonRequestSchema.safeParse({ video: { url: 'https://example.com/clip.mp4' } })
-        .success,
+      updateLessonRequestSchema.safeParse({ video: { url: 'https://example.com/page' } }).success,
     ).toBe(false);
     expect(
       updateLessonRequestSchema.safeParse({ video: { url: 'http://youtu.be/dQw4w9WgXcQ' } })

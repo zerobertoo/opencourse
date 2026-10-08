@@ -10,6 +10,7 @@ const GUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 export const pandaPlugin: VideoProviderPlugin = {
   id: 'panda',
   label: 'Panda Video',
+  playback: 'embed',
   match(url) {
     const host = url.hostname.toLowerCase();
     const video = url.searchParams.get('v');

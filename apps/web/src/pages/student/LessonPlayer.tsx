@@ -1,4 +1,5 @@
 import {
+  findVideoProvider,
   flattenLessons,
   getUnlockedLessonIds,
   summarizeCourseProgress,
@@ -82,6 +83,20 @@ function VideoLessonBody({
   const playback = useVideoPlaybackUrl(isUpload ? video.assetId : undefined);
 
   if (video?.provider === 'external') {
+    // a direct file link plays like an upload (position, captions, quality); the rest are embeds
+    if (findVideoProvider(video.plugin)?.playback === 'file') {
+      return (
+        <VideoPlayer
+          key={lesson.id}
+          src={video.embedUrl}
+          title={title}
+          captions={lesson.captions}
+          initialPositionSeconds={initialPositionSeconds}
+          onPositionChange={onVideoPosition}
+          onEnded={onVideoEnded}
+        />
+      );
+    }
     return <ExternalVideoEmbed embedUrl={video.embedUrl} title={title} />;
   }
   if (video?.status !== 'ready') {

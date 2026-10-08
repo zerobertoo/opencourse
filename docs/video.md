@@ -43,11 +43,11 @@ Self-hosting cannot stop a determined person from saving a video. Anyone who can
 
 ### Upgrading from link-only videos
 
-Before provider plugins, a video lesson held any `https` address. Those lessons are converted when read: an address from a supported provider becomes a proper embed, and anything else (a direct `.mp4` link, for instance) shows as no video, which a published course reports as a video that is not ready. Upload those files, or paste a link from a supported provider, to fix the affected lessons.
+Before provider plugins, a video lesson held any `https` address. Those lessons are converted when read: an address from a supported provider becomes a proper embed, a link to a video file becomes a "Video file" link, and anything else (a page that is not a video, say) shows as no video, which a published course reports as a video that is not ready. The old data is not changed, so paste a supported link in the lesson to fix it.
 
 ## Links from external providers
 
-Pasting a link in the Studio picks the provider automatically from the address. The platform stores the provider, the video identifier and the embed address, and shows the provider's player in an iframe. The provider does the processing, so the status is always ready. These players report no position, so students mark such lessons complete themselves. A link that no provider recognises is refused, because embedding arbitrary pages would let an instructor put any content in front of students.
+Pasting a link in the Studio picks the provider automatically from the address. The platform stores the provider, the video identifier and the embed address, and shows the provider's player in an iframe. The provider does the processing, so the status is always ready. These players report no position, so students mark such lessons complete themselves. A link that no provider recognises is refused, because embedding arbitrary pages would let an instructor put any content in front of students. The one exception is a direct link to a video file you host yourself (see below), which plays in the platform's own player instead of an iframe.
 
 | Provider         | Links recognised                                                                                          |
 | ---------------- | --------------------------------------------------------------------------------------------------------- |
@@ -56,6 +56,7 @@ Pasting a link in the Studio picks the provider automatically from the address. 
 | Bunny Stream     | `iframe.mediadelivery.net/embed/` or `/play/` `LIBRARY/VIDEO`                                             |
 | Cloudflare Stream | `iframe.videodelivery.net/ID`, `watch.cloudflarestream.com/ID`, `customer-XXXX.cloudflarestream.com/ID`  |
 | Panda Video      | `player-vz-XXXX.tv.pandavideo.com.br/embed/?v=VIDEO`                                                      |
+| Video file       | Any `https` link ending in `.mp4`, `.webm`, `.mov`, `.m4v` or `.m3u8` (an HLS playlist), without a user name or password |
 
 Administration, Plugins lists the providers installed on the instance.
 
@@ -70,6 +71,7 @@ import { normalizedHost, type VideoProviderPlugin } from '../types';
 export const examplePlugin: VideoProviderPlugin = {
   id: 'example', // stored with the lesson: never rename it later
   label: 'Example Video',
+  playback: 'embed',
   // return the provider's identifier for a link you recognise, otherwise null
   match(url) {
     if (normalizedHost(url) !== 'video.example.com') return null;
@@ -80,5 +82,7 @@ export const examplePlugin: VideoProviderPlugin = {
   embedUrl: (externalId) => `https://video.example.com/embed/${externalId}`,
 };
 ```
+
+A plugin declares how it plays: `playback: 'embed'` shows the provider's page in an iframe, `playback: 'file'` hands the address to the platform's own player (use it only for addresses that are the video itself).
 
 Rules that keep embeds safe: match the **host exactly** (never with `endsWith` on user input or `includes`), validate the identifier with a strict pattern, and build the embed address only from the identifier on a host you control or the provider owns. Add the plugin to `videoProviders` in `registry.ts` and a few links to `registry.test.ts`, including near-miss addresses that must be refused (`example.com.evil.com`).

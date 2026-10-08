@@ -7,6 +7,11 @@ export interface VideoProviderPlugin {
   id: string;
   /** Name shown to instructors. */
   label: string;
+  /**
+   * `embed` shows the provider's own player in an iframe; `file` plays `embedUrl` as a video in
+   * the platform's player (with captions, quality and position resume).
+   */
+  playback: 'embed' | 'file';
   /** Returns the provider's identifier for a URL it recognises, otherwise null. */
   match(url: URL): { externalId: string } | null;
   /** The https address to put in the player iframe. */

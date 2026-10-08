@@ -274,7 +274,7 @@ describe('video upload, processing and playback', () => {
     expect(await ctx.app.storage.sizeOf(playlistKey)).not.toBeNull();
 
     const bad = await cast.instructorA.client.patch(`/api/v1/lessons/${lesson.id}`, {
-      video: { url: 'https://example.com/clip.mp4' },
+      video: { url: 'https://example.com/page' },
     });
     expect(bad.statusCode).toBe(400);
     expect(await ctx.app.db.select().from(videoAssets)).toHaveLength(1);
@@ -431,6 +431,10 @@ describe('video upload, processing and playback', () => {
       title: 'Other',
       type: 'video',
     });
+    const unknown = await insertLesson(ctx.app, courseModule.id, 2, {
+      title: 'Unknown',
+      type: 'video',
+    });
     const legacy = (url: string) =>
       ({ provider: 'external', externalId: url, status: 'ready', playbackUrl: url }) as never;
     await ctx.app.db
@@ -441,17 +445,27 @@ describe('video upload, processing and playback', () => {
       .update(lessons)
       .set({ video: legacy('https://example.com/clip.mp4') })
       .where(eq(lessons.id, other.id));
+    await ctx.app.db
+      .update(lessons)
+      .set({ video: legacy('https://example.com/page') })
+      .where(eq(lessons.id, unknown.id));
 
     const response = await cast.instructorA.client.get(`/api/v1/courses/${course.id}`);
 
     expect(response.statusCode).toBe(200);
-    const [first, second] = response.json().course.modules[0].lessons;
+    const [first, second, third] = response.json().course.modules[0].lessons;
     expect(first.video).toMatchObject({
       provider: 'external',
       plugin: 'youtube',
       embedUrl: 'https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ',
     });
-    expect(second.video).toBeNull();
+    // a bare video file is now a provider of its own, so old direct links keep playing
+    expect(second.video).toMatchObject({
+      provider: 'external',
+      plugin: 'direct',
+      embedUrl: 'https://example.com/clip.mp4',
+    });
+    expect(third.video).toBeNull();
   });
 
   it('encodes a WebM whose container reports no duration, measuring it from the result', async () => {
@@ -533,4 +547,51 @@ describe('video upload, processing and playback', () => {
     expect(abort).toHaveBeenCalledWith(`videos/${upload.assetId}/source`, asset!.uploadId);
     abort.mockRestore();
   });
+
+  it('encodes every rendition of a 720p source in one pass, each with its own segments', async () => {
+    const { cast, lesson } = await setup();
+    const clip720 = path.join(workDir, 'clip720.mp4');
+    await run('ffmpeg', [
+      '-y',
+      '-loglevel',
+      'error',
+      '-f',
+      'lavfi',
+      '-i',
+      'testsrc=duration=2:size=1280x720:rate=24',
+      '-f',
+      'lavfi',
+      '-i',
+      'sine=frequency=440:duration=2',
+      '-c:v',
+      'libx264',
+      '-pix_fmt',
+      'yuv420p',
+      '-c:a',
+      'aac',
+      '-shortest',
+      clip720,
+    ]);
+    const { upload } = await sendFile(cast.instructorA.client, lesson.id, await readFile(clip720));
+    await worker.drain(60_000);
+
+    const [asset] = await ctx.app.db.select().from(videoAssets);
+    expect(asset).toMatchObject({
+      id: upload.assetId,
+      status: 'ready',
+      renditions: ['360p', '720p'],
+    });
+    const master = await ctx.app.storage.readText(`videos/${upload.assetId}/hls/master.m3u8`);
+    expect(master).toContain('RESOLUTION=640x360');
+    expect(master).toContain('RESOLUTION=1280x720');
+    for (const rendition of ['360p', '720p']) {
+      const playlist = await ctx.app.storage.readText(
+        `videos/${upload.assetId}/hls/${rendition}/index.m3u8`,
+      );
+      const segment = playlist.split('\n').find((line) => line.endsWith('.ts'))!;
+      expect(
+        await ctx.app.storage.sizeOf(`videos/${upload.assetId}/hls/${rendition}/${segment}`),
+      ).toBeGreaterThan(1000);
+    }
+  }, 90_000);
 });

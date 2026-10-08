@@ -7,6 +7,7 @@ const GUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 export const bunnyPlugin: VideoProviderPlugin = {
   id: 'bunny',
   label: 'Bunny Stream',
+  playback: 'embed',
   match(url) {
     if (normalizedHost(url) !== 'iframe.mediadelivery.net') return null;
     const [kind, library, video] = url.pathname.split('/').filter(Boolean);

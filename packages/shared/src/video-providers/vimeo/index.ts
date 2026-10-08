@@ -13,6 +13,7 @@ const PRIVACY_HASH = /^[0-9a-f]{6,32}$/i;
 export const vimeoPlugin: VideoProviderPlugin = {
   id: 'vimeo',
   label: 'Vimeo',
+  playback: 'embed',
   match(url) {
     const host = normalizedHost(url);
     const segments = url.pathname.split('/').filter(Boolean);

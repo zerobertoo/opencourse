@@ -2,7 +2,10 @@ import { screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import i18n from '@/i18n';
+import { resolveVideoUrl } from '@opencourse/shared';
 import { ServiceError } from '@/services';
+import type { MockServices } from '@/services/mock';
+import { findLesson } from '@/services/mock/helpers';
 import { renderApp } from '@/test/render';
 import { demoId } from '@/services/mock/seed/ids';
 
@@ -224,6 +227,50 @@ describe('lesson player', () => {
     expect(video?.querySelector('track[kind="captions"][srclang="pt-BR"]')).not.toBeNull();
     // the player's own labels follow the app language
     expect(within(player).getByRole('button', { name: /Reproduzir/ })).toBeInTheDocument();
+  });
+
+  describe('external videos', () => {
+    /** Opens the first demo lesson after pointing its video at a link a provider plugin resolved. */
+    async function openWithLink(url: string) {
+      const lessonId = demoId('les-js-1-1');
+      const resolved = resolveVideoUrl(url)!;
+      await renderApp(`/courses/fundamentos-de-javascript/lessons/${lessonId}`, {
+        signInAs: 'student',
+        override: (services) => {
+          const { store } = (services as MockServices).mock;
+          store.mutate((db) => {
+            const { lesson } = findLesson(db, lessonId);
+            if (lesson.type === 'video') {
+              lesson.video = { provider: 'external', status: 'ready', ...resolved };
+            }
+          });
+          return {};
+        },
+      });
+    }
+
+    it('plays a direct file link in the platform player, not in an iframe', async () => {
+      await openWithLink('https://cdn.example.com/aula.mp4');
+
+      const player = await screen.findByRole('group', { name: /Player de vídeo/ });
+      expect(player.querySelector('video')).toHaveAttribute(
+        'src',
+        'https://cdn.example.com/aula.mp4',
+      );
+      expect(document.querySelector('iframe')).toBeNull();
+    });
+
+    it("shows a provider's video in its own embed", async () => {
+      await openWithLink('https://youtu.be/dQw4w9WgXcQ');
+
+      const frame = await waitFor(() => {
+        const found = document.querySelector('iframe');
+        expect(found).not.toBeNull();
+        return found!;
+      });
+      expect(frame).toHaveAttribute('src', 'https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ');
+      expect(document.querySelector('video')).toBeNull();
+    });
   });
 
   it('grades a quiz with per-question feedback and keeps the attempt history', async () => {

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { resolveVideoUrl } from './registry';
+import { findVideoProvider, resolveVideoUrl } from './registry';
 
 const GUID = '0a1b2c3d-1111-2222-3333-444455556666';
 const CLOUDFLARE_ID = '5d5bc37ffcf54c9b82e996823bffbb81';
@@ -28,12 +28,33 @@ describe('resolveVideoUrl', () => {
       'panda',
       `player-vz-ab12cd34-ef5.tv.pandavideo.com/${GUID}`,
     ],
+    [
+      'https://cdn.example.com/lessons/intro.mp4',
+      'direct',
+      'https://cdn.example.com/lessons/intro.mp4',
+    ],
+    [
+      'https://cdn.example.com/hls/index.M3U8?sig=abc',
+      'direct',
+      'https://cdn.example.com/hls/index.M3U8?sig=abc',
+    ],
     ['https://vimeo.com/channels/staffpicks/76979871', 'vimeo', '76979871'],
     ['https://vimeo.com/groups/motion/videos/76979871', 'vimeo', '76979871'],
     ['https://vimeo.com/showcase/1234567/video/76979871', 'vimeo', '76979871'],
     ['https://vimeo.com/album/1234567/video/76979871', 'vimeo', '76979871'],
   ])('recognises %s', (link, plugin, externalId) => {
     expect(resolveVideoUrl(link)).toMatchObject({ plugin, externalId });
+  });
+
+  it('plays direct file links in the platform player and the others in their own', () => {
+    const direct = findVideoProvider('direct');
+    expect(direct?.playback).toBe('file');
+    expect(direct?.embedUrl('https://cdn.example.com/intro.mp4')).toBe(
+      'https://cdn.example.com/intro.mp4',
+    );
+    for (const id of ['youtube', 'vimeo', 'bunny', 'cloudflare', 'panda']) {
+      expect(findVideoProvider(id)?.playback).toBe('embed');
+    }
   });
 
   it('builds an https embed address that keeps what each provider needs', () => {
@@ -53,7 +74,10 @@ describe('resolveVideoUrl', () => {
     'not a url',
     'http://youtu.be/dQw4w9WgXcQ',
     'https://youtu.be/short',
-    'https://example.com/video.mp4',
+    'https://example.com/page',
+    // credentials in a link would be stored and shown in clear
+    'https://user:secret@cdn.example.com/intro.mp4',
+    'http://cdn.example.com/intro.mp4',
     'https://evil.com/?v=dQw4w9WgXcQ',
     'https://youtube.com.evil.com/watch?v=dQw4w9WgXcQ',
     'https://vimeo.com/channels/staffpicks',

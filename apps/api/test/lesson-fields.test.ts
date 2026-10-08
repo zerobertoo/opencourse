@@ -17,7 +17,7 @@ describe('toLessonColumns', () => {
         status: 'ready',
       },
     });
-    expect(() => toLessonColumns('video', { video: { url: 'https://example.com/a.mp4' } })).toThrow(
+    expect(() => toLessonColumns('video', { video: { url: 'https://example.com/a' } })).toThrow(
       HttpError,
     );
     expect(toLessonColumns('video', { video: null })).toEqual({ video: null });

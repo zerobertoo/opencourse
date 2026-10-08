@@ -6,6 +6,7 @@ const VIDEO_ID = /^[\w-]{11}$/;
 export const youtubePlugin: VideoProviderPlugin = {
   id: 'youtube',
   label: 'YouTube',
+  playback: 'embed',
   match(url) {
     const host = normalizedHost(url);
     const segments = url.pathname.split('/').filter(Boolean);

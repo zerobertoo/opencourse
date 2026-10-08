@@ -1,5 +1,6 @@
 import { bunnyPlugin } from './bunny';
 import { cloudflarePlugin } from './cloudflare';
+import { directPlugin } from './direct';
 import { pandaPlugin } from './panda';
 import type { VideoProviderPlugin } from './types';
 import { vimeoPlugin } from './vimeo';
@@ -12,6 +13,8 @@ export const videoProviders: readonly VideoProviderPlugin[] = [
   bunnyPlugin,
   cloudflarePlugin,
   pandaPlugin,
+  // last: a file link on one of the hosts above should be claimed by that provider first
+  directPlugin,
 ];
 
 export interface ResolvedVideoLink {

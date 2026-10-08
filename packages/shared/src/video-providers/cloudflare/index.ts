@@ -9,6 +9,7 @@ const VIDEO_ID = /^[0-9a-f]{32}$/i;
 export const cloudflarePlugin: VideoProviderPlugin = {
   id: 'cloudflare',
   label: 'Cloudflare Stream',
+  playback: 'embed',
   match(url) {
     const host = normalizedHost(url);
     const isStreamHost =
