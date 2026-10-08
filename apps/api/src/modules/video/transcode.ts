@@ -116,51 +116,87 @@ function runFfmpeg(args: string[]): Promise<void> {
   });
 }
 
-/** Encodes one rendition as VOD HLS with fixed-length segments. */
-async function encodeRendition(
+/** Arguments that encode every rendition in one ffmpeg run, so the source is decoded only once. */
+export function buildEncodeArgs(
   source: string,
-  rendition: Rendition,
-  outputDir: string,
-): Promise<void> {
-  await mkdir(outputDir, { recursive: true });
-  await runFfmpeg([
+  renditions: Rendition[],
+  workDir: string,
+): string[] {
+  const branches = renditions.map((_, index) => `[v${index}]`).join('');
+  const scales = renditions
+    .map((rendition, index) => `[v${index}]scale=-2:${rendition.height}[o${index}]`)
+    .join(';');
+  const args = [
     '-y',
     '-i',
     source,
-    '-vf',
-    `scale=-2:${rendition.height}`,
-    '-c:v',
-    'libx264',
-    '-preset',
-    'veryfast',
-    '-crf',
-    '23',
-    '-profile:v',
-    'main',
-    '-pix_fmt',
-    'yuv420p',
-    // a keyframe at every segment start keeps the renditions aligned, so players can switch between them
-    '-force_key_frames',
-    `expr:gte(t,n_forced*${SEGMENT_SECONDS})`,
-    '-sc_threshold',
-    '0',
-    '-c:a',
-    'aac',
-    '-b:a',
-    '128k',
-    '-ac',
-    '2',
-    '-f',
-    'hls',
-    '-hls_time',
-    String(SEGMENT_SECONDS),
-    '-hls_playlist_type',
-    'vod',
-    '-hls_segment_filename',
-    path.join(outputDir, 'segment_%05d.ts'),
-    path.join(outputDir, 'index.m3u8'),
-  ]);
+    '-filter_complex',
+    `[0:v:0]split=${renditions.length}${branches};${scales}`,
+  ];
+  for (const [index, rendition] of renditions.entries()) {
+    const outputDir = path.join(workDir, rendition.name);
+    args.push(
+      '-map',
+      `[o${index}]`,
+      // the first audio track, when there is one
+      '-map',
+      '0:a:0?',
+      '-c:v',
+      'libx264',
+      '-preset',
+      'veryfast',
+      '-crf',
+      '23',
+      '-profile:v',
+      'main',
+      '-pix_fmt',
+      'yuv420p',
+      // a keyframe at every segment start keeps the renditions aligned, so players can switch between them
+      '-force_key_frames',
+      `expr:gte(t,n_forced*${SEGMENT_SECONDS})`,
+      '-sc_threshold',
+      '0',
+      '-c:a',
+      'aac',
+      '-b:a',
+      '128k',
+      '-ac',
+      '2',
+      '-f',
+      'hls',
+      '-hls_time',
+      String(SEGMENT_SECONDS),
+      '-hls_playlist_type',
+      'vod',
+      '-hls_segment_filename',
+      path.join(outputDir, 'segment_%05d.ts'),
+      path.join(outputDir, 'index.m3u8'),
+    );
+  }
+  return args;
 }
+
+/** Encodes every rendition as VOD HLS with fixed-length segments, into one folder per rendition. */
+async function encodeRenditions(
+  source: string,
+  renditions: Rendition[],
+  workDir: string,
+): Promise<void> {
+  for (const rendition of renditions) {
+    await mkdir(path.join(workDir, rendition.name), { recursive: true });
+  }
+  await runFfmpeg(buildEncodeArgs(source, renditions, workDir));
+}
+
+/** Runs `task` over every item, a few at a time. */
+async function inBatches<T>(items: T[], size: number, task: (item: T) => Promise<void>) {
+  for (let start = 0; start < items.length; start += size) {
+    await Promise.all(items.slice(start, start + size).map(task));
+  }
+}
+
+/** Segments uploaded at the same time: enough to hide the round trips without flooding the storage. */
+const UPLOAD_CONCURRENCY = 4;
 
 function contentTypeOf(file: string): string {
   return file.endsWith('.m3u8') ? 'application/vnd.apple.mpegurl' : 'video/mp2t';
@@ -188,20 +224,23 @@ export async function transcodeVideo(
   // start clean, so a retry never leaves segments of an earlier attempt behind
   await storage.deletePrefix(`${videoKeys.prefix(assetId)}hls/`);
 
-  let durationSeconds = probe.durationSeconds;
+  await encodeRenditions(sourcePath, renditions, workDir);
+  // the container may not know its length (browser-recorded WebM): the encoded playlist does
+  const durationSeconds =
+    probe.durationSeconds ??
+    playlistDurationSeconds(
+      await readFile(path.join(workDir, renditions[0]!.name, 'index.m3u8'), 'utf8'),
+    );
+
   for (const rendition of renditions) {
     const outputDir = path.join(workDir, rendition.name);
-    await encodeRendition(sourcePath, rendition, outputDir);
-    durationSeconds ??= playlistDurationSeconds(
-      await readFile(path.join(outputDir, 'index.m3u8'), 'utf8'),
-    );
-    for (const file of await readdir(outputDir)) {
-      await storage.uploadFile(
+    await inBatches(await readdir(outputDir), UPLOAD_CONCURRENCY, (file) =>
+      storage.uploadFile(
         videoKeys.segment(assetId, rendition.name, file),
         path.join(outputDir, file),
         contentTypeOf(file),
-      );
-    }
+      ),
+    );
   }
 
   const masterPath = path.join(workDir, 'master.m3u8');
