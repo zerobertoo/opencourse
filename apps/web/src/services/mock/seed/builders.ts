@@ -61,7 +61,7 @@ export function videoLesson(common: LessonCommon & { captions?: Locale[] }): Les
     },
     captions: (common.captions ?? ['pt-BR']).map((locale) => ({
       locale,
-      url: `/media/captions/${common.id}.${locale}.vtt`,
+      url: `${import.meta.env.BASE_URL}media/captions/${common.id}.${locale}.vtt`,
     })),
   });
 }
@@ -102,7 +102,7 @@ export function question(
 }
 
 export function attachment(id: string, name: string, sizeBytes: number): FileAttachment {
-  return { id, name, sizeBytes, url: `/media/files/${name}` };
+  return { id, name, sizeBytes, url: `${import.meta.env.BASE_URL}media/files/${name}` };
 }
 
 export function courseModule(
