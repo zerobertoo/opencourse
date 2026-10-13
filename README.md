@@ -6,7 +6,7 @@ Current state: the backend (`apps/api`, plus its background worker) has accounts
 
 ## Requirements
 
-- Node 20 or newer (`.nvmrc` pins 22)
+- Node 20 or newer (`.nvmrc` pins 24)
 - pnpm 9
 - Docker, for the backend stack and the API tests
 

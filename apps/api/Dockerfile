@@ -1,5 +1,5 @@
 # Build context is the repository root (see compose.yaml).
-FROM node:22-alpine AS build
+FROM node:24-alpine AS build
 RUN corepack enable
 WORKDIR /repo
 
@@ -13,10 +13,12 @@ RUN pnpm install --frozen-lockfile --filter @opencourse/api...
 COPY tsconfig.base.json ./
 COPY packages/shared packages/shared
 COPY apps/api apps/api
+# pnpm 9 deploy links the workspace root bins (vite, tsc...) in the wrong directory and logs
+# harmless WARNs for them; the runtime only runs node, so the deploy step logs errors only
 RUN pnpm --filter @opencourse/api build \
-  && pnpm --filter @opencourse/api deploy --prod /out
+  && pnpm --loglevel=error --filter @opencourse/api deploy --prod /out
 
-FROM node:22-alpine
+FROM node:24-alpine
 ENV NODE_ENV=production
 # the worker encodes uploaded videos; the API shares the image, so it carries ffmpeg too
 RUN apk add --no-cache ffmpeg
