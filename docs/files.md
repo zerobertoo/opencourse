@@ -21,7 +21,7 @@ and both are served only to people who can see the course content.
 ## Captions
 
 - In the Studio, open a video lesson and use **Captions**: one file per language.
-- Send **WebVTT** (`.vtt`) or **SRT** (`.srt`). SRT is converted to WebVTT when it is stored.
+- Send **WebVTT** (`.vtt`) or **SRT** (`.srt`). SRT is converted to WebVTT when it is stored, always as UTF-8. The file may be UTF-8, UTF-16 (with a byte order mark) or Latin-1/Windows-1252: the encoding is detected, so accents survive.
   Anything else is refused. Files are limited to 1 MiB.
 - The player loads them through `GET /api/v1/lessons/:id/captions/:locale.vtt`, which checks the
   course access.
