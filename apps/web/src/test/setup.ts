@@ -1,6 +1,9 @@
 import '@testing-library/jest-dom/vitest';
-import { cleanup } from '@testing-library/react';
+import { cleanup, configure } from '@testing-library/react';
 import { afterEach, vi } from 'vitest';
+
+// CI runners are slow: the default 1s lookup timeout flakes on lazy routes
+configure({ asyncUtilTimeout: 4000 });
 
 afterEach(() => {
   cleanup();
