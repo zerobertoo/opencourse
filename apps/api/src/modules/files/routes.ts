@@ -29,6 +29,7 @@ import {
   ATTACHMENT_UPLOAD_TTL_SECONDS,
   attachmentDisposition,
   cleanFileName,
+  deleteUnreferencedCaptionFiles,
   findAttachmentContext,
   findLessonAttachment,
   lessonFileKeys,
@@ -223,12 +224,14 @@ export const fileRoutes: FastifyPluginAsyncZod<FileRoutesOptions> = async (app, 
       const vtt = toWebVtt(request.body);
       if (vtt === null) throw badRequest('The captions must be a WebVTT or SRT file');
 
-      await app.storage.putText(lessonFileKeys.caption(lessonId, locale), vtt, 'text/vtt');
       const { course: detail } = await changeCurriculum(
         app.db,
         course.id,
         { checkPublish: false },
         async (tx) => {
+          // the file is written under the course lock, so an update that dropped these captions
+          // cannot delete it afterwards (see deleteUnreferencedCaptionFiles)
+          await app.storage.putText(lessonFileKeys.caption(lessonId, locale), vtt, 'text/vtt');
           const [current] = await tx
             .select({ captions: lessons.captions })
             .from(lessons)
@@ -280,11 +283,14 @@ export const fileRoutes: FastifyPluginAsyncZod<FileRoutesOptions> = async (app, 
             .where(eq(lessons.id, lessonId));
         },
       );
-      await app.storage
-        .deleteObject(lessonFileKeys.caption(lessonId, locale))
-        .catch((error: unknown) =>
-          request.log.warn({ err: error, lessonId, locale }, 'could not delete a caption file'),
-        );
+      await deleteUnreferencedCaptionFiles(
+        app.db,
+        app.storage,
+        course.id,
+        lessonId,
+        [locale],
+        request.log,
+      );
       return { course: detail };
     },
   );

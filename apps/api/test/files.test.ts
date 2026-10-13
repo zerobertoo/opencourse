@@ -4,7 +4,7 @@ import {
   DEFAULT_ATTACHMENT_MAX_BYTES,
 } from '@opencourse/shared';
 import { eq } from 'drizzle-orm';
-import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { lessonAttachments } from '../src/db/schema';
 import { lessonFileKeys, removeStaleAttachments } from '../src/modules/files/service';
 import { createCast, insertCourse, insertGrant, insertLesson, insertModule } from './fixtures';
@@ -290,6 +290,33 @@ describe('lesson attachments and captions', () => {
       expect((await client.delete(`/api/v1/lessons/${lesson.id}/captions/en`)).statusCode).toBe(
         404,
       );
+    });
+
+    it('keeps captions uploaded while a lesson update was dropping the old ones', async () => {
+      const { cast, lesson } = await setup();
+      const client = cast.instructorA.client;
+      await putCaptions(client, lesson.id, 'en', WEBVTT);
+      const key = lessonFileKeys.caption(lesson.id, 'en');
+      const deleteObject = ctx.app.storage.deleteObject.bind(ctx.app.storage);
+      let replacement: ReturnType<typeof putCaptions> | undefined;
+      const spy = vi.spyOn(ctx.app.storage, 'deleteObject').mockImplementation(async (target) => {
+        // new captions arrive right after the update committed, before its cleanup deleted the file
+        replacement = putCaptions(client, lesson.id, 'en', WEBVTT.replace('Hello', 'Again'));
+        const deadline = Date.now() + 1000;
+        while (Date.now() < deadline && !(await ctx.app.storage.readText(key)).includes('Again')) {
+          await new Promise((resolve) => setTimeout(resolve, 20));
+        }
+        await deleteObject(target);
+      });
+
+      const dropped = await client.patch(`/api/v1/lessons/${lesson.id}`, { captions: [] });
+      expect(dropped.statusCode).toBe(200);
+      expect((await replacement!).statusCode).toBe(200);
+      spy.mockRestore();
+
+      const served = await client.get(`/api/v1/lessons/${lesson.id}/captions/en.vtt`);
+      expect(served.statusCode).toBe(200);
+      expect(served.body).toContain('Again');
     });
 
     it('refuses text that is not subtitles and lessons that are not videos', async () => {

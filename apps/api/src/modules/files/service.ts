@@ -1,4 +1,8 @@
-import { attachmentDownloadPath, type FileAttachment } from '@opencourse/shared';
+import {
+  attachmentDownloadPath,
+  uploadedCaptionPath,
+  type FileAttachment,
+} from '@opencourse/shared';
 import { and, eq, lt } from 'drizzle-orm';
 import type { Logger } from 'pino';
 import {
@@ -83,6 +87,47 @@ export async function findLessonAttachment(
     .from(lessonAttachments)
     .where(and(eq(lessonAttachments.id, attachmentId), eq(lessonAttachments.lessonId, lessonId)));
   return row;
+}
+
+/**
+ * Deletes the stored caption files of these languages unless a caption entry points at them again.
+ * Runs after the change that dropped them committed, under the course lock like every caption
+ * change: captions uploaded meanwhile have their file and entry written under that same lock, so
+ * the check cannot see an entry whose file is about to be deleted. A failure is only logged.
+ */
+export async function deleteUnreferencedCaptionFiles(
+  db: Database,
+  storage: Storage,
+  courseId: string,
+  lessonId: string,
+  locales: string[],
+  log: Pick<Logger, 'warn'>,
+): Promise<void> {
+  if (locales.length === 0) return;
+  try {
+    await db.transaction(async (tx) => {
+      await tx
+        .select({ id: courses.id })
+        .from(courses)
+        .where(eq(courses.id, courseId))
+        .for('update');
+      const [current] = await tx
+        .select({ captions: lessons.captions })
+        .from(lessons)
+        .where(eq(lessons.id, lessonId));
+      const stillUploaded = new Set<string>(
+        (current?.captions ?? [])
+          .filter((item) => item.url === uploadedCaptionPath(lessonId, item.locale))
+          .map((item) => item.locale),
+      );
+      for (const locale of locales) {
+        if (stillUploaded.has(locale)) continue;
+        await storage.deleteObject(lessonFileKeys.caption(lessonId, locale));
+      }
+    });
+  } catch (error) {
+    log.warn({ err: error, lessonId }, 'could not delete caption files');
+  }
 }
 
 /**

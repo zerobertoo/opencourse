@@ -25,7 +25,7 @@ import {
   videoAssets,
 } from '../../db/schema';
 import { badRequest, conflict } from '../../errors';
-import { deleteLessonFiles, lessonFileKeys } from '../files/service';
+import { deleteLessonFiles, deleteUnreferencedCaptionFiles } from '../files/service';
 import { deleteVideoFiles, videoAssetsOfLessons } from '../video/service';
 import { requireManagedCourse } from './access';
 import {
@@ -257,16 +257,14 @@ export const curriculumRoutes: FastifyPluginAsyncZod = async (app) => {
         },
       );
       await deleteVideoFiles(app.storage, replacedVideoIds, request.log);
-      for (const locale of removedCaptions) {
-        await app.storage
-          .deleteObject(lessonFileKeys.caption(lesson.id, locale))
-          .catch((error: unknown) =>
-            request.log.warn(
-              { err: error, lessonId: lesson.id, locale },
-              'could not delete a caption',
-            ),
-          );
-      }
+      await deleteUnreferencedCaptionFiles(
+        app.db,
+        app.storage,
+        course.id,
+        lesson.id,
+        removedCaptions,
+        request.log,
+      );
       return { course: detail };
     },
   );
