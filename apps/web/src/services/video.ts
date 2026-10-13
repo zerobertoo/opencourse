@@ -1,3 +1,5 @@
+import type { FailedVideo, LocalVideoAsset } from '@opencourse/shared';
+
 /** What the player needs to start an uploaded video. */
 export interface VideoPlayback {
   /** Address of the HLS master playlist. */
@@ -23,4 +25,8 @@ export interface VideoService {
    * carries the session (and renews it when it expired) instead of being a plain link.
    */
   getDownloadUrl(path: string): Promise<string>;
+  /** Uploaded videos that failed to encode, newest first. Admin only. */
+  listFailed(): Promise<FailedVideo[]>;
+  /** Sends a failed video back to the encoder. Admin only. */
+  retry(assetId: string): Promise<LocalVideoAsset>;
 }

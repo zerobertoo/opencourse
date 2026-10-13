@@ -1,4 +1,9 @@
-import { attachmentDownloadResponseSchema, videoPlaybackResponseSchema } from '@opencourse/shared';
+import {
+  attachmentDownloadResponseSchema,
+  failedVideosResponseSchema,
+  videoPlaybackResponseSchema,
+  videoStatusResponseSchema,
+} from '@opencourse/shared';
 import type { VideoService } from '../video';
 import type { ApiClient } from './client';
 
@@ -16,6 +21,20 @@ export function createApiVideoService(client: ApiClient): VideoService {
     async getCaptionUrl(url) {
       if (!url.startsWith('/api/')) return url;
       return URL.createObjectURL(await client.blob(url));
+    },
+    async listFailed() {
+      const { videos } = await client.request('GET', '/admin/videos/failed', {
+        schema: failedVideosResponseSchema,
+      });
+      return videos;
+    },
+    async retry(assetId) {
+      const { video } = await client.request(
+        'POST',
+        `/admin/videos/${encodeURIComponent(assetId)}/retry`,
+        { schema: videoStatusResponseSchema },
+      );
+      return video;
     },
     async getDownloadUrl(path) {
       if (!path.startsWith('/api/')) return path;

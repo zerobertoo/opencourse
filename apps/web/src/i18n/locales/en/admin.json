@@ -9,6 +9,7 @@
     "grants": "Access",
     "settings": "Settings",
     "plugins": "Plugins",
+    "videos": "Videos",
     "webhooks": "Webhooks"
   },
   "roles": {
@@ -271,5 +272,16 @@
       "retryFor": "Try {event} again",
       "retriedToast": "Delivery queued again."
     }
+  },
+  "videos": {
+    "title": "Failed videos",
+    "description": "Uploaded videos the encoder gave up on. Send one back once the cause is fixed; if the original file is gone, the instructor has to upload it again.",
+    "listLabel": "Failed videos",
+    "emptyTitle": "No failed videos",
+    "emptyDescription": "Every uploaded video was processed. Failures show up here.",
+    "failedAt": "Failed {date}",
+    "retry": "Try again",
+    "retryFor": "Try again: {lesson}",
+    "retriedToast": "Video queued again."
   }
 }

@@ -114,6 +114,23 @@ export function useUpdateSettings() {
   });
 }
 
+const failedVideosKey = ['admin', 'failed-videos'] as const;
+
+export function useFailedVideos() {
+  const { video } = useServices();
+  return useQuery({ queryKey: failedVideosKey, queryFn: () => video.listFailed() });
+}
+
+export function useRetryVideo() {
+  const { video } = useServices();
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (assetId: string) => video.retry(assetId),
+    // a refused retry (someone else got there first) also leaves the list out of date
+    onSettled: () => queryClient.invalidateQueries({ queryKey: failedVideosKey }),
+  });
+}
+
 const webhookKeys = {
   list: ['admin', 'webhooks'] as const,
   deliveries: (webhookId: string) => ['admin', 'webhooks', webhookId, 'deliveries'] as const,

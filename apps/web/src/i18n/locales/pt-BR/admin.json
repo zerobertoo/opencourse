@@ -9,6 +9,7 @@
     "grants": "Acessos",
     "settings": "Configurações",
     "plugins": "Plugins",
+    "videos": "Vídeos",
     "webhooks": "Webhooks"
   },
   "roles": {
@@ -271,5 +272,16 @@
       "retryFor": "Tentar de novo {event}",
       "retriedToast": "Entrega colocada na fila de novo."
     }
+  },
+  "videos": {
+    "title": "Vídeos com falha",
+    "description": "Vídeos enviados que o codificador não conseguiu processar. Envie de volta depois de resolver a causa; se o arquivo original não existir mais, o instrutor precisa enviar o vídeo de novo.",
+    "listLabel": "Vídeos com falha",
+    "emptyTitle": "Nenhum vídeo com falha",
+    "emptyDescription": "Todos os vídeos enviados foram processados. As falhas aparecem aqui.",
+    "failedAt": "Falhou em {date}",
+    "retry": "Tentar de novo",
+    "retryFor": "Tentar de novo: {lesson}",
+    "retriedToast": "Vídeo colocado na fila de novo."
   }
 }

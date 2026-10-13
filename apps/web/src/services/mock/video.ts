@@ -1,3 +1,4 @@
+import { ServiceError } from '../errors';
 import type { VideoService } from '../video';
 import type { MockContext } from './context';
 
@@ -11,5 +12,16 @@ export function createMockVideoService(context: MockContext): VideoService {
     // the mock keeps captions and files as data URLs, which load as they are
     getCaptionUrl: (url) => Promise.resolve(url),
     getDownloadUrl: (path) => Promise.resolve(path),
+    // the demo encoder always succeeds, so there is never a failure to list or retry
+    listFailed: () =>
+      context.run('video.listFailed', () => {
+        context.requireRole('admin');
+        return [];
+      }),
+    retry: (assetId) =>
+      context.run('video.retry', () => {
+        context.requireRole('admin');
+        throw new ServiceError('not_found', `Video not found: ${assetId}`);
+      }),
   };
 }
