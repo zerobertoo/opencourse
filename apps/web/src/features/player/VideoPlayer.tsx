@@ -5,6 +5,7 @@ import { Video, VideoPlayer as VideoJsPlayer, VideoSkin } from '@videojs/react/v
 import '@videojs/react/video/skin.css';
 import { useCallback, useEffect, useRef, type CSSProperties, type SyntheticEvent } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useCaptionTracks } from '@/hooks/queries';
 
 /** How often (in seconds of playback) the position is reported while playing. */
 const POSITION_SAVE_INTERVAL_SECONDS = 5;
@@ -101,7 +102,8 @@ export function VideoPlayer({
       callbacksRef.current.onEnded();
     },
   };
-  const tracks = captions.map((caption) => (
+  const captionTracks = useCaptionTracks(captions);
+  const tracks = captionTracks.map((caption) => (
     <track
       key={caption.locale}
       kind="captions"

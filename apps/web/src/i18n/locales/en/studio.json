@@ -201,12 +201,11 @@
     "uploadStarted": "Upload received. The video is being processed.",
     "uploadFailed": "The upload failed. Check the connection and try again.",
     "demoNote": "In this demo no file is sent anywhere: a sample video stands in for your upload.",
-    "captionsApiNote": "Caption files cannot be added yet. Uploads arrive in a later release.",
     "externalUrl": "External video link",
     "useLink": "Use link",
     "linkSaved": "Video link saved.",
     "captionsTitle": "Captions",
-    "captionsDescription": "One WebVTT (.vtt) file per language.",
+    "captionsDescription": "One WebVTT (.vtt) or SRT (.srt) file per language.",
     "captionAdded": "Added",
     "captionMissing": "Missing",
     "captionUpload": "Upload {language} captions",
@@ -221,8 +220,7 @@
     "add": "Add files",
     "remove": "Remove {name}",
     "saved": "Materials saved.",
-    "limitNote": "Demo limit: files up to {limit}.",
-    "apiNote": "Files cannot be attached yet. Uploads arrive in a later release."
+    "limitNote": "Demo limit: files up to {limit}."
   },
   "upload": {
     "tooLarge": "This file is too large for the demo. The limit is {limit}."

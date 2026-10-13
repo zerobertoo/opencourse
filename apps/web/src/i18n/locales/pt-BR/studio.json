@@ -201,12 +201,11 @@
     "uploadStarted": "Envio recebido. O vídeo está sendo processado.",
     "uploadFailed": "O envio falhou. Verifique a conexão e tente de novo.",
     "demoNote": "Nesta demonstração nenhum arquivo é enviado: um vídeo de exemplo substitui o seu.",
-    "captionsApiNote": "Ainda não é possível adicionar legendas. O envio de arquivos chega em uma versão futura.",
     "externalUrl": "Link do vídeo externo",
     "useLink": "Usar link",
     "linkSaved": "Link do vídeo salvo.",
     "captionsTitle": "Legendas",
-    "captionsDescription": "Um arquivo WebVTT (.vtt) por idioma.",
+    "captionsDescription": "Um arquivo WebVTT (.vtt) ou SRT (.srt) por idioma.",
     "captionAdded": "Adicionada",
     "captionMissing": "Ausente",
     "captionUpload": "Enviar legenda em {language}",
@@ -221,8 +220,7 @@
     "add": "Adicionar arquivos",
     "remove": "Remover {name}",
     "saved": "Materiais salvos.",
-    "limitNote": "Limite da demonstração: arquivos de até {limit}.",
-    "apiNote": "Ainda não é possível anexar arquivos. O envio de arquivos chega em uma versão futura."
+    "limitNote": "Limite da demonstração: arquivos de até {limit}."
   },
   "upload": {
     "tooLarge": "Este arquivo é grande demais para a demonstração. O limite é {limit}."

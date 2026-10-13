@@ -1,5 +1,6 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import type { Progress } from '@opencourse/shared';
+import { useMutation, useQueries, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useEffect } from 'react';
+import type { Caption, Progress } from '@opencourse/shared';
 import { useServices } from '@/services/ServicesContext';
 
 /** Cache keys. Switching users discards everything that is not `auth`. */
@@ -68,6 +69,42 @@ export function useVideoPlaybackUrl(assetId: string | undefined) {
     refetchOnReconnect: false,
     gcTime: 0,
   });
+}
+
+/**
+ * The captions with an address a `<track>` can load, in the order given. A caption still being
+ * fetched is left out until it is ready. Kept only while the player is mounted, so a replaced
+ * file is read again the next time the lesson opens.
+ */
+export function useCaptionTracks(captions: Caption[]): Caption[] {
+  const { video } = useServices();
+  const tracks = useQueries({
+    queries: captions.map((caption) => ({
+      queryKey: ['video', 'caption', caption.url],
+      queryFn: () => video.getCaptionUrl(caption.url),
+      staleTime: Infinity,
+      gcTime: 0,
+      refetchOnWindowFocus: false,
+      refetchOnReconnect: false,
+    })),
+    combine: (results) =>
+      results.flatMap((result, index) =>
+        result.data === undefined ? [] : [{ ...captions[index]!, url: result.data }],
+      ),
+  });
+
+  // object addresses pin their file in memory until revoked
+  const addressKey = tracks.map((track) => track.url).join('\n');
+  useEffect(() => {
+    const addresses = addressKey === '' ? [] : addressKey.split('\n');
+    return () => {
+      for (const address of addresses) {
+        if (address.startsWith('blob:')) URL.revokeObjectURL(address);
+      }
+    };
+  }, [addressKey]);
+
+  return tracks;
 }
 
 export function useCourseProgress(courseId: string | undefined, enabled = true) {

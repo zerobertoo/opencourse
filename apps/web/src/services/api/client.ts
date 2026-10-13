@@ -11,6 +11,8 @@ export type HttpMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
 
 export interface ApiRequestOptions<T> {
   body?: unknown;
+  /** Sends `body` as it is, with this content type, instead of JSON. */
+  contentType?: string;
   /** Undefined values are skipped, so callers can pass optional filters as they are. */
   query?: Record<string, string | undefined>;
   /** Validates the response body against the shared contract. Omit for 204 responses. */
@@ -82,6 +84,17 @@ export class ApiClient {
     return this.parse(response, options.schema);
   }
 
+  /** A file the API serves, such as captions, read with the session (`path` includes `/api/v1`). */
+  async blob(path: string): Promise<Blob> {
+    const apiPath = path.replace(/^\/api\/v1/, '');
+    let response = await this.send('GET', apiPath, {});
+    if (response.status === 401 && (await this.refreshSession())) {
+      response = await this.send('GET', apiPath, {});
+    }
+    if (!response.ok) await this.parse(response, undefined);
+    return response.blob();
+  }
+
   private async send(
     method: HttpMethod,
     path: string,
@@ -100,9 +113,16 @@ export class ApiClient {
         headers: {
           accept: 'application/json',
           [CSRF_HEADER_NAME]: CSRF_HEADER_VALUE,
-          ...(options.body === undefined ? {} : { 'content-type': 'application/json' }),
+          ...(options.body === undefined
+            ? {}
+            : { 'content-type': options.contentType ?? 'application/json' }),
         },
-        body: options.body === undefined ? undefined : JSON.stringify(options.body),
+        body:
+          options.body === undefined
+            ? undefined
+            : options.contentType
+              ? (options.body as string)
+              : JSON.stringify(options.body),
       });
     } catch {
       throw new ServiceError('unavailable', 'Could not reach the API');

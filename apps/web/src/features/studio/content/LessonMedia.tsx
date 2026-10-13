@@ -1,11 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import {
-  findVideoProvider,
-  videoProviders,
-  type Caption,
-  type Lesson,
-  type Locale,
-} from '@opencourse/shared';
+import { findVideoProvider, videoProviders, type Lesson, type Locale } from '@opencourse/shared';
 import { FileText, Trash2, Upload, Video } from 'lucide-react';
 import { useId, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
@@ -120,7 +114,8 @@ export function VideoSection({
   locales: Locale[];
 }) {
   const { t } = useTranslation(['studio', 'common']);
-  const { setVideo, removeVideo, updateLesson } = useCurriculumMutations(courseId);
+  const { setVideo, removeVideo, setCaption, removeCaption } = useCurriculumMutations(courseId);
+  const isSavingCaption = setCaption.isPending || removeCaption.isPending;
   const describeError = useServiceErrorMessage();
   const describeUploadError = useUploadErrorMessage();
   const [formError, setFormError] = useState<string | null>(null);
@@ -179,24 +174,21 @@ export function VideoSection({
     }
   };
 
-  const saveCaptions = async (captions: Caption[]) => {
+  const uploadCaption = async (locale: Locale, files: File[]) => {
+    const file = files[0];
+    if (!file) return;
     try {
-      await updateLesson.mutateAsync({ lessonId: lesson.id, input: { captions } });
+      await setCaption.mutateAsync({ lessonId: lesson.id, locale, file });
       toast.success(t('studio:video.captionsSaved'));
     } catch (error) {
       toast.error(describeUploadError(error));
     }
   };
 
-  const uploadCaption = async (locale: Locale, files: File[]) => {
-    const file = files[0];
-    if (!file) return;
+  const deleteCaption = async (locale: Locale) => {
     try {
-      const url = await readFileAsDataUrl(file);
-      await saveCaptions([
-        ...lesson.captions.filter((item) => item.locale !== locale),
-        { locale, url },
-      ]);
+      await removeCaption.mutateAsync({ lessonId: lesson.id, locale });
+      toast.success(t('studio:video.captionsSaved'));
     } catch (error) {
       toast.error(describeUploadError(error));
     }
@@ -312,9 +304,7 @@ export function VideoSection({
 
       <PanelSection
         title={t('studio:video.captionsTitle')}
-        description={
-          isApiMode ? t('studio:video.captionsApiNote') : t('studio:video.captionsDescription')
-        }
+        description={t('studio:video.captionsDescription')}
       >
         <ul className="space-y-2">
           {locales.map((locale) => {
@@ -332,23 +322,19 @@ export function VideoSection({
                   </Badge>
                 </span>
                 <span className="flex gap-2">
-                  {isApiMode ? null : (
-                    <FilePicker
-                      label={t('studio:video.captionUpload', { language })}
-                      accept=".vtt,text/vtt"
-                      disabled={updateLesson.isPending}
-                      onFiles={(files) => void uploadCaption(locale, files)}
-                    />
-                  )}
+                  <FilePicker
+                    label={t('studio:video.captionUpload', { language })}
+                    accept=".vtt,.srt,text/vtt,application/x-subrip"
+                    disabled={isSavingCaption}
+                    onFiles={(files) => void uploadCaption(locale, files)}
+                  />
                   {caption ? (
                     <Button
                       variant="ghost"
                       size="sm"
                       aria-label={t('studio:video.captionRemove', { language })}
-                      disabled={updateLesson.isPending}
-                      onClick={() =>
-                        void saveCaptions(lesson.captions.filter((item) => item.locale !== locale))
-                      }
+                      disabled={isSavingCaption}
+                      onClick={() => void deleteCaption(locale)}
                     >
                       <Trash2 aria-hidden="true" />
                     </Button>
@@ -385,7 +371,9 @@ export function MaterialsSection({ courseId, lesson }: { courseId: string; lesso
         files.map(async (file): Promise<AttachmentUpload> => ({
           name: file.name,
           sizeBytes: file.size,
-          url: await readFileAsDataUrl(file),
+          file,
+          // the real API uploads the file itself; only the demo keeps the content in the session
+          url: isApiMode ? '' : await readFileAsDataUrl(file),
         })),
       );
       await addAttachments.mutateAsync({ lessonId: lesson.id, files: uploads });
@@ -428,24 +416,22 @@ export function MaterialsSection({ courseId, lesson }: { courseId: string; lesso
           ))}
         </ul>
       )}
-      {isApiMode ? (
-        <p className="text-xs text-muted-foreground">{t('studio:materials.apiNote')}</p>
-      ) : (
-        <div className="space-y-1.5">
-          <FilePicker
-            label={t('studio:materials.add')}
-            accept="*/*"
-            multiple
-            disabled={isSaving}
-            onFiles={(files) => void addFiles(files)}
-          />
+      <div className="space-y-1.5">
+        <FilePicker
+          label={t('studio:materials.add')}
+          accept="*/*"
+          multiple
+          disabled={isSaving}
+          onFiles={(files) => void addFiles(files)}
+        />
+        {isApiMode ? null : (
           <p className="text-xs text-muted-foreground">
             {t('studio:materials.limitNote', {
               limit: formatFileSize(MOCK_UPLOAD_LIMIT_BYTES, i18n.language),
             })}
           </p>
-        </div>
-      )}
+        )}
+      </div>
     </PanelSection>
   );
 }

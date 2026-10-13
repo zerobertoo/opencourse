@@ -211,8 +211,22 @@ describe('lesson player', () => {
     });
 
     expect(await screen.findByText('exercicios-modulo-1.pdf')).toBeVisible();
-    const link = screen.getByRole('link', { name: 'Baixar exercicios-modulo-1.pdf' });
-    expect(link).toHaveAttribute('href', '/media/files/exercicios-modulo-1.pdf');
+    // the download address is asked for on click, so the session can be renewed first
+    const saved: Array<{ href: string; download: string }> = [];
+    const click = vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(function (
+      this: HTMLAnchorElement,
+    ) {
+      saved.push({ href: this.getAttribute('href') ?? '', download: this.download });
+    });
+    await userEvent
+      .setup()
+      .click(screen.getByRole('button', { name: 'Baixar exercicios-modulo-1.pdf' }));
+    await waitFor(() =>
+      expect(saved).toEqual([
+        { href: '/media/files/exercicios-modulo-1.pdf', download: 'exercicios-modulo-1.pdf' },
+      ]),
+    );
+    click.mockRestore();
   });
 
   it('renders the video player with its captions and translated controls', async () => {
@@ -224,7 +238,10 @@ describe('lesson player', () => {
     // the demo video plays through the same player as an uploaded one, minus the HLS engine
     const video = player.querySelector('video');
     expect(video).toHaveAttribute('src', '/media/sample-lesson.mp4');
-    expect(video?.querySelector('track[kind="captions"][srclang="pt-BR"]')).not.toBeNull();
+    // captions are resolved through the video service, so the track appears a moment later
+    await waitFor(() =>
+      expect(video?.querySelector('track[kind="captions"][srclang="pt-BR"]')).not.toBeNull(),
+    );
     // the player's own labels follow the app language
     expect(within(player).getByRole('button', { name: /Reproduzir/ })).toBeInTheDocument();
   });

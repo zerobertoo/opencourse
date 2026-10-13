@@ -18,7 +18,7 @@ beforeEach(async () => {
 });
 
 describe('lesson panel against the real API', () => {
-  it('offers a file upload and a provider link for video, but no caption upload', async () => {
+  it('offers a file upload and a provider link for video, and caption upload per language', async () => {
     const user = userEvent.setup();
     await renderApp(`${SQL_EDITOR}/content`, { signInAs: 'instructor' });
 
@@ -28,12 +28,11 @@ describe('lesson panel against the real API', () => {
     expect(await screen.findByLabelText('External video link')).toBeInTheDocument();
     expect(screen.getByText(/Supported providers: .*YouTube/)).toBeInTheDocument();
     expect(
-      screen.queryByLabelText(/Upload .* captions/, { selector: 'input' }),
-    ).not.toBeInTheDocument();
-    expect(screen.getAllByText(/uploads arrive in a later release/i).length).toBeGreaterThan(0);
+      screen.getAllByLabelText(/Upload .* captions/, { selector: 'input' }).length,
+    ).toBeGreaterThan(0);
   });
 
-  it('hides the file picker of the materials and explains that files come later', async () => {
+  it('shows the file picker of the materials', async () => {
     const user = userEvent.setup();
     await renderApp(`${SQL_EDITOR}/content`, { signInAs: 'instructor' });
 
@@ -41,8 +40,9 @@ describe('lesson panel against the real API', () => {
     const materials = (await screen.findByRole('heading', { name: 'Materials' })).closest(
       'section',
     )!;
-    expect(within(materials).queryByLabelText('Add files', { selector: 'input' })).toBeNull();
-    expect(within(materials).getByText(/uploads arrive in a later release/i)).toBeInTheDocument();
+    expect(
+      within(materials).getByLabelText('Add files', { selector: 'input' }),
+    ).toBeInTheDocument();
   });
 
   it('asks for https links in the video form', async () => {

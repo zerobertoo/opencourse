@@ -140,6 +140,7 @@ export function useUpdateCourse(courseId: string) {
 export function useCurriculumMutations(courseId: string) {
   const { curriculum } = useServices();
   const sync = useCourseSync(courseId);
+  const queryClient = useQueryClient();
 
   return {
     createModule: useMutation({
@@ -172,6 +173,20 @@ export function useCurriculumMutations(courseId: string) {
     addAttachments: useMutation({
       mutationFn: ({ lessonId, files }: { lessonId: string; files: AttachmentUpload[] }) =>
         curriculum.addLessonAttachments(lessonId, files),
+      onSuccess: sync,
+      // files are sent one by one: when a later one fails, the earlier ones are already attached
+      onError: () => {
+        void queryClient.invalidateQueries({ queryKey: studioKeys.course(courseId) });
+      },
+    }),
+    setCaption: useMutation({
+      mutationFn: ({ lessonId, locale, file }: { lessonId: string; locale: Locale; file: File }) =>
+        curriculum.setLessonCaption(lessonId, locale, file),
+      onSuccess: sync,
+    }),
+    removeCaption: useMutation({
+      mutationFn: ({ lessonId, locale }: { lessonId: string; locale: Locale }) =>
+        curriculum.removeLessonCaption(lessonId, locale),
       onSuccess: sync,
     }),
     removeAttachment: useMutation({

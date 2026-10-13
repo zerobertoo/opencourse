@@ -29,8 +29,10 @@ export interface CreateLessonInput {
 export interface AttachmentUpload {
   name: string;
   sizeBytes: number;
-  /** Where the content is reachable (a data URL in the mock; a real API would upload the file). */
+  /** Where the content is reachable (a data URL in the mock). */
   url: string;
+  /** The file itself; the real API uploads it to the storage. */
+  file?: File;
 }
 
 export interface UpdateLessonInput {
@@ -69,6 +71,9 @@ export interface CurriculumService {
   deleteLesson(lessonId: string): Promise<CourseDetail>;
   addLessonAttachments(lessonId: string, files: AttachmentUpload[]): Promise<CourseDetail>;
   removeLessonAttachment(lessonId: string, attachmentId: string): Promise<CourseDetail>;
+  /** Adds or replaces the captions of one language from a WebVTT or SRT file. */
+  setLessonCaption(lessonId: string, locale: Locale, file: File): Promise<CourseDetail>;
+  removeLessonCaption(lessonId: string, locale: Locale): Promise<CourseDetail>;
   /**
    * Sends the file (it then shows as `processing` until the worker finishes) or links an external
    * video (`ready`). Throws `validation` for a link no provider plugin recognises.

@@ -8,6 +8,7 @@ import {
 } from '@opencourse/shared';
 import { z } from 'zod';
 import type { CurriculumLayoutItem, CurriculumService, UpdateLessonInput } from '../curriculum';
+import { readFileAsDataUrl } from '../../lib/files';
 import { ServiceError } from '../errors';
 import type { MockContext } from './context';
 import { canManageCourse, findCourseById, findLesson, findModule } from './helpers';
@@ -204,6 +205,33 @@ export function createMockCurriculumService(context: MockContext): CurriculumSer
           throw new ServiceError('validation', 'Invalid attachments');
         }
         return changeCourse(course, () => lesson.attachments.push(...added));
+      }),
+
+    setLessonCaption: async (lessonId, locale, file) => {
+      // the demo keeps the caption as a data URL in the session, like attachments
+      const url = await readFileAsDataUrl(file);
+      return context.run('curriculum.setLessonCaption', () => {
+        const { course, lesson } = findLesson(store.db, lessonId);
+        requireManager(course);
+        const others = lesson.type === 'video' ? lesson.captions : [];
+        return changeCourse(course, () =>
+          applyLessonUpdate(lesson, {
+            captions: [...others.filter((item) => item.locale !== locale), { locale, url }],
+          }),
+        );
+      });
+    },
+
+    removeLessonCaption: (lessonId, locale) =>
+      context.run('curriculum.removeLessonCaption', () => {
+        const { course, lesson } = findLesson(store.db, lessonId);
+        requireManager(course);
+        const others = lesson.type === 'video' ? lesson.captions : [];
+        return changeCourse(course, () =>
+          applyLessonUpdate(lesson, {
+            captions: others.filter((item) => item.locale !== locale),
+          }),
+        );
       }),
 
     removeLessonAttachment: (lessonId, attachmentId) =>

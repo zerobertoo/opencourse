@@ -20,6 +20,16 @@ function json(status: number, body: unknown): Response {
   });
 }
 
+/** The JSON a request carried, or the text itself for a plain-text body (captions). */
+function parseBody(body: unknown): unknown {
+  if (!body) return undefined;
+  try {
+    return JSON.parse(String(body));
+  } catch {
+    return String(body);
+  }
+}
+
 /** Services over a fake API that records every request and answers with `respond`. */
 function setup(respond: (request: Recorded) => Response = () => json(200, {})) {
   const requests: Recorded[] = [];
@@ -29,13 +39,14 @@ function setup(respond: (request: Recorded) => Response = () => json(200, {})) {
       method: init?.method ?? 'GET',
       path: url.pathname.replace('/api/v1', ''),
       query: Object.fromEntries(url.searchParams),
-      body: init?.body ? JSON.parse(String(init.body)) : undefined,
+      body: parseBody(init?.body),
     };
     requests.push(request);
     return Promise.resolve(respond(request));
   });
   const client = new ApiClient({ baseUrl: 'http://api.test', fetch: fetchMock as typeof fetch });
   return {
+    client,
     requests,
     courses: createApiCourseService(client),
     curriculum: createApiCurriculumService(client),
@@ -204,16 +215,65 @@ describe('API curriculum service', () => {
     ]);
   });
 
-  it('refuses attachments without calling the API: they wait for a later milestone', async () => {
-    const api = setup();
-    const attempts = [
-      api.curriculum.addLessonAttachments('l1', [{ name: 'a.pdf', sizeBytes: 1, url: 'data:' }]),
-      api.curriculum.removeLessonAttachment('l1', 'a1'),
-    ];
-    for (const attempt of attempts) {
-      await expect(attempt).rejects.toMatchObject({ code: 'unavailable' });
-    }
-    expect(api.requests).toEqual([]);
+  describe('attachments and captions', () => {
+    const ATTACHMENT = '7a1c3a52-2d1c-4a43-9a43-0d3c8b6f9a22';
+
+    it('uploads each attachment to the storage in one request and confirms it', async () => {
+      const { course } = await samples();
+      const api = setup((request) =>
+        request.path.endsWith('/attachments')
+          ? json(200, { attachmentId: ATTACHMENT, uploadUrl: 'https://s3.test/put' })
+          : json(200, {
+              course,
+              attachment: { id: ATTACHMENT, name: 'a.pdf', sizeBytes: 3, url: '/api/v1/x' },
+            }),
+      );
+      const sent: Array<{ url: string; type: string | null }> = [];
+      const curriculum = createApiCurriculumService(api.client, (async (
+        url: RequestInfo | URL,
+        init?: RequestInit,
+      ) => {
+        sent.push({ url: String(url), type: new Headers(init?.headers).get('content-type') });
+        return new Response(null, { status: 200 });
+      }) as typeof fetch);
+      const file = new File(['abc'], 'a.pdf', { type: 'application/pdf' });
+
+      const result = await curriculum.addLessonAttachments('l1', [
+        { name: 'a.pdf', sizeBytes: 3, url: '', file },
+      ]);
+
+      expect(result).toEqual(course);
+      expect(sent).toEqual([{ url: 'https://s3.test/put', type: 'application/pdf' }]);
+      expect(api.requests).toMatchObject([
+        {
+          method: 'POST',
+          path: '/lessons/l1/attachments',
+          body: { filename: 'a.pdf', contentType: 'application/pdf', sizeBytes: 3 },
+        },
+        { method: 'POST', path: `/lessons/l1/attachments/${ATTACHMENT}/complete` },
+      ]);
+    });
+
+    it('refuses an upload that has no file, without calling the API', async () => {
+      const api = setup();
+      await expect(
+        api.curriculum.addLessonAttachments('l1', [{ name: 'a.pdf', sizeBytes: 1, url: 'data:' }]),
+      ).rejects.toMatchObject({ code: 'validation' });
+      expect(api.requests).toEqual([]);
+    });
+
+    it('removes an attachment, and sets and removes captions by language', async () => {
+      const { course } = await samples();
+      const api = setup(() => json(200, { course }));
+      await api.curriculum.removeLessonAttachment('l1', 'a1');
+      await api.curriculum.setLessonCaption('l1', 'pt-BR', new File(['WEBVTT'], 'a.vtt'));
+      await api.curriculum.removeLessonCaption('l1', 'pt-BR');
+      expect(api.requests.map(({ method, path }) => `${method} ${path}`)).toEqual([
+        'DELETE /lessons/l1/attachments/a1',
+        'PUT /lessons/l1/captions/pt-BR',
+        'DELETE /lessons/l1/captions/pt-BR',
+      ]);
+    });
   });
 
   describe('video upload', () => {
