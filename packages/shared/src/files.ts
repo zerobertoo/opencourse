@@ -55,6 +55,24 @@ export function attachmentDownloadPath(attachmentId: string): string {
   return `/api/v1/attachments/${attachmentId}/download`;
 }
 
+/**
+ * Subtitle file bytes as text. A UTF-16 byte order mark wins; otherwise strict UTF-8, and bytes
+ * that are not valid UTF-8 are read as Windows-1252, which is what old Latin-1 subtitle files are.
+ */
+export function decodeSubtitleBytes(bytes: Uint8Array): string {
+  if (bytes[0] === 0xff && bytes[1] === 0xfe) {
+    return new TextDecoder('utf-16le').decode(bytes.subarray(2));
+  }
+  if (bytes[0] === 0xfe && bytes[1] === 0xff) {
+    return new TextDecoder('utf-16be').decode(bytes.subarray(2));
+  }
+  try {
+    return new TextDecoder('utf-8', { fatal: true }).decode(bytes);
+  } catch {
+    return new TextDecoder('windows-1252').decode(bytes);
+  }
+}
+
 const SRT_TIMESTAMP = /(\d{1,2}:\d{2}:\d{2}),(\d{3})/g;
 const VTT_CUE_TIMING = /\d{1,2}:\d{2}(?::\d{2})?\.\d{3}\s+-->\s+\d{1,2}:\d{2}(?::\d{2})?\.\d{3}/;
 
@@ -71,7 +89,14 @@ export function toWebVtt(input: string): string | null {
   for (const block of text.split(/\n{2,}/)) {
     const lines = block.split('\n').filter((line) => line.trim() !== '');
     const timingAt = lines.findIndex((line) => line.includes('-->'));
-    if (timingAt === -1) continue;
+    if (timingAt === -1) {
+      // text that follows a blank line inside a cue; a lone number is the next cue's index
+      const isCueNumber = lines.length === 1 && /^\d+$/.test(lines[0]!.trim());
+      if (cues.length > 0 && lines.length > 0 && !isCueNumber) {
+        cues[cues.length - 1] += `\n${lines.join('\n')}`;
+      }
+      continue;
+    }
     const timing = (lines[timingAt] ?? '').replace(SRT_TIMESTAMP, '$1.$2');
     if (!VTT_CUE_TIMING.test(timing)) return null;
     cues.push([timing, ...lines.slice(timingAt + 1)].join('\n'));

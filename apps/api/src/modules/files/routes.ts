@@ -9,6 +9,7 @@ import {
   courseResponseSchema,
   createAttachmentRequestSchema,
   createAttachmentResponseSchema,
+  decodeSubtitleBytes,
   lessonIdParamsSchema,
   localeSchema,
   toWebVtt,
@@ -17,7 +18,6 @@ import {
 import { eq, sql } from 'drizzle-orm';
 import type { FastifyRequest } from 'fastify';
 import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod';
-import { z } from 'zod';
 import type { Config } from '../../config';
 import { lessonAttachments, lessons } from '../../db/schema';
 import { badRequest, forbidden, notFound } from '../../errors';
@@ -41,6 +41,13 @@ export interface FileRoutesOptions {
 }
 
 export const fileRoutes: FastifyPluginAsyncZod<FileRoutesOptions> = async (app, { config }) => {
+  // captions arrive as raw bytes, so the encoding is decided from them and not by the HTTP layer
+  app.addContentTypeParser(
+    'text/plain',
+    { parseAs: 'buffer', bodyLimit: CAPTION_MAX_BYTES },
+    (_request, body, done) => done(null, body),
+  );
+
   /** A lesson the caller may edit; invisible and unknown lessons look the same. */
   async function managedLesson(request: FastifyRequest, lessonId: string) {
     const found = await findCourseOfLesson(app.db, lessonId);
@@ -211,9 +218,9 @@ export const fileRoutes: FastifyPluginAsyncZod<FileRoutesOptions> = async (app, 
       schema: {
         tags: ['files'],
         summary: 'Add or replace the captions of a video lesson in one language',
-        description: 'Send WebVTT or SRT as text/plain; SRT is stored as WebVTT.',
+        description:
+          'Send the file as text/plain: WebVTT or SRT in UTF-8, UTF-16 or Latin-1. SRT is stored as WebVTT, always in UTF-8.',
         params: captionParamsSchema,
-        body: z.string(),
         response: { 200: courseResponseSchema },
       },
     },
@@ -221,7 +228,8 @@ export const fileRoutes: FastifyPluginAsyncZod<FileRoutesOptions> = async (app, 
       const { id: lessonId, locale } = request.params;
       const { course, lesson } = await managedLesson(request, lessonId);
       if (lesson.type !== 'video') throw badRequest('Only video lessons have captions');
-      const vtt = toWebVtt(request.body);
+      if (!Buffer.isBuffer(request.body)) throw badRequest('Send the captions as a text file');
+      const vtt = toWebVtt(decodeSubtitleBytes(request.body));
       if (vtt === null) throw badRequest('The captions must be a WebVTT or SRT file');
 
       const { course: detail } = await changeCurriculum(

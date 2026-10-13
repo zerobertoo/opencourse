@@ -14,7 +14,7 @@ import type { ApiClient } from './client';
 
 /**
  * CurriculumService backed by the real API. Video files and attachments go straight to the
- * storage (video in slices, attachments in one request); captions travel as text through the API.
+ * storage (video in slices, attachments in one request); captions travel as raw bytes through the API.
  */
 export function createApiCurriculumService(
   client: ApiClient,
@@ -131,7 +131,9 @@ export function createApiCurriculumService(
           'PUT',
           `${lessonUrl(lessonId)}/captions/${encodeURIComponent(locale)}`,
           {
-            body: await file.text(),
+            // raw bytes: the API detects UTF-8, UTF-16 or Latin-1; reading it as text here would
+            // assume UTF-8 and corrupt the accents of an older file
+            body: await file.arrayBuffer(),
             contentType: 'text/plain',
             schema: courseResponseSchema,
           },

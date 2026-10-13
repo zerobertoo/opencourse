@@ -234,7 +234,12 @@ describe('lesson attachments and captions', () => {
   });
 
   describe('captions', () => {
-    const putCaptions = (client: TestClient, lessonId: string, locale: string, text: string) =>
+    const putCaptions = (
+      client: TestClient,
+      lessonId: string,
+      locale: string,
+      text: string | Buffer,
+    ) =>
       client.request('PUT', `/api/v1/lessons/${lessonId}/captions/${locale}`, {
         body: text,
         headers: { 'content-type': 'text/plain' },
@@ -317,6 +322,26 @@ describe('lesson attachments and captions', () => {
       const served = await client.get(`/api/v1/lessons/${lesson.id}/captions/en.vtt`);
       expect(served.statusCode).toBe(200);
       expect(served.body).toContain('Again');
+    });
+
+    it('stores captions saved as Latin-1 or UTF-16 with their accents', async () => {
+      const { cast, lesson } = await setup();
+      const client = cast.instructorA.client;
+      const text = 'WEBVTT\n\n00:00:01.000 --> 00:00:02.000\nAção e emoção\n';
+      const key = (locale: string) => lessonFileKeys.caption(lesson.id, locale);
+
+      expect(
+        (await putCaptions(client, lesson.id, 'pt-BR', Buffer.from(text, 'latin1'))).statusCode,
+      ).toBe(200);
+      expect(await ctx.app.storage.readText(key('pt-BR'))).toBe(text);
+
+      const utf16 = Buffer.concat([Buffer.from([0xff, 0xfe]), Buffer.from(text, 'utf16le')]);
+      expect((await putCaptions(client, lesson.id, 'en', utf16)).statusCode).toBe(200);
+      expect(await ctx.app.storage.readText(key('en'))).toBe(text);
+
+      const utf8 = Buffer.concat([Buffer.from([0xef, 0xbb, 0xbf]), Buffer.from(text, 'utf8')]);
+      expect((await putCaptions(client, lesson.id, 'en', utf8)).statusCode).toBe(200);
+      expect(await ctx.app.storage.readText(key('en'))).toBe(text);
     });
 
     it('refuses text that is not subtitles and lessons that are not videos', async () => {

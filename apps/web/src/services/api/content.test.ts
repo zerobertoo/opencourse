@@ -11,6 +11,9 @@ interface Recorded {
   path: string;
   query: Record<string, string>;
   body: unknown;
+  /** What was handed to `fetch`, before it was read as text or JSON. */
+  rawBody?: unknown;
+  contentType?: string | undefined;
 }
 
 function json(status: number, body: unknown): Response {
@@ -40,6 +43,8 @@ function setup(respond: (request: Recorded) => Response = () => json(200, {})) {
       path: url.pathname.replace('/api/v1', ''),
       query: Object.fromEntries(url.searchParams),
       body: parseBody(init?.body),
+      rawBody: init?.body,
+      contentType: (init?.headers as Record<string, string> | undefined)?.['content-type'],
     };
     requests.push(request);
     return Promise.resolve(respond(request));
@@ -260,6 +265,18 @@ describe('API curriculum service', () => {
         api.curriculum.addLessonAttachments('l1', [{ name: 'a.pdf', sizeBytes: 1, url: 'data:' }]),
       ).rejects.toMatchObject({ code: 'validation' });
       expect(api.requests).toEqual([]);
+    });
+
+    it('sends a caption file as its raw bytes, so the API can read its encoding', async () => {
+      const { course } = await samples();
+      const api = setup(() => json(200, { course }));
+      // "Aç" in Latin-1: not valid UTF-8, so reading it as text would corrupt it
+      const bytes = new Uint8Array([0x41, 0xe7]);
+      await api.curriculum.setLessonCaption('l1', 'pt-BR', new File([bytes], 'a.srt'));
+
+      const [request] = api.requests;
+      expect(request?.contentType).toBe('text/plain');
+      expect(new Uint8Array(request?.rawBody as ArrayBuffer)).toEqual(bytes);
     });
 
     it('removes an attachment, and sets and removes captions by language', async () => {
