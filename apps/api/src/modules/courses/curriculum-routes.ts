@@ -1,4 +1,5 @@
 import {
+  type Caption,
   courseIdParamsSchema,
   courseResponseSchema,
   createLessonRequestSchema,
@@ -10,6 +11,7 @@ import {
   reorderCurriculumRequestSchema,
   updateLessonRequestSchema,
   updateModuleRequestSchema,
+  uploadedCaptionPath,
 } from '@opencourse/shared';
 import { eq, inArray } from 'drizzle-orm';
 import type { FastifyRequest } from 'fastify';
@@ -22,7 +24,8 @@ import {
   modules,
   videoAssets,
 } from '../../db/schema';
-import { conflict } from '../../errors';
+import { badRequest, conflict } from '../../errors';
+import { deleteLessonFiles, lessonFileKeys } from '../files/service';
 import { deleteVideoFiles, videoAssetsOfLessons } from '../video/service';
 import { requireManagedCourse } from './access';
 import {
@@ -157,6 +160,7 @@ export const curriculumRoutes: FastifyPluginAsyncZod = async (app) => {
         },
       );
       await deleteVideoFiles(app.storage, videoIds, request.log);
+      await deleteLessonFiles(app.storage, lessonIds, request.log);
       return { course: detail };
     },
   );
@@ -225,6 +229,7 @@ export const curriculumRoutes: FastifyPluginAsyncZod = async (app) => {
       const { translations, ...fields } = request.body;
       // validate before opening the transaction
       const columns = toLessonColumns(lesson.type, fields);
+      const removedCaptions = uploadedCaptionsToRemove(lesson, fields.captions);
       // a pasted link (or removing the video) replaces an uploaded file, so its files go too
       const replacedVideoIds =
         fields.video !== undefined ? await videoAssetsOfLessons(app.db, [lesson.id]) : [];
@@ -252,6 +257,16 @@ export const curriculumRoutes: FastifyPluginAsyncZod = async (app) => {
         },
       );
       await deleteVideoFiles(app.storage, replacedVideoIds, request.log);
+      for (const locale of removedCaptions) {
+        await app.storage
+          .deleteObject(lessonFileKeys.caption(lesson.id, locale))
+          .catch((error: unknown) =>
+            request.log.warn(
+              { err: error, lessonId: lesson.id, locale },
+              'could not delete a caption',
+            ),
+          );
+      }
       return { course: detail };
     },
   );
@@ -279,6 +294,7 @@ export const curriculumRoutes: FastifyPluginAsyncZod = async (app) => {
         },
       );
       await deleteVideoFiles(app.storage, videoIds, request.log);
+      await deleteLessonFiles(app.storage, [lesson.id], request.log);
       return { course: detail };
     },
   );
@@ -357,3 +373,23 @@ export const curriculumRoutes: FastifyPluginAsyncZod = async (app) => {
     },
   );
 };
+
+/**
+ * Locales of uploaded captions that a new captions list drops. A path to an uploaded file is
+ * only accepted for a file this lesson already has, so a list cannot claim someone else's.
+ */
+function uploadedCaptionsToRemove(
+  lesson: { id: string; captions: Caption[] },
+  next: Caption[] | undefined,
+): string[] {
+  if (next === undefined) return [];
+  const uploaded = (item: Caption) => item.url === uploadedCaptionPath(lesson.id, item.locale);
+  const had = new Set(lesson.captions.filter(uploaded).map((item) => item.locale));
+  for (const item of next) {
+    if (item.url.startsWith('/') && !(uploaded(item) && had.has(item.locale))) {
+      throw badRequest('Captions can only point to files already uploaded to this lesson');
+    }
+  }
+  const kept = new Set(next.filter(uploaded).map((item) => item.locale));
+  return [...had].filter((locale) => !kept.has(locale));
+}

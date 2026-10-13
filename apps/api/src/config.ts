@@ -1,4 +1,5 @@
 import {
+  DEFAULT_ATTACHMENT_MAX_BYTES,
   DEFAULT_VIDEO_MAX_UPLOAD_BYTES,
   VIDEO_UPLOAD_MAX_PARTS,
   VIDEO_UPLOAD_PART_BYTES,
@@ -89,6 +90,9 @@ const configSchema = z
         'must fit in 10,000 upload parts (about 156 GiB)',
       )
       .default(DEFAULT_VIDEO_MAX_UPLOAD_BYTES),
+
+    /** Largest lesson attachment an instructor may upload, in bytes. */
+    ATTACHMENT_MAX_BYTES: z.coerce.number().int().positive().default(DEFAULT_ATTACHMENT_MAX_BYTES),
 
     SMTP_HOST: z.string().default('localhost'),
     SMTP_PORT: z.coerce.number().int().min(1).max(65535).default(1025),

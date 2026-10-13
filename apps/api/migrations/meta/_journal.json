@@ -64,6 +64,13 @@
       "when": 1791410815933,
       "tag": "0008_far_puff_adder",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1791859214408,
+      "tag": "0009_mixed_sinister_six",
+      "breakpoints": true
     }
   ]
 }

@@ -7,6 +7,7 @@ import pino, { type Logger } from 'pino';
 import type { Config } from '../config';
 import { outboxEvents } from '../db/schema';
 import { createSmtpMailer, type Mailer } from '../mail/mailer';
+import { removeStaleAttachments } from '../modules/files/service';
 import { removeStaleUploads } from '../modules/video/service';
 import { openDatabase } from '../plugins/db';
 import { createS3Storage, type Storage } from '../storage/s3';
@@ -138,6 +139,9 @@ export async function startWorker(
         );
         await removeStaleUploads(db, storage, log).catch((error: unknown) =>
           log.error({ err: error }, 'stale upload cleanup failed'),
+        );
+        await removeStaleAttachments(db, storage, log).catch((error: unknown) =>
+          log.error({ err: error }, 'stale attachment cleanup failed'),
         );
       }
       await sleep(pollIntervalMs, undefined, { signal: stopSignal.signal }).catch(() => undefined);

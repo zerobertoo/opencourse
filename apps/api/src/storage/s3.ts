@@ -6,6 +6,7 @@ import {
   AbortMultipartUploadCommand,
   CompleteMultipartUploadCommand,
   CreateMultipartUploadCommand,
+  DeleteObjectCommand,
   DeleteObjectsCommand,
   GetObjectCommand,
   HeadObjectCommand,
@@ -37,9 +38,25 @@ export interface Storage {
   abortMultipartUpload(key: string, uploadId: string): Promise<void>;
   /** Size of the object, or null when it does not exist. */
   sizeOf(key: string): Promise<number | null>;
-  /** Address the browser GETs the object from. */
-  presignGet(key: string, expiresInSeconds: number): Promise<string>;
+  /**
+   * Address the browser GETs the object from. `contentDisposition` makes the storage answer with
+   * that header, so a download is saved instead of rendered.
+   */
+  presignGet(key: string, expiresInSeconds: number, contentDisposition?: string): Promise<string>;
+  /**
+   * Address the browser PUTs a whole object to (a single request, for small files). The length is
+   * part of the signature, so the storage refuses a body of any other size.
+   */
+  presignPut(
+    key: string,
+    contentType: string,
+    sizeBytes: number,
+    expiresInSeconds: number,
+  ): Promise<string>;
   readText(key: string): Promise<string>;
+  putText(key: string, body: string, contentType: string): Promise<void>;
+  /** Deletes one object; a missing key is not an error. */
+  deleteObject(key: string): Promise<void>;
   downloadToFile(key: string, filePath: string): Promise<void>;
   uploadFile(key: string, filePath: string, contentType: string): Promise<void>;
   /** Deletes every object whose key starts with the prefix. */
@@ -111,13 +128,38 @@ export function createS3Storage(config: Config): Storage {
         throw error;
       }
     },
-    presignGet: (key, expiresInSeconds) =>
-      getSignedUrl(publicClient, new GetObjectCommand({ Bucket, Key: key }), {
-        expiresIn: Math.min(expiresInSeconds, MAX_PRESIGN_SECONDS),
-      }),
+    presignGet: (key, expiresInSeconds, contentDisposition) =>
+      getSignedUrl(
+        publicClient,
+        new GetObjectCommand({
+          Bucket,
+          Key: key,
+          ...(contentDisposition ? { ResponseContentDisposition: contentDisposition } : {}),
+        }),
+        { expiresIn: Math.min(expiresInSeconds, MAX_PRESIGN_SECONDS) },
+      ),
+    presignPut: (key, contentType, sizeBytes, expiresInSeconds) =>
+      getSignedUrl(
+        publicClient,
+        new PutObjectCommand({
+          Bucket,
+          Key: key,
+          ContentType: contentType,
+          ContentLength: sizeBytes,
+        }),
+        { expiresIn: Math.min(expiresInSeconds, MAX_PRESIGN_SECONDS) },
+      ),
     async readText(key) {
       const result = await client.send(new GetObjectCommand({ Bucket, Key: key }));
       return result.Body!.transformToString();
+    },
+    async putText(key, body, contentType) {
+      await client.send(
+        new PutObjectCommand({ Bucket, Key: key, Body: body, ContentType: contentType }),
+      );
+    },
+    async deleteObject(key) {
+      await client.send(new DeleteObjectCommand({ Bucket, Key: key }));
     },
     async downloadToFile(key, filePath) {
       const result = await client.send(new GetObjectCommand({ Bucket, Key: key }));

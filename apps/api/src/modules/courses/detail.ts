@@ -1,13 +1,15 @@
 import type { Course, CourseDetail, Lesson } from '@opencourse/shared';
-import { asc, inArray } from 'drizzle-orm';
+import { and, asc, eq, inArray } from 'drizzle-orm';
 import {
   courseTranslations,
+  lessonAttachments,
   lessons,
   lessonTranslations,
   moduleTranslations,
   modules,
   type CourseRow,
   type CourseTranslationRow,
+  type LessonAttachmentRow,
   type LessonRow,
   type LessonTranslationRow,
   users,
@@ -16,6 +18,7 @@ import {
 } from '../../db/schema';
 import { toLocale } from '../../mappers';
 import type { Database } from '../../plugins/db';
+import { toFileAttachment } from '../files/service';
 import { readExternalVideo, toLocalVideoAsset } from '../video/service';
 
 type Reader = Pick<Database, 'select'>;
@@ -52,14 +55,14 @@ function toLesson(
   row: LessonRow,
   translations: LessonTranslationRow[],
   uploads: VideoAssetRow[],
+  attachments: LessonAttachmentRow[],
 ): Lesson {
   const base = {
     id: row.id,
     moduleId: row.moduleId,
     order: row.position,
     durationSeconds: row.durationSeconds,
-    // attachments need the storage adapter (milestone 4b)
-    attachments: [],
+    attachments: attachments.filter((item) => item.lessonId === row.id).map(toFileAttachment),
     translations: translations
       .filter((item) => item.lessonId === row.id)
       .sort(byLocale)
@@ -134,6 +137,19 @@ export async function loadCourseDetails(db: Reader, rows: CourseRow[]): Promise<
     ? await db.select().from(videoAssets).where(inArray(videoAssets.lessonId, lessonIds))
     : [];
 
+  const attachmentRows = lessonIds.length
+    ? await db
+        .select()
+        .from(lessonAttachments)
+        .where(
+          and(
+            inArray(lessonAttachments.lessonId, lessonIds),
+            eq(lessonAttachments.status, 'ready'),
+          ),
+        )
+        .orderBy(asc(lessonAttachments.position), asc(lessonAttachments.createdAt))
+    : [];
+
   const teachers = await db
     .select({ id: users.id, name: users.name })
     .from(users)
@@ -154,7 +170,7 @@ export async function loadCourseDetails(db: Reader, rows: CourseRow[]): Promise<
           .map((item) => ({ locale: toLocale(item.locale), title: item.title })),
         lessons: lessonRows
           .filter((lesson) => lesson.moduleId === row.id)
-          .map((lesson) => toLesson(lesson, lessonTexts, uploadRows)),
+          .map((lesson) => toLesson(lesson, lessonTexts, uploadRows, attachmentRows)),
       })),
   }));
 }

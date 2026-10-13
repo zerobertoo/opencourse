@@ -12,6 +12,12 @@ import {
   quizSchema,
 } from './entities';
 
+/** A caption is an https link, or the path of a file uploaded to this instance. */
+const captionUrlSchema = z.union([
+  httpsUrlSchema,
+  z.string().regex(/^\/api\/v1\/lessons\/[0-9a-f-]{36}\/captions\/[A-Za-z-]+\.vtt$/),
+]);
+
 export const moduleIdParamsSchema = z.object({ id: idSchema });
 export const lessonIdParamsSchema = z.object({ id: idSchema });
 
@@ -89,7 +95,7 @@ export const updateLessonRequestSchema = z
     durationSeconds: z.number().int().nonnegative().max(86_400),
     /** Video lessons only. */
     captions: z
-      .array(captionSchema.extend({ url: httpsUrlSchema }).strict())
+      .array(captionSchema.extend({ url: captionUrlSchema }).strict())
       .max(10)
       .refine(hasUniqueLocales, UNIQUE_LOCALES),
     /** Video lessons only: a link a video provider plugin recognises, or null to remove the video. */
