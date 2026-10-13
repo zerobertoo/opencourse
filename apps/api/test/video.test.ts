@@ -15,6 +15,7 @@ import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vites
 import { grants, lessons, outboxEvents, videoAssets } from '../src/db/schema';
 import { processVideo } from '../src/modules/video/process';
 import { removeStaleUploads } from '../src/modules/video/service';
+import { probeVideo } from '../src/modules/video/transcode';
 import type { Storage } from '../src/storage/s3';
 import { createCast, insertCourse, insertGrant, insertLesson, insertModule } from './fixtures';
 import {
@@ -594,4 +595,22 @@ describe('video upload, processing and playback', () => {
       ).toBeGreaterThan(1000);
     }
   }, 90_000);
+
+  it('reads the displayed size of a phone video stored rotated by 90 degrees', async () => {
+    const rotated = path.join(workDir, 'rotated.mp4');
+    // same pixels, only the rotation flag differs: the stored frame is landscape, shown portrait
+    await run('ffmpeg', [
+      '-y',
+      '-loglevel',
+      'error',
+      '-display_rotation',
+      '90',
+      '-i',
+      path.join(workDir, 'clip.mp4'),
+      '-c',
+      'copy',
+      rotated,
+    ]);
+    expect(await probeVideo(rotated)).toMatchObject({ width: 360, height: 640 });
+  });
 });

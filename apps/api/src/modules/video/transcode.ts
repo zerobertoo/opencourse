@@ -56,7 +56,14 @@ export async function probeVideo(file: string): Promise<VideoProbe> {
     throw new UnreadableVideoError('The file is not a video that can be read');
   }
   const info = JSON.parse(output) as {
-    streams?: Array<{ codec_type?: string; width?: number; height?: number; duration?: string }>;
+    streams?: Array<{
+      codec_type?: string;
+      width?: number;
+      height?: number;
+      duration?: string;
+      tags?: { rotate?: string };
+      side_data_list?: Array<{ rotation?: number }>;
+    }>;
     format?: { duration?: string };
   };
   const video = info.streams?.find((stream) => stream.codec_type === 'video');
@@ -65,8 +72,17 @@ export async function probeVideo(file: string): Promise<VideoProbe> {
   }
   // ffprobe prints "N/A" when it does not know: the stream may still say, otherwise it stays null
   const known = [info.format?.duration, video.duration].map(Number).find((n) => n > 0);
-  // ponytail: rotation metadata (phone videos) is not read; renditions keep the stored size
-  return { width: video.width, height: video.height, durationSeconds: known ?? null };
+  // phone videos are stored landscape and flagged as rotated: players (and ffmpeg's autorotate)
+  // show them turned, so the size that matters is the displayed one
+  const rotation =
+    video.side_data_list?.find((data) => data.rotation !== undefined)?.rotation ??
+    Number(video.tags?.rotate ?? 0);
+  const isSideways = Math.abs(rotation) % 180 === 90;
+  return {
+    width: isSideways ? video.height : video.width,
+    height: isSideways ? video.width : video.height,
+    durationSeconds: known ?? null,
+  };
 }
 
 /** Length of an HLS playlist: the sum of its segment durations. */
