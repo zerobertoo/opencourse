@@ -1,9 +1,16 @@
-import { resolveVideoUrl, type ExternalVideoAsset, type LocalVideoAsset } from '@opencourse/shared';
-import { and, eq, inArray, lt } from 'drizzle-orm';
+import {
+  resolveVideoUrl,
+  type ExternalVideoAsset,
+  type FailedVideo,
+  type LocalVideoAsset,
+} from '@opencourse/shared';
+import { and, desc, eq, inArray, lt } from 'drizzle-orm';
 import type { Logger } from 'pino';
 import {
   courses,
+  courseTranslations,
   lessons,
+  lessonTranslations,
   modules,
   videoAssets,
   type CourseRow,
@@ -58,6 +65,51 @@ export async function findAssetContext(
     .innerJoin(courses, eq(courses.id, modules.courseId))
     .where(eq(videoAssets.id, assetId));
   return found;
+}
+
+/** The failed list shows this many videos; older failures wait until these are dealt with. */
+const FAILED_VIDEOS_LIMIT = 100;
+
+/** Videos the encoder gave up on, newest failure first, with titles in the course's language. */
+export async function listFailedVideos(db: Pick<Database, 'select'>): Promise<FailedVideo[]> {
+  const rows = await db
+    .select({
+      assetId: videoAssets.id,
+      lessonId: lessons.id,
+      lessonTitle: lessonTranslations.title,
+      courseId: courses.id,
+      courseTitle: courseTranslations.title,
+      errorMessage: videoAssets.errorMessage,
+      failedAt: videoAssets.updatedAt,
+      sizeBytes: videoAssets.sizeBytes,
+    })
+    .from(videoAssets)
+    .innerJoin(lessons, eq(lessons.id, videoAssets.lessonId))
+    .innerJoin(modules, eq(modules.id, lessons.moduleId))
+    .innerJoin(courses, eq(courses.id, modules.courseId))
+    .leftJoin(
+      lessonTranslations,
+      and(
+        eq(lessonTranslations.lessonId, lessons.id),
+        eq(lessonTranslations.locale, courses.defaultLocale),
+      ),
+    )
+    .leftJoin(
+      courseTranslations,
+      and(
+        eq(courseTranslations.courseId, courses.id),
+        eq(courseTranslations.locale, courses.defaultLocale),
+      ),
+    )
+    .where(eq(videoAssets.status, 'error'))
+    .orderBy(desc(videoAssets.updatedAt))
+    .limit(FAILED_VIDEOS_LIMIT);
+  return rows.map((row) => ({
+    ...row,
+    lessonTitle: row.lessonTitle ?? '',
+    courseTitle: row.courseTitle ?? '',
+    failedAt: row.failedAt.toISOString(),
+  }));
 }
 
 /** An uploaded video to clean up: its id and the multipart upload still open at the storage, if any. */

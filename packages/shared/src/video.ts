@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { idSchema } from './base';
+import { idSchema, isoDateSchema } from './base';
 import { courseResponseSchema } from './courses';
 import { localVideoAssetSchema } from './entities';
 
@@ -78,3 +78,21 @@ export const videoProcessedEventSchema = z.object({
   durationSeconds: z.number().nonnegative(),
 });
 export type VideoProcessedEvent = z.infer<typeof videoProcessedEventSchema>;
+
+/** A video the encoder gave up on, with where it lives so an admin can find its lesson. */
+export const failedVideoSchema = z.object({
+  assetId: idSchema,
+  lessonId: idSchema,
+  /** Titles are in the course's default language. */
+  lessonTitle: z.string(),
+  courseId: idSchema,
+  courseTitle: z.string(),
+  errorMessage: z.string().nullable(),
+  failedAt: isoDateSchema,
+  sizeBytes: z.number().int().nonnegative(),
+});
+export type FailedVideo = z.infer<typeof failedVideoSchema>;
+
+/** The newest failures first. */
+export const failedVideosResponseSchema = z.object({ videos: z.array(failedVideoSchema) });
+export type FailedVideosResponse = z.infer<typeof failedVideosResponseSchema>;

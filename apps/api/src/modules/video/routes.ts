@@ -4,6 +4,7 @@ import {
   completeVideoUploadResponseSchema,
   createVideoUploadRequestSchema,
   createVideoUploadResponseSchema,
+  failedVideosResponseSchema,
   lessonIdParamsSchema,
   videoAssetParamsSchema,
   videoPlaybackResponseSchema,
@@ -43,6 +44,7 @@ import {
 import {
   deleteVideoFiles,
   findAssetContext,
+  listFailedVideos,
   toLocalVideoAsset,
   videoAssetsOfLessons,
   type VideoAssetRef,
@@ -77,8 +79,11 @@ export const videoRoutes: FastifyPluginAsyncZod<VideoRoutesOptions> = async (
     await queue?.close();
   });
 
-  /** Queues the encode of an uploaded video; the fixed job id makes asking twice harmless. */
-  const queueTranscode = (assetId: string) =>
+  /**
+   * Queues the encode of an uploaded video; the fixed job id makes asking twice harmless. A retry
+   * passes its own id, because the failed job still holds the fixed one.
+   */
+  const queueTranscode = (assetId: string, jobId = `transcode-video-${assetId}`) =>
     getQueue().add(
       'transcode-video',
       {
@@ -90,7 +95,7 @@ export const videoRoutes: FastifyPluginAsyncZod<VideoRoutesOptions> = async (
       {
         ...jobOptions(DEFAULT_RETRY_DELAY_MS),
         attempts: 2,
-        jobId: `transcode-video-${assetId}`,
+        jobId,
       },
     );
 
@@ -252,6 +257,62 @@ export const videoRoutes: FastifyPluginAsyncZod<VideoRoutesOptions> = async (
       }
       await queueTranscode(asset.id);
       return await completed(course, updated);
+    },
+  );
+
+  app.get(
+    '/admin/videos/failed',
+    {
+      preHandler: app.requireRole('admin'),
+      schema: {
+        tags: ['video'],
+        summary: 'Uploaded videos that failed to encode',
+        response: { 200: failedVideosResponseSchema },
+      },
+    },
+    async () => ({ videos: await listFailedVideos(app.db) }),
+  );
+
+  app.post(
+    '/admin/videos/:assetId/retry',
+    {
+      preHandler: app.requireRole('admin'),
+      schema: {
+        tags: ['video'],
+        summary: 'Send a failed video back to the encoder',
+        description:
+          'Needs the original file to still be stored; otherwise the instructor has to upload the video again.',
+        params: videoAssetParamsSchema,
+        response: { 200: videoStatusResponseSchema },
+      },
+    },
+    async (request) => {
+      const { assetId } = request.params;
+      const [asset] = await app.db.select().from(videoAssets).where(eq(videoAssets.id, assetId));
+      if (!asset) throw notFound('Video not found');
+      if (asset.status !== 'error') throw conflict('Only a video that failed can be retried');
+      if ((await app.storage.sizeOf(videoKeys.source(assetId))) === null) {
+        throw conflict('The original file is no longer stored. The video has to be uploaded again');
+      }
+
+      // the status change is the claim: two admins clicking together queue one job
+      const [claimed] = await app.db
+        .update(videoAssets)
+        .set({ status: 'processing', errorMessage: null, updatedAt: new Date() })
+        .where(and(eq(videoAssets.id, assetId), eq(videoAssets.status, 'error')))
+        .returning();
+      if (!claimed) throw conflict('Only a video that failed can be retried');
+      try {
+        await queueTranscode(assetId, `transcode-video-${assetId}-${Date.now()}`);
+      } catch (error) {
+        // without a job it would sit in `processing` for good: put the failure back
+        await app.db
+          .update(videoAssets)
+          .set({ status: 'error', errorMessage: asset.errorMessage, updatedAt: asset.updatedAt })
+          .where(eq(videoAssets.id, assetId));
+        throw error;
+      }
+      return { video: toLocalVideoAsset(claimed) };
     },
   );
 
