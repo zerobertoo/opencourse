@@ -1,10 +1,18 @@
+/** What the player needs to start an uploaded video. */
+export interface VideoPlayback {
+  /** Address of the HLS master playlist. */
+  url: string;
+  /** Address of the poster frame, null for a video encoded without one. */
+  posterUrl: string | null;
+}
+
 /** Playback of videos uploaded to this instance. */
 export interface VideoService {
   /**
-   * Address of the HLS master playlist for a ready video. It carries a token that expires, so ask
-   * again each time a lesson opens instead of keeping it.
+   * Playlist and poster addresses of a ready video. The playlist carries a token that expires, so
+   * ask again each time a lesson opens instead of keeping it.
    */
-  getPlaybackUrl(assetId: string): Promise<string>;
+  getPlayback(assetId: string): Promise<VideoPlayback>;
   /**
    * Address a `<track>` can load a caption from. A caption uploaded to this instance is behind the
    * access check, so it is fetched with the session and handed over as a local object address.

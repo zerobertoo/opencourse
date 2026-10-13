@@ -39,7 +39,7 @@ import {
   useCourseProgress,
   useSaveVideoPosition,
   useSetLessonCompleted,
-  useVideoPlaybackUrl,
+  useVideoPlayback,
 } from '@/hooks/queries';
 import { localizeCourse, localizeLesson, toLocale } from '@/lib/content';
 import { useServiceErrorMessage } from '@/lib/serviceError';
@@ -80,7 +80,7 @@ function VideoLessonBody({
   const { t } = useTranslation('player');
   const { video } = lesson;
   const isUpload = video?.provider === 'local' && video.status === 'ready';
-  const playback = useVideoPlaybackUrl(isUpload ? video.assetId : undefined);
+  const playback = useVideoPlayback(isUpload ? video.assetId : undefined);
 
   if (video?.provider === 'external') {
     // a direct file link plays like an upload (position, captions, quality); the rest are embeds
@@ -132,7 +132,8 @@ function VideoLessonBody({
   return (
     <VideoPlayer
       key={lesson.id}
-      src={playback.data}
+      src={playback.data.url}
+      posterUrl={playback.data.posterUrl}
       title={title}
       captions={lesson.captions}
       initialPositionSeconds={initialPositionSeconds}

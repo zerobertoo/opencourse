@@ -239,10 +239,10 @@ describe('mock curriculum service', () => {
       });
       // every uploaded video plays the demo clip
       expect(
-        await services.video.getPlaybackUrl(
+        await services.video.getPlayback(
           processing?.provider === 'local' ? processing.assetId : '',
         ),
-      ).toBe('/media/sample-lesson.mp4');
+      ).toEqual({ url: '/media/sample-lesson.mp4', posterUrl: null });
     });
 
     it('is ready immediately when processing takes no time', async () => {

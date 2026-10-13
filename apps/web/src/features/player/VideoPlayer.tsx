@@ -23,6 +23,8 @@ const SKIN_STYLE = {
 interface VideoPlayerProps {
   /** An HLS playlist (`.m3u8`) or a plain video file. */
   src: string;
+  /** Frame shown before playback starts. */
+  posterUrl?: string | null;
   title: string;
   captions: Caption[];
   /** Saved position to resume from, in seconds. */
@@ -42,6 +44,7 @@ const isHlsSource = (src: string) => /\.m3u8(\?|#|$)/i.test(src);
  */
 export function VideoPlayer({
   src,
+  posterUrl,
   title,
   captions,
   initialPositionSeconds,
@@ -120,7 +123,7 @@ export function VideoPlayer({
       aria-label={t('video.playerLabel', { title })}
     >
       <I18nProvider locale={i18n.resolvedLanguage ?? 'en'}>
-        <VideoJsPlayer>
+        <VideoJsPlayer poster={posterUrl ?? undefined}>
           <VideoSkin style={SKIN_STYLE}>
             {isHlsSource(src) ? (
               <HlsJsVideo src={src} {...mediaProps}>

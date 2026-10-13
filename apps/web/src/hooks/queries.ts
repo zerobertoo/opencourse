@@ -55,15 +55,15 @@ export function useCourseAccess(courseId: string | undefined) {
 const PLAYBACK_URL_STALE_MS = 5 * 60 * 60 * 1000;
 
 /**
- * Streaming address of an uploaded video. It holds a token, so it is asked for when the lesson
+ * Streaming and poster addresses of an uploaded video. The first holds a token, so it is asked for when the lesson
  * opens and kept as it is while the student watches: a new address in the middle of playback
  * would restart the player. A tab left open past the token's life gets a fresh one on return.
  */
-export function useVideoPlaybackUrl(assetId: string | undefined) {
+export function useVideoPlayback(assetId: string | undefined) {
   const { video } = useServices();
   return useQuery({
     queryKey: ['video', 'playback', assetId ?? ''],
-    queryFn: () => video.getPlaybackUrl(assetId!),
+    queryFn: () => video.getPlayback(assetId!),
     enabled: assetId !== undefined,
     staleTime: PLAYBACK_URL_STALE_MS,
     refetchOnReconnect: false,
