@@ -2,6 +2,7 @@ import { execFile, spawn } from 'node:child_process';
 import { mkdir, readdir, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { promisify } from 'node:util';
+import type { Logger } from 'pino';
 import type { Storage } from '../../storage/s3';
 import { videoKeys } from './playlist';
 
@@ -221,6 +222,39 @@ function contentTypeOf(file: string): string {
 export interface TranscodeResult {
   durationSeconds: number;
   renditions: string[];
+  /** Whether a poster frame was stored; a failure to make one never fails the video. */
+  poster: boolean;
+}
+
+/** Width of the poster frame; the height follows the aspect ratio. */
+const POSTER_WIDTH = 640;
+
+/** Grabs one frame (a tenth in, at least a second) and stores it as the poster. */
+async function storePoster(
+  storage: Storage,
+  assetId: string,
+  source: string,
+  workDir: string,
+  durationSeconds: number,
+): Promise<void> {
+  const posterPath = path.join(workDir, 'poster.jpg');
+  // never seek past the end of a very short clip
+  const seekSeconds = Math.min(Math.max(1, durationSeconds * 0.1), durationSeconds / 2);
+  await runFfmpeg([
+    '-y',
+    '-ss',
+    seekSeconds.toFixed(2),
+    '-i',
+    source,
+    '-frames:v',
+    '1',
+    '-vf',
+    `scale='min(${POSTER_WIDTH},iw)':-2`,
+    '-q:v',
+    '3',
+    posterPath,
+  ]);
+  await storage.uploadFile(videoKeys.poster(assetId), posterPath, 'image/jpeg');
 }
 
 /**
@@ -231,6 +265,7 @@ export async function transcodeVideo(
   storage: Storage,
   assetId: string,
   workDir: string,
+  log: Pick<Logger, 'warn'>,
 ): Promise<TranscodeResult> {
   const sourcePath = path.join(workDir, 'source');
   await storage.downloadToFile(videoKeys.source(assetId), sourcePath);
@@ -266,8 +301,16 @@ export async function transcodeVideo(
   if (!durationSeconds || durationSeconds <= 0) {
     throw new UnreadableVideoError('The file has no playable video stream');
   }
+  const poster = await storePoster(storage, assetId, sourcePath, workDir, durationSeconds).then(
+    () => true,
+    (error: unknown) => {
+      log.warn({ err: error, assetId }, 'could not make the poster of a video');
+      return false;
+    },
+  );
   return {
     durationSeconds: Math.round(durationSeconds),
     renditions: renditions.map((rendition) => rendition.name),
+    poster,
   };
 }

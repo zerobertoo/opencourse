@@ -38,7 +38,7 @@ export async function processVideo(
 
   const workDir = await mkdtemp(path.join(tmpdir(), 'opencourse-video-'));
   try {
-    const result = await transcodeVideo(storage, assetId, workDir);
+    const result = await transcodeVideo(storage, assetId, workDir, log);
     const committed = await db.transaction(async (tx) => {
       // the video may have been replaced or deleted while it encoded: only a still-processing
       // asset is finished, and then nothing else is touched
@@ -49,6 +49,7 @@ export async function processVideo(
           errorMessage: null,
           durationSeconds: result.durationSeconds,
           renditions: result.renditions,
+          poster: result.poster,
           updatedAt: new Date(),
         })
         .where(and(eq(videoAssets.id, assetId), eq(videoAssets.status, 'processing')))

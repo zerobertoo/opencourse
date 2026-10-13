@@ -1,0 +1,1 @@
+ALTER TABLE "video_assets" ADD COLUMN "poster" boolean DEFAULT false NOT NULL;

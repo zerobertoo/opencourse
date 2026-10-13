@@ -51,8 +51,14 @@ export const completeVideoUploadRequestSchema = z
   .strict();
 export type CompleteVideoUploadRequest = z.infer<typeof completeVideoUploadRequestSchema>;
 
-/** Where to stream a ready video from: the API path of its master playlist, with a token that expires. */
-export const videoPlaybackResponseSchema = z.object({ playbackUrl: z.string() });
+/**
+ * Where to stream a ready video from: the API path of its master playlist, with a token that
+ * expires, and a signed address of its poster frame (null for videos encoded without one).
+ */
+export const videoPlaybackResponseSchema = z.object({
+  playbackUrl: z.string(),
+  posterUrl: z.string().nullable(),
+});
 export type VideoPlaybackResponse = z.infer<typeof videoPlaybackResponseSchema>;
 
 export const videoStatusResponseSchema = z.object({ video: localVideoAssetSchema });

@@ -613,4 +613,42 @@ describe('video upload, processing and playback', () => {
     ]);
     expect(await probeVideo(rotated)).toMatchObject({ width: 360, height: 640 });
   });
+
+  it('stores a poster frame and hands its address out with the playback address', async () => {
+    const { cast, lesson } = await setup();
+    const assetId = await insertProcessingAsset(lesson.id);
+    await processVideo(ctx.app.db, ctx.app.storage, assetId, true, { warn: () => undefined });
+
+    const [asset] = await ctx.app.db.select().from(videoAssets).where(eq(videoAssets.id, assetId));
+    expect(asset).toMatchObject({ status: 'ready', poster: true });
+    const playback = await cast.admin.client.get(`/api/v1/videos/${assetId}/playback`);
+    const { posterUrl } = videoPlaybackResponseSchema.parse(playback.json());
+    const image = await fetch(posterUrl!);
+    expect(image.status).toBe(200);
+    expect(image.headers.get('content-type')).toBe('image/jpeg');
+    expect((await image.arrayBuffer()).byteLength).toBeGreaterThan(500);
+  }, 60_000);
+
+  it('keeps the video ready, without a poster, when the poster cannot be stored', async () => {
+    const { cast, lesson } = await setup();
+    const assetId = await insertProcessingAsset(lesson.id);
+    const warnings: unknown[] = [];
+    const noPosters: Storage = {
+      ...ctx.app.storage,
+      async uploadFile(key, filePath, contentType) {
+        if (key.endsWith('/poster.jpg')) throw new Error('storage hiccup');
+        await ctx.app.storage.uploadFile(key, filePath, contentType);
+      },
+    };
+
+    await processVideo(ctx.app.db, noPosters, assetId, true, {
+      warn: (...args: unknown[]) => warnings.push(args),
+    });
+
+    const [asset] = await ctx.app.db.select().from(videoAssets).where(eq(videoAssets.id, assetId));
+    expect(asset).toMatchObject({ status: 'ready', poster: false });
+    expect(warnings).toHaveLength(1);
+    const playback = await cast.admin.client.get(`/api/v1/videos/${assetId}/playback`);
+    expect(videoPlaybackResponseSchema.parse(playback.json()).posterUrl).toBeNull();
+  }, 60_000);
 });

@@ -8,7 +8,7 @@ A video lesson holds either **a file uploaded to your instance**, which the work
 
 1. In the Studio the instructor picks a file. The web app asks `POST /api/v1/lessons/:id/video/upload` for upload addresses, then sends the file **straight to the S3-compatible storage** in 16 MiB slices (presigned multipart upload). The file never goes through the API.
 2. When the last slice is in, the app calls `POST /api/v1/lessons/:id/video/complete`. The API checks that the stored object has the announced size, marks the video `processing` and queues a `transcode-video` job.
-3. The worker downloads the original, probes it with `ffprobe` and encodes HLS renditions with `ffmpeg`: **360p, 720p and 1080p, never taller than the original** (an original below 360p gets a single rendition at its own height). Segments are 6 seconds long.
+3. The worker downloads the original, probes it with `ffprobe` and encodes HLS renditions with `ffmpeg`: **360p, 720p and 1080p, never taller than the original** (an original below 360p gets a single rendition at its own height). Segments are 6 seconds long. Phone videos stored sideways and flagged as rotated are shown (and sized) turned, as players show them. The worker also stores one **poster frame** (a tenth of the way in, at least one second) next to the renditions; if making it fails the video is still ready, just without a poster.
 4. When it finishes, the video becomes `ready`, the lesson takes the video duration, the original file is deleted and a `video.processed` event is recorded (webhooks can subscribe to it). If the file cannot be read, the video becomes `error` with a message and is not retried; other failures are retried once.
 5. The Studio shows the status (uploading, processing, ready, error) and refreshes by itself while a video is being prepared.
 
@@ -18,7 +18,7 @@ Encoding runs on its own queue with a concurrency of one, so a long video never 
 
 ### Playback
 
-Students never receive a permanent address. `GET /api/v1/videos/:assetId/playback` (signed in, with access to the course) returns the path of the master playlist with a token that lasts 6 hours. Every playlist request checks the token **and the access again**, so a revoked or expired grant stops new playlists at once. The rendition playlists are rewritten so that each segment is a presigned address on the storage; the video bytes come directly from the storage, not from the API. Segment addresses last at least one hour, or twice the video length when that is longer.
+Students never receive a permanent address. `GET /api/v1/videos/:assetId/playback` (signed in, with access to the course) returns the path of the master playlist with a token that lasts 6 hours, plus `posterUrl`, a presigned address of the poster frame (or `null` for videos encoded before posters existed). Every playlist request checks the token **and the access again**, so a revoked or expired grant stops new playlists at once. The rendition playlists are rewritten so that each segment is a presigned address on the storage; the video bytes come directly from the storage, not from the API. Segment addresses last at least one hour, or twice the video length when that is longer.
 
 The player is [Video.js 10](https://videojs.org) with hls.js. It offers quality (automatic or fixed), speed, captions, picture-in-picture and fullscreen, and resumes where the student stopped.
 

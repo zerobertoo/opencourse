@@ -71,6 +71,13 @@
       "when": 1791859214408,
       "tag": "0009_mixed_sinister_six",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1791860809361,
+      "tag": "0010_parallel_sabra",
+      "breakpoints": true
     }
   ]
 }

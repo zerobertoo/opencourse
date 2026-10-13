@@ -2,6 +2,7 @@
 export const videoKeys = {
   prefix: (assetId: string) => `videos/${assetId}/`,
   source: (assetId: string) => `videos/${assetId}/source`,
+  poster: (assetId: string) => `videos/${assetId}/poster.jpg`,
   masterPlaylist: (assetId: string) => `videos/${assetId}/hls/master.m3u8`,
   renditionPlaylist: (assetId: string, rendition: string) =>
     `videos/${assetId}/hls/${rendition}/index.m3u8`,
