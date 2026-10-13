@@ -51,7 +51,7 @@ export function useCourseAccess(courseId: string | undefined) {
   });
 }
 
-/** The playback token lasts 6 hours; the address is renewed well before that. */
+/** The playback token and the poster address last 6 hours; both are renewed well before that. */
 const PLAYBACK_URL_STALE_MS = 5 * 60 * 60 * 1000;
 
 /**

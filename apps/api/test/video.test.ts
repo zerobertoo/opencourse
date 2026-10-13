@@ -13,6 +13,7 @@ import {
 import { eq } from 'drizzle-orm';
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { grants, lessons, outboxEvents, videoAssets } from '../src/db/schema';
+import { PLAYBACK_TOKEN_TTL_SECONDS } from '../src/modules/video/playback-token';
 import { processVideo } from '../src/modules/video/process';
 import { removeStaleUploads } from '../src/modules/video/service';
 import { probeVideo } from '../src/modules/video/transcode';
@@ -623,6 +624,8 @@ describe('video upload, processing and playback', () => {
     expect(asset).toMatchObject({ status: 'ready', poster: true });
     const playback = await cast.admin.client.get(`/api/v1/videos/${assetId}/playback`);
     const { posterUrl } = videoPlaybackResponseSchema.parse(playback.json());
+    // the web app caches this response along with the playback token, so both must last as long
+    expect(posterUrl).toContain(`X-Amz-Expires=${PLAYBACK_TOKEN_TTL_SECONDS}`);
     const image = await fetch(posterUrl!);
     expect(image.status).toBe(200);
     expect(image.headers.get('content-type')).toBe('image/jpeg');

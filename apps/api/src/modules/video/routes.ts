@@ -53,8 +53,6 @@ import {
 const PLAYLIST_CONTENT_TYPE = 'application/vnd.apple.mpegurl';
 /** Time a browser has to start uploading each part. */
 const UPLOAD_URL_TTL_SECONDS = 6 * 3600;
-/** The poster is fetched once per page view, so its address needs no long life. */
-const POSTER_URL_TTL_SECONDS = 3600;
 /** Segment addresses last at least this long, so a player that paused keeps working. */
 const MIN_SEGMENT_URL_TTL_SECONDS = 3600;
 
@@ -363,7 +361,10 @@ export const videoRoutes: FastifyPluginAsyncZod<VideoRoutesOptions> = async (
         new Date(),
       );
       const posterUrl = context.asset.poster
-        ? await app.storage.presignGet(videoKeys.poster(context.asset.id), POSTER_URL_TTL_SECONDS)
+        ? await app.storage.presignGet(
+            videoKeys.poster(context.asset.id),
+            PLAYBACK_TOKEN_TTL_SECONDS,
+          )
         : null;
       return { playbackUrl: playlistPath(context.asset.id, 'master', token), posterUrl };
     },

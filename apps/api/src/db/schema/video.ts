@@ -34,9 +34,9 @@ export const videoAssets = pgTable('video_assets', {
   uploadId: text('upload_id'),
   durationSeconds: integer('duration_seconds'),
   /** Names of the HLS renditions written by the worker, e.g. `["360p", "720p"]`. */
+  renditions: jsonb('renditions').$type<string[]>().notNull().default([]),
   /** Whether the worker stored a poster frame at `videos/<assetId>/poster.jpg`. */
   poster: boolean('poster').notNull().default(false),
-  renditions: jsonb('renditions').$type<string[]>().notNull().default([]),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
 });
