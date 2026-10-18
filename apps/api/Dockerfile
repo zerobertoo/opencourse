@@ -1,5 +1,5 @@
 # Build context is the repository root (see compose.yaml).
-FROM node:24-alpine AS build
+FROM node:26-alpine AS build
 RUN corepack enable
 WORKDIR /repo
 
@@ -18,7 +18,7 @@ COPY apps/api apps/api
 RUN pnpm --filter @opencourse/api build \
   && pnpm --loglevel=error --filter @opencourse/api deploy --prod /out
 
-FROM node:24-alpine
+FROM node:26-alpine
 ENV NODE_ENV=production
 # the worker encodes uploaded videos; the API shares the image, so it carries ffmpeg too
 RUN apk add --no-cache ffmpeg
