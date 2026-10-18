@@ -2,7 +2,7 @@
 
 Open source, self-hosted course platform. Full specification in [docs/PRD.md](docs/PRD.md).
 
-Current state: the backend (`apps/api`, plus its background worker) has accounts, sessions, roles, invites, an audit log, courses with modules, lessons and translations, and access grants, lesson progress, graded quizzes, personal notes, enrollments, certificates and outbound webhooks. The frontend (`apps/web`) can run fully mocked (demo mode) or use the real API for everything except settings, which are still mocked until their milestone. Uploads of videos work (see [docs/video.md](docs/video.md)); cover images, attachments and caption files still wait for the rest of the storage work.
+Current state: the backend (`apps/api`, plus its background worker) has accounts, sessions, roles, invites, an audit log, courses with modules, lessons and translations, and access grants, lesson progress, graded quizzes, personal notes, enrollments, certificates and outbound webhooks. The frontend (`apps/web`) can run fully mocked (demo mode) or use the real API for everything except settings, which are still mocked (not wired to the API yet). Video uploads, lesson attachments and caption files work (see [docs/video.md](docs/video.md) and [docs/files.md](docs/files.md)); course covers are still links, with no upload yet.
 
 ## Requirements
 
@@ -17,7 +17,7 @@ pnpm install
 pnpm dev        # development servers
 pnpm lint
 pnpm typecheck
-pnpm test       # API tests need Postgres and Redis (see below)
+pnpm test       # API tests need Postgres, Redis, the storage and ffmpeg (see below)
 pnpm build
 ```
 
@@ -52,7 +52,8 @@ The first account created on an instance becomes its admin; everyone after that 
 To work on the API with hot reload and run its tests, start only the data services:
 
 ```bash
-docker compose up -d --wait postgres redis
+docker compose up -d --wait postgres redis storage
+docker compose up storage-init             # once: creates the bucket
 pnpm --filter @opencourse/api db:migrate
 pnpm --filter @opencourse/api dev
 pnpm --filter @opencourse/api dev:worker   # in another terminal: certificates and e-mails need it
@@ -113,7 +114,7 @@ docker compose up -d --build --wait
 pnpm --filter @opencourse/web dev
 ```
 
-Without `VITE_API_URL` the app stays in demo mode. With it, the demo sign-in buttons disappear and the mock starts empty (under its own storage keys, so demo and real data never mix). Everything except settings goes to the API; only the signed-in user is mirrored into the mock, so settings keeps working. Finishing a course issues its certificate on the server. A new instructor starts with an empty Studio: create courses there, or run the demo seed above. Attachments and caption uploads are hidden until their milestone. Videos can be uploaded (they go to the storage and the worker encodes them to HLS) or added by a link from a supported provider; see [docs/video.md](docs/video.md).
+Without `VITE_API_URL` the app stays in demo mode. With it, the demo sign-in buttons disappear and the mock starts empty (under its own storage keys, so demo and real data never mix). Everything except settings goes to the API; only the signed-in user is mirrored into the mock, so settings keeps working. Finishing a course issues its certificate on the server. A new instructor starts with an empty Studio: create courses there, or run the demo seed above. Videos can be uploaded (they go to the storage and the worker encodes them to HLS) or added by a link from a supported provider; see [docs/video.md](docs/video.md). Attachments and captions are uploaded the same way, see [docs/files.md](docs/files.md).
 
 ## Tests
 
@@ -129,6 +130,7 @@ The mocked login accepts any credentials. On the sign-in screen, the "sign in as
 - `apps/web`: frontend (React, Vite, Tailwind, react-i18next)
 - `apps/api`: backend (Fastify, Drizzle, Postgres, Redis)
 - `packages/shared`: shared types and zod schemas, the contract between web and API
+- `docs`: [PRD](docs/PRD.md) (the original specification; this README describes the current state), [video](docs/video.md) and [files](docs/files.md)
 
 ## Contributing
 

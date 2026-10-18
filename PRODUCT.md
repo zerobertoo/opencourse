@@ -29,8 +29,8 @@ Open source and self-hosted with a product experience that closed platforms usua
 - Instructors work in the Studio (dashboard, tabbed course editor: Details, Content, Students, Certificate, Settings; quiz builder; grants and invites).
 - Students use a home with "continue where you left off", course pages with an accordion curriculum, and a player (speed, fullscreen, captions, position resume, collapsible curriculum, personal notes).
 - Admins use users, grants, settings and a plugins page.
-- Video sits behind a `VideoProvider` adapter: self-hosted HLS by default, external providers (Bunny Stream, Vimeo, Cloudflare Stream) swappable.
-- Self-hosting stack: Docker Compose with web, api, worker, postgres, redis, minio, mailpit.
+- Video is either self-hosted HLS (uploaded files, transcoded by the worker) or an external link resolved by provider plugins (YouTube, Vimeo, Bunny Stream, Cloudflare Stream, Panda Video, direct video files); see `docs/video.md`.
+- Self-hosting stack: Docker Compose with web, api, worker, postgres, redis, S3-compatible storage (RustFS), mailpit.
 
 ## Capabilities and Constraints
 
@@ -46,7 +46,7 @@ Open source and self-hosted with a product experience that closed platforms usua
 ## Brand Commitments
 
 - Working name "OpenCourse".
-- Olive green `#2f6f5e`, background `#f4f6f2`, an equivalent dark theme, everything as CSS variables (from the project conventions).
+- Olive green `#2f6f5e`, background `#f6f7f8`, an equivalent dark theme, everything as CSS variables (from the project conventions).
 - Code comments and all documentation in English; the project is public.
 
 ## Evidence on Hand
