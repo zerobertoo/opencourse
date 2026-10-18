@@ -38,7 +38,7 @@ describe('buildCertificatePdf', () => {
   it('escapes PDF delimiters and replaces characters outside Latin-1', async () => {
     const text = await readBytes(buildCertificatePdf(content));
 
-    expect(text).toContain('Patrícia \\(Sales\\) \\\\ Ltda'.replace('í', 'í'));
+    expect(text).toContain('Patrícia \\(Sales\\) \\\\ Ltda');
     expect(text).toContain('Título ??');
   });
 });
