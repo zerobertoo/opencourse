@@ -16,7 +16,14 @@ updates:
     directory: /apps/api
     schedule:
       interval: weekly
+    # Node follows .nvmrc (LTS); skip non-LTS majors
+    ignore:
+      - dependency-name: node
+        update-types: [version-update:semver-major]
   - package-ecosystem: docker
     directory: /apps/web
     schedule:
       interval: weekly
+    ignore:
+      - dependency-name: node
+        update-types: [version-update:semver-major]
