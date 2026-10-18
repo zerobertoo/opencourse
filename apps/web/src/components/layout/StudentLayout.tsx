@@ -4,6 +4,7 @@ import { Link, NavLink, Outlet, useNavigate, useSearchParams } from 'react-route
 import { useAuth } from '@/auth/AuthContext';
 import { LanguageSwitcher } from '@/components/LanguageSwitcher';
 import { Logo } from '@/components/Logo';
+import { RepositoryLink } from '@/components/RepositoryLink';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { UserMenu } from '@/components/UserMenu';
 import { cn } from '@/lib/utils';
@@ -130,6 +131,9 @@ export function StudentLayout() {
       <main id="main-content" className="mx-auto max-w-7xl px-4 py-6 sm:py-8">
         <Outlet />
       </main>
+      <footer className="mx-auto max-w-7xl px-4 pb-8 text-center">
+        <RepositoryLink />
+      </footer>
     </div>
   );
 }
