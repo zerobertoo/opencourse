@@ -17,8 +17,7 @@ Requirements: Node 20+ (`.nvmrc` pins 24), pnpm 9, Docker, and `ffmpeg` on the P
 ```sh
 pnpm install
 cp .env.example .env            # then replace AUTH_SECRET
-docker compose up -d --wait postgres redis storage
-docker compose up storage-init  # once, creates the bucket
+pnpm infra                      # Postgres, Redis, storage (bucket included) and Mailpit
 pnpm dev
 ```
 

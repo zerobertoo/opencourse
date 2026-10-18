@@ -82,6 +82,9 @@ jobs:
           done
           aws --endpoint-url http://localhost:9000 s3api create-bucket --bucket opencourse
 
+      # both setups must keep rendering; the app-only file reuses services from compose.yaml
+      - run: docker compose config -q && docker compose --env-file .env.external.example -f compose.app.yaml config -q
+
       - run: pnpm install --frozen-lockfile
       - run: pnpm lint
       - run: pnpm typecheck

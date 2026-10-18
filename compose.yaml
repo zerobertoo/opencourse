@@ -116,8 +116,13 @@ services:
       S3_ACCESS_KEY: ${S3_ACCESS_KEY:-opencourse}
       S3_SECRET_KEY: ${S3_SECRET_KEY:-opencourse-secret}
       VIDEO_MAX_UPLOAD_BYTES: ${VIDEO_MAX_UPLOAD_BYTES:-2147483648}
-      SMTP_HOST: mailpit
-      SMTP_PORT: 1025
+      ATTACHMENT_MAX_BYTES: ${ATTACHMENT_MAX_BYTES:-52428800}
+      # Mailpit by default; point these at a real SMTP server for a deployment
+      SMTP_HOST: ${SMTP_HOST:-mailpit}
+      SMTP_PORT: ${SMTP_PORT:-1025}
+      SMTP_USER: ${SMTP_USER:-}
+      SMTP_PASSWORD: ${SMTP_PASSWORD:-}
+      SMTP_FROM: ${SMTP_FROM:-OpenCourse <no-reply@opencourse.local>}
     ports:
       - '${API_PORT:-3000}:3000'
     depends_on:
@@ -176,8 +181,12 @@ services:
       S3_ACCESS_KEY: ${S3_ACCESS_KEY:-opencourse}
       S3_SECRET_KEY: ${S3_SECRET_KEY:-opencourse-secret}
       VIDEO_MAX_UPLOAD_BYTES: ${VIDEO_MAX_UPLOAD_BYTES:-2147483648}
-      SMTP_HOST: mailpit
-      SMTP_PORT: 1025
+      ATTACHMENT_MAX_BYTES: ${ATTACHMENT_MAX_BYTES:-52428800}
+      SMTP_HOST: ${SMTP_HOST:-mailpit}
+      SMTP_PORT: ${SMTP_PORT:-1025}
+      SMTP_USER: ${SMTP_USER:-}
+      SMTP_PASSWORD: ${SMTP_PASSWORD:-}
+      SMTP_FROM: ${SMTP_FROM:-OpenCourse <no-reply@opencourse.local>}
     depends_on:
       migrate:
         condition: service_completed_successfully
