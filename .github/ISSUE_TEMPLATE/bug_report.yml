@@ -1,0 +1,41 @@
+name: Bug report
+description: Something is broken or behaves unexpectedly
+labels: [bug, needs-triage]
+body:
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: What you did, what you expected and what you got instead.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. ...
+        2. ...
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options: [Web, API, Worker, Video, Docs, Docker / deployment, Other]
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Version or commit
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: OS, browser, Node and Docker versions, anything relevant.
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs or screenshots
+      render: shell

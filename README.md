@@ -132,6 +132,12 @@ The mocked login accepts any credentials. On the sign-in screen, the "sign in as
 
 ## Contributing
 
+See [CONTRIBUTING.md](CONTRIBUTING.md) for setup and the pull request flow; by taking part you agree to the [Code of Conduct](CODE_OF_CONDUCT.md). Security issues: [SECURITY.md](SECURITY.md).
+
 - Code, comments and documentation are written in English.
 - UI text always goes through i18n (`pt-BR` and `en`); there are no hard-coded strings in components.
 - Components never read data directly: everything goes through the interfaces in `apps/web/src/services`.
+
+## License
+
+[AGPL-3.0](LICENSE).
