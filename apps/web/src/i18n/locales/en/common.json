@@ -1,7 +1,8 @@
 {
   "app": {
     "name": "OpenCourse",
-    "tagline": "Your course platform"
+    "tagline": "Your course platform",
+    "repository": "Open source on GitHub"
   },
   "nav": {
     "studio": "Studio",
