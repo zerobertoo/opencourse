@@ -21,6 +21,16 @@ pnpm test       # API tests need Postgres, Redis, the storage and ffmpeg (see be
 pnpm build
 ```
 
+## Setups
+
+| Setup                        | Use it when                                               | How                                                                                                                               |
+| ---------------------------- | --------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| **Full stack**               | you want everything running with one command              | `docker compose up -d --build` (see [Backend](#backend))                                                                          |
+| **App only, your own infra** | you already run Postgres, Redis and S3-compatible storage | `cp .env.external.example .env.external`, then `docker compose --env-file .env.external -f compose.app.yaml up -d --build --wait` |
+| **Development**              | you are changing the code                                 | `pnpm infra` starts only the data services, then run the apps with `pnpm dev` (see [Backend](#backend))                           |
+
+The app-only setup runs the migrations, API, worker and web, and reads every connection from `.env.external`. Use addresses the containers can reach (not `localhost`), create the bucket yourself and allow your web origin in its CORS rules ([docs/video.md](docs/video.md)). The web app bakes the API address (`VITE_API_URL`) into the bundle at build time. For real e-mail, set the `SMTP_*` variables in either setup.
+
 ## Backend
 
 The whole stack (API, worker, Postgres, Redis, S3-compatible storage, Mailpit) runs with Docker Compose:
@@ -52,8 +62,7 @@ The first account created on an instance becomes its admin; everyone after that 
 To work on the API with hot reload and run its tests, start only the data services:
 
 ```bash
-docker compose up -d --wait postgres redis storage
-docker compose up storage-init             # once: creates the bucket
+pnpm infra                                 # Postgres, Redis, storage (bucket included) and Mailpit
 pnpm --filter @opencourse/api db:migrate
 pnpm --filter @opencourse/api dev
 pnpm --filter @opencourse/api dev:worker   # in another terminal: certificates and e-mails need it
