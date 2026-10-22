@@ -374,7 +374,7 @@
       "description": {
         "draft": "Only you can see this course. Publish it when it is ready.",
         "published": "The course is published: students with access can take it.",
-        "archived": "The course is archived and hidden. Restore it to edit and publish again."
+        "archived": "The course is archived: out of the catalog, still open to students who already have access. Restore it to edit and publish again."
       },
       "checklistTitle": "Before publishing",
       "ready": "Everything is ready to publish.",
@@ -397,7 +397,7 @@
     },
     "archive": {
       "title": "Archive",
-      "description": "Archiving hides the course. Nothing is deleted and you can restore it any time.",
+      "description": "Archiving takes the course out of the catalog; students who already have access keep it. Nothing is deleted and you can restore it any time.",
       "archivedDescription": "This course is archived. Restoring it brings it back as a draft.",
       "action": "Archive course",
       "restore": "Restore as draft",
@@ -412,7 +412,7 @@
       },
       "archive": {
         "title": "Archive this course?",
-        "description": "The course is hidden from students. You can restore it later.",
+        "description": "The course leaves the catalog. Students who already have access keep it. You can restore it later.",
         "action": "Archive",
         "toast": "Course archived."
       }

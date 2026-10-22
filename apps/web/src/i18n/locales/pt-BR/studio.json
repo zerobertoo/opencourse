@@ -374,7 +374,7 @@
       "description": {
         "draft": "Só você vê este curso. Publique quando estiver pronto.",
         "published": "O curso está publicado: alunos com acesso podem fazê-lo.",
-        "archived": "O curso está arquivado e oculto. Restaure para editar e publicar de novo."
+        "archived": "O curso está arquivado: fora do catálogo, mas ainda aberto a quem já tem acesso. Restaure para editar e publicar de novo."
       },
       "checklistTitle": "Antes de publicar",
       "ready": "Tudo pronto para publicar.",
@@ -397,7 +397,7 @@
     },
     "archive": {
       "title": "Arquivar",
-      "description": "Arquivar oculta o curso. Nada é excluído e você pode restaurar quando quiser.",
+      "description": "Arquivar tira o curso do catálogo; quem já tem acesso continua com ele. Nada é excluído e você pode restaurar quando quiser.",
       "archivedDescription": "Este curso está arquivado. Ao restaurar, ele volta como rascunho.",
       "action": "Arquivar curso",
       "restore": "Restaurar como rascunho",
@@ -412,7 +412,7 @@
       },
       "archive": {
         "title": "Arquivar este curso?",
-        "description": "O curso fica oculto para os alunos. Você pode restaurá-lo depois.",
+        "description": "O curso sai do catálogo. Quem já tem acesso continua com ele. Você pode restaurá-lo depois.",
         "action": "Arquivar",
         "toast": "Curso arquivado."
       }
