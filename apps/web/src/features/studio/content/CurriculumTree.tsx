@@ -78,6 +78,14 @@ function isMissingTranslation(lesson: Lesson, locales: Locale[]): boolean {
   );
 }
 
+/** True when the module has no title in one of the enabled languages. */
+function isMissingTitle(courseModule: CourseModuleWithLessons, locales: Locale[]): boolean {
+  return locales.some(
+    (locale) =>
+      !courseModule.translations.some((item) => item.locale === locale && item.title.trim() !== ''),
+  );
+}
+
 function DragHandle({
   label,
   setActivatorNodeRef,
@@ -217,6 +225,17 @@ function ModuleCard({
             listeners={listeners}
           />
           <h3 className="min-w-0 flex-1 truncate text-base font-semibold">{title}</h3>
+          {isMissingTitle(courseModule, enabledLocales) ? (
+            <Button
+              variant="ghost"
+              size="icon"
+              aria-label={t('studio:content.moduleTitleIncomplete', { title })}
+              title={t('studio:content.moduleTitleIncomplete', { title })}
+              onClick={() => onRenameModule(courseModule.id)}
+            >
+              <AlertTriangle className="text-destructive" aria-hidden="true" />
+            </Button>
+          ) : null}
           <span className="shrink-0 font-mono text-xs text-muted-foreground">
             {t('studio:content.lessonCount', { count: lessonIds.length })}
           </span>

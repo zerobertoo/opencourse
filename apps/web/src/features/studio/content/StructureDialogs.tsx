@@ -18,10 +18,8 @@ import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@/compone
 import {
   moduleTitlesSchema,
   newLessonSchema,
-  newModuleSchema,
   type ModuleTitlesValues,
   type NewLessonValues,
-  type NewModuleValues,
 } from '@/lib/schemas';
 import { useServiceErrorMessage } from '@/lib/serviceError';
 
@@ -68,71 +66,40 @@ function DialogActions({
   );
 }
 
-/** Asks for the title of a new module, written in the course default language. */
+type ModuleTitles = Array<{ locale: Locale; title: string }>;
+
+/** Asks for the title of a new module in every enabled language; only the default one is required. */
 export function NewModuleDialog({
   open,
   onOpenChange,
   defaultLocale,
+  locales,
   onSubmit,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   defaultLocale: Locale;
-  onSubmit: (title: string) => Promise<void>;
+  locales: Locale[];
+  onSubmit: (titles: ModuleTitles) => Promise<void>;
 }) {
   const { t } = useTranslation(['studio', 'common']);
-  const describeError = useServiceErrorMessage();
-  const [formError, setFormError] = useState<string | null>(null);
-  const {
-    register,
-    handleSubmit,
-    reset,
-    formState: { errors, isSubmitting },
-  } = useForm<NewModuleValues>({
-    resolver: zodResolver(newModuleSchema),
-    defaultValues: { title: '' },
-  });
-
-  const close = (next: boolean) => {
-    if (!next) {
-      reset();
-      setFormError(null);
-    }
-    onOpenChange(next);
-  };
-
-  const submit = handleSubmit(async ({ title }) => {
-    setFormError(null);
-    try {
-      await onSubmit(title);
-      close(false);
-    } catch (error) {
-      setFormError(describeError(error));
-    }
-  });
-
   return (
     <DialogShell
       open={open}
-      onOpenChange={close}
+      onOpenChange={onOpenChange}
       title={t('studio:content.newModule.title')}
       description={t('studio:content.newModule.description', {
         language: t(`common:language.${defaultLocale}`),
       })}
     >
-      <form onSubmit={submit} noValidate className="mt-4 space-y-4">
-        <FormError message={formError} />
-        <TextField
-          label={t('studio:content.newModule.name')}
-          error={errors.title}
-          {...register('title')}
-        />
-        <DialogActions
-          submitLabel={t('studio:content.newModule.submit')}
-          isPending={isSubmitting}
-          onCancel={() => close(false)}
-        />
-      </form>
+      <ModuleTitlesForm
+        initialTitles={[]}
+        defaultLocale={defaultLocale}
+        locales={locales}
+        submitLabel={t('studio:content.newModule.submit')}
+        onCancel={() => onOpenChange(false)}
+        onSubmit={onSubmit}
+      />
     </DialogShell>
   );
 }
@@ -150,7 +117,7 @@ export function RenameModuleDialog({
   course: CourseDetail;
   locales: Locale[];
   onOpenChange: (open: boolean) => void;
-  onSubmit: (moduleId: string, titles: Array<{ locale: Locale; title: string }>) => Promise<void>;
+  onSubmit: (moduleId: string, titles: ModuleTitles) => Promise<void>;
 }) {
   const { t } = useTranslation(['studio', 'common']);
   return (
@@ -161,32 +128,36 @@ export function RenameModuleDialog({
       description={t('studio:content.renameModuleDialog.description')}
     >
       {courseModule ? (
-        <RenameModuleForm
+        <ModuleTitlesForm
           // remounts per module so the form starts from the right titles
           key={courseModule.id}
-          courseModule={courseModule}
+          initialTitles={courseModule.translations}
           defaultLocale={course.defaultLocale}
           locales={locales}
+          submitLabel={t('studio:content.renameModuleDialog.submit')}
           onCancel={() => onOpenChange(false)}
-          onSubmit={onSubmit}
+          onSubmit={(titles) => onSubmit(courseModule.id, titles)}
         />
       ) : null}
     </DialogShell>
   );
 }
 
-function RenameModuleForm({
-  courseModule,
+/** One title field per enabled language; the default language is required, the rest may stay empty. */
+function ModuleTitlesForm({
+  initialTitles,
   defaultLocale,
   locales,
+  submitLabel,
   onCancel,
   onSubmit,
 }: {
-  courseModule: CourseModuleWithLessons;
+  initialTitles: ModuleTitles;
   defaultLocale: Locale;
   locales: Locale[];
+  submitLabel: string;
   onCancel: () => void;
-  onSubmit: (moduleId: string, titles: Array<{ locale: Locale; title: string }>) => Promise<void>;
+  onSubmit: (titles: ModuleTitles) => Promise<void>;
 }) {
   const { t } = useTranslation(['studio', 'common']);
   const describeError = useServiceErrorMessage();
@@ -202,7 +173,7 @@ function RenameModuleForm({
       translations: Object.fromEntries(
         SUPPORTED_LOCALES.map((locale) => [
           locale,
-          { title: courseModule.translations.find((item) => item.locale === locale)?.title ?? '' },
+          { title: initialTitles.find((item) => item.locale === locale)?.title ?? '' },
         ]),
       ) as ModuleTitlesValues['translations'],
     },
@@ -212,7 +183,6 @@ function RenameModuleForm({
     setFormError(null);
     try {
       await onSubmit(
-        courseModule.id,
         locales.map((locale) => ({ locale, title: values.translations[locale].title })),
       );
       onCancel();
@@ -234,11 +204,7 @@ function RenameModuleForm({
           {...register(`translations.${locale}.title`)}
         />
       ))}
-      <DialogActions
-        submitLabel={t('studio:content.renameModuleDialog.submit')}
-        isPending={isSubmitting}
-        onCancel={onCancel}
-      />
+      <DialogActions submitLabel={submitLabel} isPending={isSubmitting} onCancel={onCancel} />
     </form>
   );
 }
