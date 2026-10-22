@@ -10,7 +10,7 @@ import {
 import { and, desc, eq, gt, isNotNull, isNull, lte, or } from 'drizzle-orm';
 import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod';
 import { courses, grants, users } from '../../db/schema';
-import { badRequest, conflict, isUniqueViolation, notFound } from '../../errors';
+import { badRequest, conflict, forbidden, isUniqueViolation, notFound } from '../../errors';
 import { requireManagedCourse } from '../courses/access';
 import { toGrant } from './mappers';
 import { grantOrExtend, loadManagedGrant, revokeGrantRow, setGrantExpiry } from './service';
@@ -31,7 +31,13 @@ export const grantRoutes: FastifyPluginAsyncZod = async (app) => {
   app.get(
     '/grants',
     {
-      preHandler: app.requireRole('admin', 'instructor'),
+      preHandler: [
+        app.authenticateOrApiKey,
+        async (request) => {
+          // same rule as requireRole('admin', 'instructor')
+          if (!['admin', 'instructor'].includes(request.auth!.user.role)) throw forbidden();
+        },
+      ],
       schema: {
         tags: ['grants'],
         summary: 'List grants',
@@ -65,7 +71,7 @@ export const grantRoutes: FastifyPluginAsyncZod = async (app) => {
   app.post(
     '/grants/:id/revoke',
     {
-      preHandler: app.authenticate,
+      preHandler: app.authenticateOrApiKey,
       schema: {
         tags: ['grants'],
         summary: 'Revoke a grant',
@@ -88,7 +94,7 @@ export const grantRoutes: FastifyPluginAsyncZod = async (app) => {
   app.post(
     '/grants/:id/extend',
     {
-      preHandler: app.authenticate,
+      preHandler: app.authenticateOrApiKey,
       schema: {
         tags: ['grants'],
         summary: 'Set a new expiry for a grant',
@@ -117,7 +123,7 @@ export const grantRoutes: FastifyPluginAsyncZod = async (app) => {
   app.post(
     '/grants',
     {
-      preHandler: app.authenticate,
+      preHandler: app.authenticateOrApiKey,
       schema: {
         tags: ['grants'],
         summary: 'Grant a user access to a course',
@@ -147,7 +153,13 @@ export const grantRoutes: FastifyPluginAsyncZod = async (app) => {
 
       const write = () =>
         app.db.transaction((tx) =>
-          grantOrExtend(tx, { userId, courseId, expiresAt, actorId: manager.id }),
+          grantOrExtend(tx, {
+            userId,
+            courseId,
+            expiresAt,
+            actorId: manager.id,
+            source: request.auth!.apiKeyId ? 'plugin' : 'manual',
+          }),
         );
       let result;
       try {

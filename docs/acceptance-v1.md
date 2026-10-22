@@ -26,10 +26,10 @@ Not covered: the lesson player has the same fallback notice (`lesson.fallbackNot
 | No payment SDK in any `package.json` | `apps/api/test/no-payment.test.ts` | Pass (automated) |
 | Course access is always a `Grant`; no other path to course content | `apps/api/src/modules/grants`, `invites`, `enrollments` (code read) | Pass (manual) |
 | Domain events (`enrollment.granted`, `grant.revoked`, ...) leave through the outbox and webhooks, not an in-process bus | `apps/api/src/modules/webhooks`, `worker/consumers.ts` (code read) | Pass (manual) |
-| A plugin can create grants through `POST /grants` | `apps/api/src/modules/grants/routes.ts` | Partial: possible only by logging in as a user (gap below) |
+| A plugin can create grants through `POST /grants` | `apps/api/src/modules/grants/routes.ts`, `apps/api/test/api-keys.test.ts` | Pass (automated), with an API key |
 
 The wording scan covers the product roots (`apps/api/src`, `apps/api/migrations`, `apps/web/src`, `packages/shared/src`). It skips `apps/docs`, which mentions the absence of payment on purpose, and test files. The wording regex is deliberately unanchored so identifiers such as `coursePrice` are caught (only "striped" and "stripes" are exempt); if it ever flags a legitimate word, fix the word rather than allowlisting. The SDK check covers dependencies, dev, optional and peer dependencies of every workspace package.
 
-### Gap: no machine credential for plugins
+### Resolved gap: machine credential for plugins
 
-`POST /grants` requires a session of someone who manages the course (an admin or the owning instructor), and sessions are httpOnly cookies issued by the e-mail and password login. A server-side plugin can only call the API by logging in as a user, so there is no scoped, revocable API key or service account yet. This does not break the criterion (the only way in is still the API), but it makes real plugins awkward. It is recorded here, not fixed: a token scheme is a design decision for a later milestone.
+Until the API keys landed, a plugin could only call `POST /grants` by signing in as a user. Admins now create keys (`/admin/api-keys`) that work only on the grant routes and act as their creator; see the courses and access guide. Remaining: there is no admin screen for keys yet, so they are managed through the API.

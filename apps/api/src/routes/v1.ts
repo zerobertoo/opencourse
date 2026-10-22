@@ -18,6 +18,7 @@ import { userRoutes } from '../modules/users/routes';
 import { fileRoutes } from '../modules/files/routes';
 import { videoRoutes } from '../modules/video/routes';
 import { webhookRoutes } from '../modules/webhooks/routes';
+import { apiKeyRoutes } from '../modules/api-keys/routes';
 
 const SAFE_METHODS = new Set(['GET', 'HEAD', 'OPTIONS']);
 
@@ -54,4 +55,5 @@ export const v1Routes: FastifyPluginAsyncZod<{
   await app.register(videoRoutes, { config, queuePrefix });
   await app.register(fileRoutes, { config });
   await app.register(webhookRoutes, { config, queuePrefix });
+  await app.register(apiKeyRoutes);
 };

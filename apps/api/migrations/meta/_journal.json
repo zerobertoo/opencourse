@@ -78,6 +78,13 @@
       "when": 1791860809361,
       "tag": "0010_parallel_sabra",
       "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1792642914157,
+      "tag": "0011_sleepy_cassandra_nova",
+      "breakpoints": true
     }
   ]
 }

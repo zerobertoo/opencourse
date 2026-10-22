@@ -154,13 +154,20 @@ export async function revokeGrantRow(
 }
 
 /**
- * Manual grant: extends the user's open grant for the course when there is one (even an expired
- * one), otherwise opens a new one. The open row is locked, so a concurrent call either waits for
- * it or loses the race on the partial unique index; the caller retries that case once.
+ * Manual (or plugin) grant: extends the user's open grant for the course when there is one (even
+ * an expired one), otherwise opens a new one. `source` only labels a new grant: an extended one
+ * keeps its own. The open row is locked, so a concurrent call either waits for it or loses the
+ * race on the partial unique index; the caller retries that case once.
  */
 export async function grantOrExtend(
   tx: GrantWriter,
-  input: { userId: string; courseId: string; expiresAt: Date | null; actorId: string },
+  input: {
+    userId: string;
+    courseId: string;
+    expiresAt: Date | null;
+    actorId: string;
+    source?: GrantSource;
+  },
 ): Promise<{ row: GrantRow; created: boolean }> {
   const [open] = await tx
     .select()
@@ -179,7 +186,7 @@ export async function grantOrExtend(
   const row = await createGrantRow(tx, {
     userId: input.userId,
     courseId: input.courseId,
-    source: 'manual',
+    source: input.source ?? 'manual',
     createdById: input.actorId,
     actorId: input.actorId,
     expiresAt: input.expiresAt,

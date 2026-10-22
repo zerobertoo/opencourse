@@ -1,16 +1,17 @@
 import cookie from '@fastify/cookie';
-import type { Role } from '@opencourse/shared';
+import { PLUGIN_TOKEN_PREFIX, type Role } from '@opencourse/shared';
 import type {
   FastifyInstance,
   FastifyReply,
   FastifyRequest,
   preHandlerAsyncHookHandler,
 } from 'fastify';
+import { and, eq, isNull } from 'drizzle-orm';
 import fp from 'fastify-plugin';
 import { createSession, findActiveSession } from '../auth/sessions';
-import { signAccessToken, verifyAccessToken } from '../auth/tokens';
+import { hashToken, signAccessToken, verifyAccessToken } from '../auth/tokens';
 import type { Config } from '../config';
-import type { SessionRow, UserRow } from '../db/schema';
+import { apiKeys, users, type SessionRow, type UserRow } from '../db/schema';
 import { forbidden, unauthorized } from '../errors';
 
 export const ACCESS_COOKIE = 'oc_access';
@@ -20,7 +21,10 @@ const REFRESH_COOKIE_PATH = '/api/v1/auth';
 
 export interface AuthContext {
   user: UserRow;
+  /** Empty on requests authenticated by an API key, which only reach routes that opt in. */
   sessionId: string;
+  /** Set when an API key authenticated the request. */
+  apiKeyId?: string;
 }
 
 declare module 'fastify' {
@@ -33,6 +37,11 @@ declare module 'fastify' {
     authenticate: preHandlerAsyncHookHandler;
     /** preHandler that sets `request.auth` when there is a valid session and lets anyone through. */
     authenticateOptional: preHandlerAsyncHookHandler;
+    /**
+     * Like `authenticate`, but also accepts `Authorization: Bearer <api key>`. Only routes meant
+     * for plugins use it; a bad key is a 401 and never falls back to the session cookie.
+     */
+    authenticateOrApiKey: preHandlerAsyncHookHandler;
     /** preHandler that requires a valid session and one of the given roles. */
     requireRole(...roles: Role[]): preHandlerAsyncHookHandler;
     /** Creates a session for the user and sets both cookies on the reply. */
@@ -113,6 +122,42 @@ export const authPlugin = fp<{ config: Config }>(async (app, { config }) => {
     if (!request.auth) throw unauthorized();
   };
   app.decorate('authenticate', authenticate);
+
+  app.decorate(
+    'authenticateOrApiKey',
+    async function (request: FastifyRequest, reply: FastifyReply) {
+      // only a bearer that looks like one of our keys counts: any other Authorization header
+      // (a proxy's Basic auth, a foreign token) must not lock out a valid session cookie
+      const header = request.headers.authorization;
+      if (!header?.startsWith(`Bearer ${PLUGIN_TOKEN_PREFIX}`)) {
+        return authenticate.call(this, request, reply);
+      }
+
+      const token = /^Bearer (\S+)$/.exec(header)?.[1];
+      const [found] = token
+        ? await app.db
+            .select({ key: apiKeys, user: users })
+            .from(apiKeys)
+            .innerJoin(users, eq(users.id, apiKeys.createdById))
+            .where(and(eq(apiKeys.tokenHash, hashToken(token)), isNull(apiKeys.revokedAt)))
+        : [];
+      // the key borrows its creator's powers, so it dies with them
+      if (!found || !found.user.active || found.user.role !== 'admin') throw unauthorized();
+
+      // bookkeeping only: at most once a minute, and never a reason to fail the request
+      const now = new Date();
+      if (!found.key.lastUsedAt || now.getTime() - found.key.lastUsedAt.getTime() > 60_000) {
+        await app.db
+          .update(apiKeys)
+          .set({ lastUsedAt: now })
+          .where(eq(apiKeys.id, found.key.id))
+          .catch((error: unknown) =>
+            request.log.warn({ err: error }, 'api key usage not recorded'),
+          );
+      }
+      request.auth = { user: found.user, sessionId: '', apiKeyId: found.key.id };
+    },
+  );
 
   app.decorate('requireRole', (...roles: Role[]): preHandlerAsyncHookHandler => {
     return async function requireRolePreHandler(request, reply) {
