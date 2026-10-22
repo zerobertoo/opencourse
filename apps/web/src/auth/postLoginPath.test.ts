@@ -11,6 +11,7 @@ describe('getPostLoginPath', () => {
   it('keeps the root from sending staff to the student home', () => {
     expect(getPostLoginPath({ from: '/' }, 'instructor')).toBe('/studio');
     expect(getPostLoginPath({ from: '/' }, 'admin')).toBe('/admin');
+    expect(getPostLoginPath({ from: '/?utm_source=mail' }, 'instructor')).toBe('/studio');
   });
 
   it('returns to the page that required the sign-in', () => {
