@@ -34,9 +34,14 @@ export const v1Routes: FastifyPluginAsyncZod<{
   // which a cross-site form or image request cannot add (and CORS blocks for scripts)
   app.addHook('onRequest', async (request) => {
     if (SAFE_METHODS.has(request.method)) return;
-    if (request.headers[CSRF_HEADER_NAME] !== CSRF_HEADER_VALUE) {
-      throw forbidden(`Missing ${CSRF_HEADER_NAME} header`);
-    }
+    const sent = request.headers[CSRF_HEADER_NAME];
+    if (sent === CSRF_HEADER_VALUE) return;
+    // a client that sends the header with another value needs to hear the value, not "missing"
+    throw forbidden(
+      sent === undefined
+        ? `Missing ${CSRF_HEADER_NAME} header`
+        : `Invalid ${CSRF_HEADER_NAME} header: the value must be "${CSRF_HEADER_VALUE}"`,
+    );
   });
 
   await app.register(authRoutes, { config });
