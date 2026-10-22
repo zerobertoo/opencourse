@@ -559,4 +559,41 @@ describe('webhook URL policy', () => {
       await strict.app.close();
     }
   });
+
+  it('refuses destinations on private networks when the endpoint is saved, as delivery does', async () => {
+    const strict = await createTestApp(
+      { WEBHOOKS_ALLOW_PRIVATE_NETWORKS: 'false' },
+      { queuePrefix },
+    );
+    try {
+      await resetDatabase(strict.app);
+      const admin = await registerClient(strict.app, 'admin@example.com', 'Ada Admin');
+      const post = (url: string) =>
+        admin.client.post('/api/v1/admin/webhooks', { url, events: ['user.created'] });
+
+      for (const url of [
+        'https://localhost/hook',
+        'https://169.254.169.254/latest',
+        'https://10.0.0.5/hook',
+        'https://[::1]/hook',
+      ]) {
+        const refused = await post(url);
+        expect(refused.statusCode, url).toBe(400);
+        expect(refused.json().error.message).toMatch(/public address/);
+      }
+      expect(await strict.app.db.select().from(webhookEndpoints)).toHaveLength(0);
+
+      const created = await post('https://93.184.216.34/hook');
+      expect(created.statusCode).toBe(201);
+      const id = created.json().webhook.id as string;
+      const moved = await admin.client.patch(`/api/v1/admin/webhooks/${id}`, {
+        url: 'https://192.168.1.10/hook',
+      });
+      expect(moved.statusCode).toBe(400);
+      const [kept] = await strict.app.db.select().from(webhookEndpoints);
+      expect(kept?.url).toBe('https://93.184.216.34/hook');
+    } finally {
+      await strict.app.close();
+    }
+  });
 });
