@@ -3,6 +3,8 @@ import { useTranslation } from 'react-i18next';
 
 export interface Formatters {
   formatDate: (value: Date | number, options?: Intl.DateTimeFormatOptions) => string;
+  /** A date with its time, always in the same shape (medium date, short time). */
+  formatDateTime: (value: Date | number) => string;
   formatNumber: (value: number, options?: Intl.NumberFormatOptions) => string;
   formatPercent: (fraction: number) => string;
 }
@@ -16,6 +18,10 @@ export function createFormatters(locale: string, timeZone?: string): Formatters 
   return {
     formatDate: (value, options = { dateStyle: 'long' }) =>
       new Intl.DateTimeFormat(locale, { timeZone, ...options }).format(value),
+    formatDateTime: (value) =>
+      new Intl.DateTimeFormat(locale, { timeZone, dateStyle: 'medium', timeStyle: 'short' }).format(
+        value,
+      ),
     formatNumber: (value, options) => new Intl.NumberFormat(locale, options).format(value),
     formatPercent: (fraction) =>
       new Intl.NumberFormat(locale, { style: 'percent', maximumFractionDigits: 0 }).format(

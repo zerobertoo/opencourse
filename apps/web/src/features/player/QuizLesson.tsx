@@ -34,7 +34,7 @@ export function QuizLesson({
   timeZone,
 }: QuizLessonProps) {
   const { t } = useTranslation(['player', 'common']);
-  const { formatDate } = useFormatters(timeZone);
+  const { formatDateTime } = useFormatters(timeZone);
   const describeError = useServiceErrorMessage();
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [submission, setSubmission] = useState<QuizSubmission | null>(null);
@@ -225,10 +225,7 @@ export function QuizLesson({
                   {attempt.passed ? t('quiz.statusPassed') : t('quiz.statusFailed')}
                 </Badge>
                 <span className="ms-auto text-xs text-muted-foreground">
-                  {formatDate(new Date(attempt.createdAt), {
-                    dateStyle: 'medium',
-                    timeStyle: 'short',
-                  })}
+                  {formatDateTime(new Date(attempt.createdAt))}
                 </span>
               </li>
             ))}

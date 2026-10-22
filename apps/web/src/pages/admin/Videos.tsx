@@ -22,7 +22,7 @@ function FailedVideoRow({
   timeZone: string | undefined;
 }) {
   const { t } = useTranslation('admin');
-  const { formatDate } = useFormatters(timeZone);
+  const { formatDateTime } = useFormatters(timeZone);
 
   return (
     <li className="flex flex-wrap items-start justify-between gap-3 p-4">
@@ -37,10 +37,7 @@ function FailedVideoRow({
         {video.errorMessage ? <p className="break-words text-sm">{video.errorMessage}</p> : null}
         <p className="text-xs text-muted-foreground">
           {t('videos.failedAt', {
-            date: formatDate(new Date(video.failedAt), {
-              dateStyle: 'medium',
-              timeStyle: 'short',
-            }),
+            date: formatDateTime(new Date(video.failedAt)),
           })}
         </p>
       </div>

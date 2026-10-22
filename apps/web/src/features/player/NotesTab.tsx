@@ -22,7 +22,7 @@ function NoteEditor({
   timeZone: string;
 }) {
   const { t } = useTranslation(['player', 'common']);
-  const { formatDate } = useFormatters(timeZone);
+  const { formatDateTime } = useFormatters(timeZone);
   const describeError = useServiceErrorMessage();
   const save = useSaveLessonNote(lessonId);
   const savedContent = note?.content ?? '';
@@ -57,10 +57,7 @@ function NoteEditor({
         <span className="text-xs text-muted-foreground">
           {note
             ? t('notes.lastSaved', {
-                date: formatDate(new Date(note.updatedAt), {
-                  dateStyle: 'medium',
-                  timeStyle: 'short',
-                }),
+                date: formatDateTime(new Date(note.updatedAt)),
               })
             : t('notes.empty')}
         </span>
