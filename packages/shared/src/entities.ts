@@ -282,12 +282,26 @@ export const platformSettingsSchema = z.object({
 });
 export type PlatformSettings = z.infer<typeof platformSettingsSchema>;
 
+const DISPLAY_NAME_ADDRESS = /^[^<>\r\n]+<([^<>\s]+)>$/;
+
+/** True for `user@host` and for `Display Name <user@host>`, the form the mail server accepts as `From`. */
+export function isSenderAddress(value: string): boolean {
+  const trimmed = value.trim();
+  const bare = DISPLAY_NAME_ADDRESS.exec(trimmed)?.[1] ?? trimmed;
+  return z.email().safeParse(bare).success;
+}
+
 /** Merged-then-validated by the server, so every group may carry only the fields that change. */
 export const updatePlatformSettingsRequestSchema = z.object({
   brand: platformSettingsSchema.shape.brand.partial().optional(),
   enabledLocales: platformSettingsSchema.shape.enabledLocales.optional(),
   defaultLocale: localeSchema.optional(),
-  email: platformSettingsSchema.shape.email.partial().optional(),
+  email: platformSettingsSchema.shape.email
+    .extend({
+      fromAddress: z.string().refine(isSenderAddress, 'Enter an e-mail, or Name <e-mail>'),
+    })
+    .partial()
+    .optional(),
 });
 export type UpdatePlatformSettingsRequest = z.infer<typeof updatePlatformSettingsRequestSchema>;
 

@@ -57,6 +57,18 @@ describe('platform settings', () => {
     });
   });
 
+  it('saves the default sender, written as "Name <e-mail>", back unchanged', async () => {
+    const { admin } = await createCast();
+    const sender = 'OpenCourse <no-reply@opencourse.local>';
+    const changed = await admin.client.patch('/api/v1/admin/settings', {
+      brand: { name: 'Acme Academy' },
+      email: { fromAddress: sender },
+    });
+
+    expect(changed.statusCode).toBe(200);
+    expect(changed.json().email.fromAddress).toBe(sender);
+  });
+
   it('refuses invalid changes without saving anything', async () => {
     const { admin } = await createCast();
 
@@ -73,6 +85,11 @@ describe('platform settings', () => {
 
     const emptyHost = await admin.client.patch('/api/v1/admin/settings', { email: { host: ' ' } });
     expect(emptyHost.statusCode).toBe(400);
+
+    const badSender = await admin.client.patch('/api/v1/admin/settings', {
+      email: { fromAddress: 'nope' },
+    });
+    expect(badSender.statusCode).toBe(400);
 
     const reread = await admin.client.get('/api/v1/settings');
     expect(reread.json().enabledLocales).toEqual(['pt-BR', 'en']);

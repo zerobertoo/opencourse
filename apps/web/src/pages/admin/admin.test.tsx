@@ -252,6 +252,26 @@ describe('admin settings', () => {
     });
   });
 
+  it('accepts the sender as "Name <e-mail>" and refuses text that is not an address', async () => {
+    const user = userEvent.setup();
+    const { services } = await renderApp('/admin/settings', { signInAs: 'admin' });
+    const sender = await screen.findByLabelText('Endereço do remetente');
+
+    await user.clear(sender);
+    await user.type(sender, 'Escola Oliva');
+    await user.click(screen.getByRole('button', { name: 'Salvar configurações' }));
+    expect(await screen.findByText('Informe um e-mail válido.')).toBeVisible();
+
+    await user.clear(sender);
+    await user.type(sender, 'Escola Oliva <oi@escola.dev>');
+    await user.click(screen.getByRole('button', { name: 'Salvar configurações' }));
+    await waitFor(async () => {
+      expect((await services.settings.get()).email.fromAddress).toBe(
+        'Escola Oliva <oi@escola.dev>',
+      );
+    });
+  });
+
   it('shows inline validation and does not save invalid values', async () => {
     const user = userEvent.setup();
     const { services } = await renderApp('/admin/settings', { signInAs: 'admin' });

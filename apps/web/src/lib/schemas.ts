@@ -1,5 +1,6 @@
 import {
   domainEventNameSchema,
+  isSenderAddress,
   lessonTypeSchema,
   localeSchema,
   NAME_MAX_LENGTH,
@@ -268,10 +269,8 @@ export const platformSettingsFormSchema = z
         return Number.isInteger(port) && port >= 1 && port <= MAX_SMTP_PORT;
       }, 'validation.port'),
     username: z.string().trim(),
-    fromAddress: z
-      .string()
-      .trim()
-      .refine((value) => value === '' || z.email().safeParse(value).success, 'validation.email'),
+    // same rule as the API ("user@host" or "Name <user@host>")
+    fromAddress: z.string().trim().refine(isSenderAddress, 'validation.email'),
     secure: z.boolean(),
   })
   .refine((values) => values.enabledLocales.includes(values.defaultLocale), {
