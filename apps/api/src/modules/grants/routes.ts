@@ -34,7 +34,8 @@ export const grantRoutes: FastifyPluginAsyncZod = async (app) => {
       preHandler: [
         app.authenticateOrApiKey,
         async (request) => {
-          if (request.auth!.user.role === 'student') throw forbidden();
+          // same rule as requireRole('admin', 'instructor')
+          if (!['admin', 'instructor'].includes(request.auth!.user.role)) throw forbidden();
         },
       ],
       schema: {

@@ -24,6 +24,7 @@ Changes since [v0.1.0](https://github.com/zerobertoo/opencourse/compare/v0.1.0..
 ### Known gaps
 
 - No admin screen for API keys yet: they are managed through the API.
+- The audit log shows grants made with a key as done by its creator; the key itself is not recorded (only the `plugin` source of new grants).
 - Failed-videos list is capped at 100 without an indicator.
 - A poster that failed once is not regenerated.
 - No server-side certificate PDF (rendered on the client).

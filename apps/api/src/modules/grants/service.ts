@@ -154,9 +154,10 @@ export async function revokeGrantRow(
 }
 
 /**
- * Manual (or plugin) grant: extends the user's open grant for the course when there is one (even an expired
- * one), otherwise opens a new one. The open row is locked, so a concurrent call either waits for
- * it or loses the race on the partial unique index; the caller retries that case once.
+ * Manual (or plugin) grant: extends the user's open grant for the course when there is one (even
+ * an expired one), otherwise opens a new one. `source` only labels a new grant: an extended one
+ * keeps its own. The open row is locked, so a concurrent call either waits for it or loses the
+ * race on the partial unique index; the caller retries that case once.
  */
 export async function grantOrExtend(
   tx: GrantWriter,

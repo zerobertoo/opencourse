@@ -156,6 +156,13 @@ describe('API keys', () => {
       });
       expect(mixed.statusCode).toBe(401);
 
+      // a foreign Authorization header (for example a proxy's) does not lock out the session
+      const foreign = await cast.admin.client.request('POST', '/api/v1/grants', {
+        body,
+        headers: { authorization: 'Basic dXNlcjpwYXNz' },
+      });
+      expect(foreign.statusCode).toBe(201);
+
       await cast.admin.client.post(`/api/v1/admin/api-keys/${apiKey.id}/revoke`);
       const afterRevoke = await pluginClient().request('POST', '/api/v1/grants', {
         body,

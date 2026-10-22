@@ -1,5 +1,5 @@
 import cookie from '@fastify/cookie';
-import type { Role } from '@opencourse/shared';
+import { API_KEY_PREFIX, type Role } from '@opencourse/shared';
 import type {
   FastifyInstance,
   FastifyReply,
@@ -126,8 +126,12 @@ export const authPlugin = fp<{ config: Config }>(async (app, { config }) => {
   app.decorate(
     'authenticateOrApiKey',
     async function (request: FastifyRequest, reply: FastifyReply) {
+      // only a bearer that looks like one of our keys counts: any other Authorization header
+      // (a proxy's Basic auth, a foreign token) must not lock out a valid session cookie
       const header = request.headers.authorization;
-      if (header === undefined) return authenticate.call(this, request, reply);
+      if (!header?.startsWith(`Bearer ${API_KEY_PREFIX}`)) {
+        return authenticate.call(this, request, reply);
+      }
 
       const token = /^Bearer (\S+)$/.exec(header)?.[1];
       const [found] = token
@@ -140,10 +144,17 @@ export const authPlugin = fp<{ config: Config }>(async (app, { config }) => {
       // the key borrows its creator's powers, so it dies with them
       if (!found || !found.user.active || found.user.role !== 'admin') throw unauthorized();
 
-      await app.db
-        .update(apiKeys)
-        .set({ lastUsedAt: new Date() })
-        .where(eq(apiKeys.id, found.key.id));
+      // bookkeeping only: at most once a minute, and never a reason to fail the request
+      const now = new Date();
+      if (!found.key.lastUsedAt || now.getTime() - found.key.lastUsedAt.getTime() > 60_000) {
+        await app.db
+          .update(apiKeys)
+          .set({ lastUsedAt: now })
+          .where(eq(apiKeys.id, found.key.id))
+          .catch((error: unknown) =>
+            request.log.warn({ err: error }, 'api key usage not recorded'),
+          );
+      }
       request.auth = { user: found.user, sessionId: '', apiKeyId: found.key.id };
     },
   );
