@@ -428,4 +428,29 @@ describe('settings', () => {
 
     expect(await screen.findByText('As senhas não coincidem.')).toBeVisible();
   });
+
+  it('marks the current password field when the API says it is wrong', async () => {
+    const user = userEvent.setup();
+    await renderApp('/settings', {
+      signInAs: 'student',
+      override: ({ auth }) => ({
+        auth: {
+          ...auth,
+          changePassword: () =>
+            Promise.reject(
+              new ServiceError('validation', 'Current password is incorrect', 'currentPassword'),
+            ),
+        },
+      }),
+    });
+
+    await user.type(await screen.findByLabelText('Senha atual'), 'errada-123');
+    await user.type(screen.getByLabelText('Nova senha'), 'nova-senha-1');
+    await user.type(screen.getByLabelText('Confirmar nova senha'), 'nova-senha-1');
+    await user.click(screen.getByRole('button', { name: 'Alterar senha' }));
+
+    expect(await screen.findByText('A senha atual está incorreta.')).toBeVisible();
+    expect(screen.getByLabelText('Senha atual')).toBeInvalid();
+    expect(screen.queryByText('Confira os dados informados e tente de novo.')).toBeNull();
+  });
 });

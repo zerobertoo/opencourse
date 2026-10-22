@@ -14,6 +14,7 @@ import { WebhookFormDialog } from '@/features/admin/WebhookFormDialog';
 import { WebhookSecretDialog } from '@/features/admin/WebhookSecretDialog';
 import { useWebhookMutations, useWebhooks } from '@/hooks/adminQueries';
 import { useServiceErrorMessage } from '@/lib/serviceError';
+import { describeWebhookError } from '@/lib/webhookError';
 import { webhookEventKey } from '@/lib/webhookEvents';
 
 interface RowActions {
@@ -147,7 +148,9 @@ export function AdminWebhooks() {
         if (result.succeeded) {
           toast.success(t('admin:webhooks.testSuccess', { status: result.statusCode }));
         } else {
-          toast.error(t('admin:webhooks.testFailure', { error: result.error ?? '' }));
+          toast.error(
+            t('admin:webhooks.testFailure', { error: describeWebhookError(result.error ?? '') }),
+          );
         }
       }),
     onToggle: (webhook) =>

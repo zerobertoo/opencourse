@@ -9,6 +9,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useWebhookDeliveries, useWebhookMutations } from '@/hooks/adminQueries';
 import { useFormatters } from '@/lib/intl';
 import { useServiceErrorMessage } from '@/lib/serviceError';
+import { describeWebhookError } from '@/lib/webhookError';
 import { webhookEventKey } from '@/lib/webhookEvents';
 
 function DeliveryRow({ delivery, timeZone }: { delivery: WebhookDelivery; timeZone?: string }) {
@@ -55,7 +56,7 @@ function DeliveryRow({ delivery, timeZone }: { delivery: WebhookDelivery; timeZo
         {delivery.lastStatusCode === null
           ? ''
           : ` · ${t('webhooks.deliveries.statusCode', { code: delivery.lastStatusCode })}`}
-        {delivery.lastError ? ` · ${delivery.lastError}` : ''}
+        {delivery.lastError ? ` · ${describeWebhookError(delivery.lastError)}` : ''}
       </p>
     </li>
   );

@@ -92,6 +92,7 @@
   },
   "validation": {
     "required": "Fill in this field.",
+    "currentPasswordWrong": "The current password is incorrect.",
     "email": "Enter a valid e-mail.",
     "passwordLength": "The password must have at least 8 characters.",
     "passwordTooLong": "The password can have at most 128 characters.",
