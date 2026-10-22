@@ -6,11 +6,12 @@ import type {
   FastifyRequest,
   preHandlerAsyncHookHandler,
 } from 'fastify';
+import { and, eq, isNull } from 'drizzle-orm';
 import fp from 'fastify-plugin';
 import { createSession, findActiveSession } from '../auth/sessions';
-import { signAccessToken, verifyAccessToken } from '../auth/tokens';
+import { hashToken, signAccessToken, verifyAccessToken } from '../auth/tokens';
 import type { Config } from '../config';
-import type { SessionRow, UserRow } from '../db/schema';
+import { apiKeys, users, type SessionRow, type UserRow } from '../db/schema';
 import { forbidden, unauthorized } from '../errors';
 
 export const ACCESS_COOKIE = 'oc_access';
@@ -20,7 +21,10 @@ const REFRESH_COOKIE_PATH = '/api/v1/auth';
 
 export interface AuthContext {
   user: UserRow;
+  /** Empty on requests authenticated by an API key, which only reach routes that opt in. */
   sessionId: string;
+  /** Set when an API key authenticated the request. */
+  apiKeyId?: string;
 }
 
 declare module 'fastify' {
@@ -33,6 +37,11 @@ declare module 'fastify' {
     authenticate: preHandlerAsyncHookHandler;
     /** preHandler that sets `request.auth` when there is a valid session and lets anyone through. */
     authenticateOptional: preHandlerAsyncHookHandler;
+    /**
+     * Like `authenticate`, but also accepts `Authorization: Bearer <api key>`. Only routes meant
+     * for plugins use it; a bad key is a 401 and never falls back to the session cookie.
+     */
+    authenticateOrApiKey: preHandlerAsyncHookHandler;
     /** preHandler that requires a valid session and one of the given roles. */
     requireRole(...roles: Role[]): preHandlerAsyncHookHandler;
     /** Creates a session for the user and sets both cookies on the reply. */
@@ -113,6 +122,31 @@ export const authPlugin = fp<{ config: Config }>(async (app, { config }) => {
     if (!request.auth) throw unauthorized();
   };
   app.decorate('authenticate', authenticate);
+
+  app.decorate(
+    'authenticateOrApiKey',
+    async function (request: FastifyRequest, reply: FastifyReply) {
+      const header = request.headers.authorization;
+      if (header === undefined) return authenticate.call(this, request, reply);
+
+      const token = /^Bearer (\S+)$/.exec(header)?.[1];
+      const [found] = token
+        ? await app.db
+            .select({ key: apiKeys, user: users })
+            .from(apiKeys)
+            .innerJoin(users, eq(users.id, apiKeys.createdById))
+            .where(and(eq(apiKeys.tokenHash, hashToken(token)), isNull(apiKeys.revokedAt)))
+        : [];
+      // the key borrows its creator's powers, so it dies with them
+      if (!found || !found.user.active || found.user.role !== 'admin') throw unauthorized();
+
+      await app.db
+        .update(apiKeys)
+        .set({ lastUsedAt: new Date() })
+        .where(eq(apiKeys.id, found.key.id));
+      request.auth = { user: found.user, sessionId: '', apiKeyId: found.key.id };
+    },
+  );
 
   app.decorate('requireRole', (...roles: Role[]): preHandlerAsyncHookHandler => {
     return async function requireRolePreHandler(request, reply) {

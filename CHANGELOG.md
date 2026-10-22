@@ -8,6 +8,8 @@ Changes since [v0.1.0](https://github.com/zerobertoo/opencourse/compare/v0.1.0..
 
 ### Added
 
+- API keys for plugins: admins create them under `/admin/api-keys`; a key works only on the grant routes, acts as its creator and creates grants with the source `plugin`.
+
 - Documentation site (Starlight, English and Portuguese) published next to the live demo.
 - Course cover image upload (presigned upload, stable public cover address, cleanup on replace or remove).
 - Platform settings stored in the database and edited by admins, including SMTP (the password stays in `SMTP_PASSWORD`).
@@ -21,7 +23,7 @@ Changes since [v0.1.0](https://github.com/zerobertoo/opencourse/compare/v0.1.0..
 
 ### Known gaps
 
-- No API key or service account: a plugin can only create grants by signing in as a user.
+- No admin screen for API keys yet: they are managed through the API.
 - Failed-videos list is capped at 100 without an indicator.
 - A poster that failed once is not regenerated.
 - No server-side certificate PDF (rendered on the client).
