@@ -11,9 +11,9 @@ describe('courses schemas', () => {
   });
 
   it('requires a title and a supported locale to create a course', () => {
-    expect(
-      createCourseRequestSchema.safeParse({ title: ' ', defaultLocale: 'en' }).success,
-    ).toBe(false);
+    expect(createCourseRequestSchema.safeParse({ title: ' ', defaultLocale: 'en' }).success).toBe(
+      false,
+    );
     expect(
       createCourseRequestSchema.safeParse({ title: 'Intro', defaultLocale: 'fr' }).success,
     ).toBe(false);

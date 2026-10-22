@@ -170,10 +170,8 @@ function LessonRow({ lesson, title, isSelected, isMissingTranslation, onSelect }
   );
 }
 
-interface ModuleCardProps extends Omit<
-  CurriculumTreeProps,
-  'course' | 'onReorder' | 'onAddModule'
-> {
+interface ModuleCardProps
+  extends Omit<CurriculumTreeProps, 'course' | 'onReorder' | 'onAddModule'> {
   courseModule: CourseModuleWithLessons;
   lessonIds: string[];
   title: string;

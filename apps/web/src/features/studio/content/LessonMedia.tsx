@@ -368,13 +368,15 @@ export function MaterialsSection({ courseId, lesson }: { courseId: string; lesso
   const addFiles = async (files: File[]) => {
     try {
       const uploads = await Promise.all(
-        files.map(async (file): Promise<AttachmentUpload> => ({
-          name: file.name,
-          sizeBytes: file.size,
-          file,
-          // the real API uploads the file itself; only the demo keeps the content in the session
-          url: isApiMode ? '' : await readFileAsDataUrl(file),
-        })),
+        files.map(
+          async (file): Promise<AttachmentUpload> => ({
+            name: file.name,
+            sizeBytes: file.size,
+            file,
+            // the real API uploads the file itself; only the demo keeps the content in the session
+            url: isApiMode ? '' : await readFileAsDataUrl(file),
+          }),
+        ),
       );
       await addAttachments.mutateAsync({ lessonId: lesson.id, files: uploads });
       toast.success(t('studio:materials.saved'));

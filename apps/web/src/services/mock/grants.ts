@@ -163,12 +163,13 @@ export function createMockGrantService(context: MockContext): GrantService {
             if (user.role === 'instructor') return invite.createdById === user.id;
             return true;
           })
-          .map((invite): Invite =>
-            toPublicInvite(
-              invite.status === 'pending' && new Date(invite.expiresAt) <= now
-                ? { ...invite, status: 'expired' }
-                : invite,
-            ),
+          .map(
+            (invite): Invite =>
+              toPublicInvite(
+                invite.status === 'pending' && new Date(invite.expiresAt) <= now
+                  ? { ...invite, status: 'expired' }
+                  : invite,
+              ),
           )
           .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
         return clone(invites);

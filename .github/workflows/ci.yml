@@ -86,6 +86,7 @@ jobs:
       - run: docker compose config -q && docker compose --env-file .env.external.example -f compose.app.yaml config -q
 
       - run: pnpm install --frozen-lockfile
+      - run: pnpm format:check
       - run: pnpm lint
       - run: pnpm typecheck
       - run: pnpm test

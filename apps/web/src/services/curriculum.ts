@@ -47,7 +47,8 @@ export interface UpdateLessonInput {
 
 /** Where a video comes from: a file to upload to this instance or a link a provider plugin recognises. */
 export type LessonVideoSource =
-  { provider: 'local'; file: File } | { provider: 'external'; url: string };
+  | { provider: 'local'; file: File }
+  | { provider: 'external'; url: string };
 
 export interface SetLessonVideoOptions {
   /** Called with the share of the file already sent, from 0 to 1. Only uploads report it. */

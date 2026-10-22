@@ -77,7 +77,8 @@ const transform: NonNullable<FastifyDynamicSwaggerOptions['transform']> = (input
   }
 
   const ownHeaders = schema.headers as
-    { properties?: Record<string, unknown>; required?: string[] } | undefined;
+    | { properties?: Record<string, unknown>; required?: string[] }
+    | undefined;
 
   let security: Record<string, string[]>[] | undefined;
   if (authRequired) {

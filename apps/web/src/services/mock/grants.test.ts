@@ -172,9 +172,7 @@ describe('mock grant service', () => {
       });
 
       const other = (await createServicesSignedInAs('beatriz')).services;
-      const [grant] = await (
-        await createServicesSignedInAs('rafael')
-      ).services.grants.list({
+      const [grant] = await (await createServicesSignedInAs('rafael')).services.grants.list({
         courseId: demoId('course-javascript'),
       });
       await expect(other.grants.revoke(grant!.id)).rejects.toMatchObject({ code: 'forbidden' });
