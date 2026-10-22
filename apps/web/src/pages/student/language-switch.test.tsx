@@ -2,6 +2,7 @@ import { screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it } from 'vitest';
 import i18n from '@/i18n';
+import { buildSqlCourse } from '@/services/mock/seed/course-others';
 import { renderApp } from '@/test/render';
 
 // PRD v1 acceptance criterion 3: switching the language changes interface and content without
@@ -32,20 +33,21 @@ describe('language switching on the course page', () => {
   });
 
   it('falls back to the course default language and says so when a translation is missing', async () => {
+    // the demo SQL course is Portuguese only on purpose, to show the fallback
+    const sqlCourse = buildSqlCourse('2026-01-01T00:00:00.000Z');
+    expect(sqlCourse.translations.map((translation) => translation.locale)).toEqual(['pt-BR']);
+
     const user = userEvent.setup();
     await renderApp('/courses/analise-de-dados-com-sql', { signInAs: 'student' });
 
-    const heading = await screen.findByRole('heading', {
-      level: 1,
-      name: /Análise de Dados com SQL/,
-    });
-    const originalTitle = heading.textContent;
+    const originalTitle = sqlCourse.translations[0]!.title;
+    await screen.findByRole('heading', { level: 1, name: originalTitle });
     expect(screen.queryByText(/ainda não foi traduzido/)).not.toBeInTheDocument();
 
     await user.selectOptions(screen.getByRole('combobox', { name: 'Idioma' }), 'en');
 
-    // interface switches, content stays in the default language
+    // interface switches, content stays in the default language (queried again after the switch)
     expect(await screen.findByText(/has not been translated yet and is shown in/)).toBeVisible();
-    expect(heading).toHaveTextContent(originalTitle!);
+    expect(screen.getByRole('heading', { level: 1, name: originalTitle })).toBeVisible();
   });
 });
