@@ -194,7 +194,8 @@ function ModuleTitlesForm({
   return (
     <form onSubmit={submit} noValidate className="mt-4 space-y-4">
       <FormError message={formError} />
-      {locales.map((locale) => (
+      {/* the required language comes first, which is also where the dialog puts the focus */}
+      {[defaultLocale, ...locales.filter((locale) => locale !== defaultLocale)].map((locale) => (
         <TextField
           key={locale}
           label={t('studio:content.renameModuleDialog.titleIn', {
