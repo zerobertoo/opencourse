@@ -76,6 +76,10 @@ export function createMockProgressService(context: MockContext): ProgressService
     setLessonCompleted: (lessonId, completed) =>
       context.run('progress.setLessonCompleted', () => {
         const { user, course, lesson } = requireAccessibleLesson(lessonId);
+        // same rule as the API: passing the quiz is the only way in, and a pass stays
+        if (lesson.type === 'quiz') {
+          throw new ServiceError('validation', 'A quiz lesson is completed by passing the quiz');
+        }
         if (completed) return markCompleted(user.id, lesson, course.id);
         return upsertProgress(user.id, lessonId, (entry) => {
           entry.completed = false;

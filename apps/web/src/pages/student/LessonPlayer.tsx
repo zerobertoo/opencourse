@@ -403,9 +403,10 @@ export function LessonPlayer() {
                 {t('lesson.previous')}
               </Button>
             )}
-            {lesson.type === 'quiz' && !isCompleted ? (
+            {lesson.type === 'quiz' ? (
+              // a quiz lesson is completed by passing and never toggled by hand
               <p className="text-center text-sm text-muted-foreground sm:order-2">
-                {t('lesson.passQuizToComplete')}
+                {isCompleted ? t('lesson.quizPassedNote') : t('lesson.passQuizToComplete')}
               </p>
             ) : (
               <Button

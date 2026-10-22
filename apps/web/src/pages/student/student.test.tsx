@@ -360,6 +360,29 @@ describe('lesson player', () => {
     expect(screen.getAllByText('Resposta correta').length).toBe(3);
   });
 
+  it('offers no way to undo a passed quiz lesson by hand', async () => {
+    const user = userEvent.setup();
+    await renderApp(`/courses/fundamentos-de-javascript/lessons/${demoId('les-js-1-4')}`, {
+      signInAs: 'student',
+    });
+
+    await screen.findByRole('heading', { level: 1, name: 'Quiz: tipos e variáveis' });
+    const rightOptions = ['q-js-1-a', 'q-js-2-b', 'q-js-3-b'].map((key) => demoId(key));
+    for (const [index, group] of screen.getAllByRole('group').entries()) {
+      const radio = within(group)
+        .getAllByRole('radio')
+        .find((candidate) => (candidate as HTMLInputElement).value === rightOptions[index]);
+      await user.click(radio!);
+    }
+    await user.click(screen.getByRole('button', { name: 'Enviar respostas' }));
+
+    expect(await screen.findByText('Aprovado!')).toBeVisible();
+    expect(
+      await screen.findByText('Você foi aprovado neste quiz, então a aula fica concluída.'),
+    ).toBeVisible();
+    expect(screen.queryByRole('button', { name: /desmarcar|Marcar como/ })).not.toBeInTheDocument();
+  });
+
   it('blocks locked lessons reached by URL in sequential courses', async () => {
     await renderApp(
       `/courses/design-de-interfaces-na-pratica/lessons/${demoId('les-design-2-1')}`,

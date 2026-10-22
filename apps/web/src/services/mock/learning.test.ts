@@ -308,9 +308,14 @@ describe('mock certificate service', () => {
     expect(certificate?.code).toMatch(/^OC-[A-Z2-9]{4}-[A-Z2-9]{4}$/);
     expect((await services.certificates.verify(certificate!.code))?.code).toBe(certificate?.code);
 
-    // redoing the completion does not issue another one
-    await services.progress.setLessonCompleted(demoId('les-js-3-3'), false);
-    await services.progress.setLessonCompleted(demoId('les-js-3-3'), true);
+    // a pass cannot be taken back, and passing again does not issue another one
+    await expect(
+      services.progress.setLessonCompleted(demoId('les-js-3-3'), false),
+    ).rejects.toMatchObject({ code: 'validation' });
+    await services.progress.submitQuizAttempt(demoId('les-js-3-3'), {
+      [demoId('q-js-4')]: demoId('q-js-4-b'),
+      [demoId('q-js-5')]: demoId('q-js-5-b'),
+    });
     expect(await services.certificates.listMine()).toHaveLength(1);
   });
 
