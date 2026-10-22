@@ -39,21 +39,23 @@ interface ResolvedAddress {
   family: number;
 }
 
-/** Where a webhook may go: the address to connect to, or why nothing may be sent. */
+/** Where a webhook may go: the parsed address and the IP to connect to, or why nothing may be sent. */
 export type Destination =
-  | { target: ResolvedAddress; failure?: undefined }
-  | { target?: undefined; failure: WebhookResponse };
+  | { url: URL; target: ResolvedAddress; failure?: undefined }
+  | { url?: undefined; target?: undefined; failure: WebhookResponse };
 
 /**
  * The destination rule, shared by delivery and by saving an endpoint: only https (http too when
  * private networks are allowed), and unless they are allowed, every address the host resolves to
  * must be public. `failure.refused` tells a forbidden destination from one that merely did not
- * answer (no DNS record yet, a timeout). The deadline in `signal` covers name resolution.
+ * answer (no DNS record yet, a timeout). The deadline in `signal` covers name resolution;
+ * `timeoutMs` only words the message.
  */
 export async function resolveDestination(
   rawUrl: string,
   allowPrivateNetworks: boolean,
   signal: AbortSignal,
+  timeoutMs: number,
 ): Promise<Destination> {
   let url: URL;
   try {
@@ -62,33 +64,39 @@ export async function resolveDestination(
     return { failure: failure('Invalid URL', true) };
   }
   if (url.protocol !== 'https:' && !(url.protocol === 'http:' && allowPrivateNetworks)) {
-    return { failure: failure('Only https is allowed here', true) };
+    return { failure: failure('Webhook URLs must use https', true) };
   }
 
-  const timedOut = new Promise<never>((_resolve, reject) =>
-    signal.addEventListener('abort', () => reject(new Error('timeout')), { once: true }),
-  );
-  // rejects at the deadline even when nothing is racing it (an IP literal skips the lookup)
-  timedOut.catch(() => undefined);
   const host = url.hostname.replace(/^\[|\]$/g, '');
   let addresses: ResolvedAddress[];
-  try {
-    addresses = isIP(host)
-      ? [{ address: host, family: isIP(host) }]
-      : await Promise.race([lookup(host, { all: true }), timedOut]);
-  } catch (error) {
-    return {
-      failure: signal.aborted
-        ? failure('Timed out resolving the host')
-        : failure(`DNS lookup failed: ${(error as Error).message}`),
-    };
+  if (isIP(host)) {
+    addresses = [{ address: host, family: isIP(host) }];
+  } else {
+    let onAbort: (() => void) | undefined;
+    const timedOut = new Promise<never>((_resolve, reject) => {
+      onAbort = () => reject(new Error('timeout'));
+      signal.addEventListener('abort', onAbort, { once: true });
+    });
+    try {
+      addresses = await Promise.race([lookup(host, { all: true }), timedOut]);
+    } catch (error) {
+      return {
+        failure: signal.aborted
+          ? failure(`Timed out after ${timeoutMs} ms`)
+          : failure(`DNS lookup failed: ${(error as Error).message}`),
+      };
+    } finally {
+      signal.removeEventListener('abort', onAbort!);
+      // the race may be lost: the rejection must not surface later
+      timedOut.catch(() => undefined);
+    }
   }
   const target = addresses[0];
   if (!target) return { failure: failure('Host did not resolve to any address') };
   if (!allowPrivateNetworks && !addresses.every(({ address }) => isPublicAddress(address))) {
     return { failure: failure('Destination is not a public address', true) };
   }
-  return { target };
+  return { url, target };
 }
 
 /**
@@ -99,16 +107,14 @@ export async function resolveDestination(
 export async function postWebhook(input: WebhookRequest): Promise<WebhookResponse> {
   // one deadline for the whole exchange, name resolution included
   const signal = AbortSignal.timeout(input.timeoutMs);
-  const destination = await resolveDestination(input.url, input.allowPrivateNetworks, signal);
-  if (destination.failure) {
-    // keep the message that names the deadline the caller configured
-    return signal.aborted && !destination.failure.refused
-      ? failure(`Timed out after ${input.timeoutMs} ms`)
-      : destination.failure;
-  }
-  const { target } = destination;
-  const url = new URL(input.url);
-  const addresses = [target];
+  const destination = await resolveDestination(
+    input.url,
+    input.allowPrivateNetworks,
+    signal,
+    input.timeoutMs,
+  );
+  if (destination.failure) return destination.failure;
+  const { url, target } = destination;
 
   const send = url.protocol === 'https:' ? httpsRequest : httpRequest;
   return new Promise<WebhookResponse>((resolve) => {
@@ -121,7 +127,7 @@ export async function postWebhook(input: WebhookRequest): Promise<WebhookRespons
         // connect to the address that passed the check
         lookup: (_host, options, callback) => {
           if ((options as { all?: boolean }).all) {
-            (callback as (error: null, result: typeof addresses) => void)(null, [target]);
+            (callback as (error: null, result: ResolvedAddress[]) => void)(null, [target]);
           } else {
             callback(null, target.address, target.family);
           }

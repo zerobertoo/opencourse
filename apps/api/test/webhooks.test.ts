@@ -583,6 +583,10 @@ describe('webhook URL policy', () => {
       }
       expect(await strict.app.db.select().from(webhookEndpoints)).toHaveLength(0);
 
+      // a host that does not resolve yet is accepted: delivery checks again when it sends
+      expect((await post('https://not-deployed-yet.invalid/hook')).statusCode).toBe(201);
+      await strict.app.db.delete(webhookEndpoints);
+
       const created = await post('https://93.184.216.34/hook');
       expect(created.statusCode).toBe(201);
       const id = created.json().webhook.id as string;
@@ -590,6 +594,12 @@ describe('webhook URL policy', () => {
         url: 'https://192.168.1.10/hook',
       });
       expect(moved.statusCode).toBe(400);
+      // sending the address it already has is not a move
+      const renamed = await admin.client.patch(`/api/v1/admin/webhooks/${id}`, {
+        url: 'https://93.184.216.34/hook',
+        description: 'Billing',
+      });
+      expect(renamed.statusCode).toBe(200);
       const [kept] = await strict.app.db.select().from(webhookEndpoints);
       expect(kept?.url).toBe('https://93.184.216.34/hook');
     } finally {
