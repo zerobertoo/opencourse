@@ -8,8 +8,8 @@ Open source, self-hosted course platform: courses with video, text and quizzes, 
 
 ![Student home with the continue-learning card and course list](docs/images/student-home.jpg)
 
-| Lesson player | Instructor studio |
-| --- | --- |
+| Lesson player                                                              | Instructor studio                                                           |
+| -------------------------------------------------------------------------- | --------------------------------------------------------------------------- |
 | ![Video lesson with the curriculum sidebar](docs/images/lesson-player.jpg) | ![Instructor dashboard with course stats](docs/images/studio-dashboard.jpg) |
 
 ## Quick start
