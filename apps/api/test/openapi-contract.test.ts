@@ -1,5 +1,6 @@
 import type { FastifyInstance } from 'fastify';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { CSRF_HEADER_NAME } from '@opencourse/shared';
 import packageJson from '../package.json';
 import { buildApp } from '../src/app';
 import { loadConfig } from '../src/config';
@@ -87,7 +88,11 @@ describe('OpenAPI contract', () => {
 
   it('declares 401 on every protected operation', () => {
     const missing = operations
-      .filter(({ operation }) => operation.security?.length)
+      .filter(
+        ({ operation }) =>
+          operation.security?.length &&
+          !operation.security.some((entry) => !Object.keys(entry).length),
+      )
       .filter(({ operation }) => !operation.responses?.['401'])
       .map(({ id }) => id);
     expect(missing).toEqual([]);
@@ -115,7 +120,9 @@ describe('OpenAPI contract', () => {
       .filter(({ method }) => method !== 'get')
       .filter(
         ({ operation }) =>
-          !operation.parameters?.some((p) => p.in === 'header' && p.name === 'x-requested-with'),
+          !operation.parameters?.some(
+            (p) => p.in === 'header' && p.name === CSRF_HEADER_NAME && p.required,
+          ),
       )
       .map(({ id }) => id);
     expect(missing).toEqual([]);

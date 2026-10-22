@@ -76,29 +76,38 @@ const transform: NonNullable<FastifyDynamicSwaggerOptions['transform']> = (input
     };
   }
 
+  const ownHeaders = schema.headers as
+    { properties?: Record<string, unknown>; required?: string[] } | undefined;
+
+  let security: Record<string, string[]>[] | undefined;
+  if (authRequired) {
+    security = kinds.includes('apiKey')
+      ? [{ cookieAuth: [] }, { apiKeyAuth: [] }]
+      : [{ cookieAuth: [] }];
+  } else if (kinds.includes('optional')) {
+    // anonymous works, a session unlocks more (admins get the mail fields)
+    security = [{}, { cookieAuth: [] }];
+  }
+
   return {
     schema: {
       ...schema,
       response,
-      ...(authRequired
-        ? {
-            security: kinds.includes('apiKey')
-              ? [{ cookieAuth: [] }, { apiKeyAuth: [] }]
-              : [{ cookieAuth: [] }],
-          }
-        : {}),
+      ...(security ? { security } : {}),
       ...(mutates
         ? {
             headers: {
+              ...ownHeaders,
               type: 'object',
               properties: {
+                ...ownHeaders?.properties,
                 [CSRF_HEADER_NAME]: {
                   type: 'string',
                   enum: [CSRF_HEADER_VALUE],
                   description: 'Required on every request that changes data (CSRF defense)',
                 },
               },
-              required: [CSRF_HEADER_NAME],
+              required: [...(ownHeaders?.required ?? []), CSRF_HEADER_NAME],
             },
           }
         : {}),
@@ -125,7 +134,13 @@ export const swaggerOptions: FastifyDynamicSwaggerOptions = {
           description: 'API key for plugins (prefix `oc_`), created by an admin',
         },
       },
-      schemas: { ApiError: z.toJSONSchema(apiErrorSchema) as Record<string, unknown> },
+      schemas: {
+        // OpenAPI 3.0 dialect, like every other schema in the document
+        ApiError: z.toJSONSchema(apiErrorSchema, { target: 'openapi-3.0' }) as Record<
+          string,
+          unknown
+        >,
+      },
     },
   },
   transform,
