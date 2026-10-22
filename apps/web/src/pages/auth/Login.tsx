@@ -10,7 +10,7 @@ import { TextField } from '@/components/TextField';
 import { Button } from '@/components/ui/button';
 import { loginSchema, type LoginValues } from '@/lib/schemas';
 import { useServiceErrorMessage } from '@/lib/serviceError';
-import { isApiMode } from '@/services';
+import { isApiMode, isServiceError } from '@/services';
 
 const DEMO_ROLES: readonly Role[] = ['student', 'instructor', 'admin'];
 
@@ -35,7 +35,12 @@ export function Login() {
     try {
       await signIn(email, password);
     } catch (error) {
-      setFormError(describeError(error));
+      // here a 401 means wrong credentials: there is no session to expire yet
+      setFormError(
+        isServiceError(error) && error.code === 'unauthorized'
+          ? t('login.invalidCredentials')
+          : describeError(error),
+      );
     }
   });
 
