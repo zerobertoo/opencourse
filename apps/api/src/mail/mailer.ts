@@ -1,5 +1,7 @@
 import nodemailer from 'nodemailer';
 import type { Config } from '../config';
+import { loadPlatformSettings } from '../modules/settings/service';
+import type { Database } from '../plugins/db';
 
 export interface Mail {
   to: string;
@@ -12,20 +14,32 @@ export interface Mailer {
   send(mail: Mail): Promise<void>;
 }
 
-/** Sends through the configured SMTP server (Mailpit in development). */
-export function createSmtpMailer(config: Config): Mailer {
-  const transport = nodemailer.createTransport({
-    host: config.SMTP_HOST,
-    port: config.SMTP_PORT,
-    secure: config.SMTP_PORT === 465,
-    auth:
-      config.SMTP_USER && config.SMTP_PASSWORD
-        ? { user: config.SMTP_USER, pass: config.SMTP_PASSWORD }
-        : undefined,
-  });
+/**
+ * Sends through the SMTP server saved in the platform settings (the `SMTP_*` environment variables
+ * until an admin saves one; Mailpit in development). The password only ever comes from the
+ * environment. `getDatabase` is a function because the API builds the mailer before its database
+ * plugin is ready.
+ */
+export function createSmtpMailer(config: Config, getDatabase: () => Database): Mailer {
   return {
     async send(mail) {
-      await transport.sendMail({ from: config.SMTP_FROM, ...mail });
+      const { email } = await loadPlatformSettings(getDatabase(), config);
+      const transport = nodemailer.createTransport({
+        host: email.host,
+        port: email.port,
+        secure: email.secure,
+        // the environment password only goes to the environment host: an admin who saves another
+        // host must not be able to collect it
+        auth:
+          email.username && config.SMTP_PASSWORD && email.host === config.SMTP_HOST
+            ? { user: email.username, pass: config.SMTP_PASSWORD }
+            : undefined,
+      });
+      try {
+        await transport.sendMail({ from: email.fromAddress, ...mail });
+      } finally {
+        transport.close();
+      }
     },
   };
 }

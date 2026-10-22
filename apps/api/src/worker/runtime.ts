@@ -57,10 +57,10 @@ export async function startWorker(
   const prefix = options.queuePrefix ?? DEFAULT_QUEUE_PREFIX;
   const pollIntervalMs = options.pollIntervalMs ?? 1000;
   const retryDelayMs = options.retryDelayMs ?? DEFAULT_RETRY_DELAY_MS;
-  const mailer = options.mailer ?? createSmtpMailer(config);
   const storage = options.storage ?? createS3Storage(config);
 
   const { db, close: closeDatabase } = openDatabase(config.DATABASE_URL, 5);
+  const mailer = options.mailer ?? createSmtpMailer(config, () => db);
   // adding a job must fail fast when Redis is down (the relay holds a transaction open);
   // the worker connection blocks and retries forever, as BullMQ requires
   const queueConnection = new Redis(config.REDIS_URL, { maxRetriesPerRequest: 1 });

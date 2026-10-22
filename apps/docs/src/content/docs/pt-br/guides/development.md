@@ -29,7 +29,7 @@ pnpm --filter @opencourse/web dev
 
 Sem `VITE_API_URL` o app fica em modo demo: o login simulado aceita qualquer credencial, os botões "entrar como aluno, instrutor ou admin" abrem dados prontos, e o estado fica no `sessionStorage`.
 
-Com ela, os botões de demo somem e o mock começa vazio, com chaves de armazenamento próprias para que dados de demo e dados reais nunca se misturem. Tudo, exceto as configurações, vai para a API; só o usuário logado é espelhado no mock, para as configurações continuarem funcionando. Um instrutor novo começa com o Studio vazio: crie cursos lá, ou carregue os dados de demonstração abaixo.
+Com ela, os botões de demo somem e o mock começa vazio, com chaves de armazenamento próprias para que dados de demo e dados reais nunca se misturem. Tudo vai para a API (inclusive as configurações: marca, idiomas e servidor de e-mail ficam salvos no banco, e a senha do SMTP continua em `SMTP_PASSWORD`); só o usuário logado é espelhado no mock. Um instrutor novo começa com o Studio vazio: crie cursos lá, ou carregue os dados de demonstração abaixo.
 
 ## Autenticação
 

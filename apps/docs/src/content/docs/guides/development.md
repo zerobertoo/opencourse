@@ -29,7 +29,7 @@ pnpm --filter @opencourse/web dev
 
 Without `VITE_API_URL` the app stays in demo mode: the mocked login accepts any credentials, the "sign in as student, instructor or admin" buttons open ready-made data, and the state lives in `sessionStorage`.
 
-With it, the demo buttons disappear and the mock starts empty, under its own storage keys so demo and real data never mix. Everything except settings goes to the API; only the signed-in user is mirrored into the mock, so settings keeps working. A new instructor starts with an empty Studio: create courses there, or load the demo data below.
+With it, the demo buttons disappear and the mock starts empty, under its own storage keys so demo and real data never mix. Everything goes to the API (settings included: branding, languages and the mail server are saved in the database, and the SMTP password stays in `SMTP_PASSWORD`); only the signed-in user is mirrored into the mock. A new instructor starts with an empty Studio: create courses there, or load the demo data below.
 
 ## Authentication
 

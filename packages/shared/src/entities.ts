@@ -281,3 +281,19 @@ export const platformSettingsSchema = z.object({
   }),
 });
 export type PlatformSettings = z.infer<typeof platformSettingsSchema>;
+
+/** Merged-then-validated by the server, so every group may carry only the fields that change. */
+export const updatePlatformSettingsRequestSchema = z.object({
+  brand: platformSettingsSchema.shape.brand.partial().optional(),
+  enabledLocales: platformSettingsSchema.shape.enabledLocales.optional(),
+  defaultLocale: localeSchema.optional(),
+  email: platformSettingsSchema.shape.email.partial().optional(),
+});
+export type UpdatePlatformSettingsRequest = z.infer<typeof updatePlatformSettingsRequestSchema>;
+
+/** Why a settings change was refused, or null when the default language is among the enabled ones. */
+export function platformSettingsProblem(settings: PlatformSettings): string | null {
+  return settings.enabledLocales.includes(settings.defaultLocale)
+    ? null
+    : 'The default language must be enabled';
+}

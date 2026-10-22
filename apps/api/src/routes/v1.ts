@@ -11,6 +11,7 @@ import { grantRoutes } from '../modules/grants/routes';
 import { inviteRoutes } from '../modules/invites/routes';
 import { meRoutes } from '../modules/me/routes';
 import { progressRoutes } from '../modules/progress/routes';
+import { settingsRoutes } from '../modules/settings/routes';
 import { studioRoutes } from '../modules/studio/routes';
 import { userRoutes } from '../modules/users/routes';
 import { fileRoutes } from '../modules/files/routes';
@@ -44,6 +45,7 @@ export const v1Routes: FastifyPluginAsyncZod<{
   await app.register(grantRoutes);
   await app.register(progressRoutes);
   await app.register(enrollmentRoutes);
+  await app.register(settingsRoutes, { config });
   await app.register(studioRoutes);
   await app.register(userRoutes);
   await app.register(inviteRoutes, { config });
