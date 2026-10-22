@@ -2,7 +2,7 @@ import { z } from 'zod';
 import { idSchema, isoDateSchema } from './base';
 
 /** Every key starts with this, which also lets secret scanners recognise a leaked one. */
-export const API_KEY_PREFIX = 'oc_';
+export const PLUGIN_TOKEN_PREFIX = 'oc_';
 
 export const apiKeySchema = z.object({
   id: idSchema,

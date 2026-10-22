@@ -1,5 +1,5 @@
 import cookie from '@fastify/cookie';
-import { API_KEY_PREFIX, type Role } from '@opencourse/shared';
+import { PLUGIN_TOKEN_PREFIX, type Role } from '@opencourse/shared';
 import type {
   FastifyInstance,
   FastifyReply,
@@ -129,7 +129,7 @@ export const authPlugin = fp<{ config: Config }>(async (app, { config }) => {
       // only a bearer that looks like one of our keys counts: any other Authorization header
       // (a proxy's Basic auth, a foreign token) must not lock out a valid session cookie
       const header = request.headers.authorization;
-      if (!header?.startsWith(`Bearer ${API_KEY_PREFIX}`)) {
+      if (!header?.startsWith(`Bearer ${PLUGIN_TOKEN_PREFIX}`)) {
         return authenticate.call(this, request, reply);
       }
 

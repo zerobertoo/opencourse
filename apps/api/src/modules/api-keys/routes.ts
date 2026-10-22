@@ -1,5 +1,5 @@
 import {
-  API_KEY_PREFIX,
+  PLUGIN_TOKEN_PREFIX,
   apiKeyIdParamsSchema,
   apiKeyResponseSchema,
   apiKeyWithTokenResponseSchema,
@@ -66,7 +66,7 @@ export const apiKeyRoutes: FastifyPluginAsyncZod = async (app) => {
       },
     },
     async (request, reply) => {
-      const token = `${API_KEY_PREFIX}${generateToken()}`;
+      const token = `${PLUGIN_TOKEN_PREFIX}${generateToken()}`;
       const row = await app.db.transaction(async (tx) => {
         const [created] = await tx
           .insert(apiKeys)
