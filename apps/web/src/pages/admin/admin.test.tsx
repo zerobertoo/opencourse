@@ -232,6 +232,16 @@ describe('admin plugins', () => {
   });
 });
 
+describe('page title', () => {
+  it('names the page and the platform, and follows the language', async () => {
+    await renderApp('/admin/users', { signInAs: 'admin' });
+    await waitFor(() => expect(document.title).toBe('Usuários · OpenCourse'));
+
+    await i18n.changeLanguage('en');
+    await waitFor(() => expect(document.title).toBe('Users · OpenCourse'));
+  });
+});
+
 describe('admin settings', () => {
   it('saves branding, languages and e-mail settings', async () => {
     const user = userEvent.setup();
@@ -295,7 +305,7 @@ describe('admin settings', () => {
     await user.type(color, '#aa3300');
     await user.click(screen.getByRole('button', { name: 'Salvar configurações' }));
 
-    await waitFor(() => expect(document.title).toBe('Escola Oliva'));
+    await waitFor(() => expect(document.title).toBe('Configurações da plataforma · Escola Oliva'));
     expect(screen.getAllByText('Escola Oliva').length).toBeGreaterThan(0);
     const css = document.getElementById('opencourse-brand')?.textContent ?? '';
     expect(css).toContain(':root{--primary:');

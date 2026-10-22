@@ -19,6 +19,31 @@
     "settings": "Configurações",
     "studioCourses": "Cursos"
   },
+  "pageTitle": {
+    "login": "Entrar",
+    "signUp": "Criar conta",
+    "forgotPassword": "Esqueci minha senha",
+    "resetPassword": "Redefinir senha",
+    "invite": "Aceitar convite",
+    "verifyCertificate": "Verificar certificado",
+    "showcase": "Componentes",
+    "home": "Início",
+    "course": "Curso",
+    "lesson": "Aula",
+    "certificates": "Certificados",
+    "settings": "Configurações",
+    "studioDashboard": "Studio",
+    "studioCourses": "Cursos",
+    "courseEditor": "Editar curso",
+    "adminUsers": "Usuários",
+    "adminGrants": "Acessos",
+    "adminVideos": "Vídeos",
+    "adminWebhooks": "Webhooks",
+    "adminApiKeys": "Chaves de API",
+    "adminSettings": "Configurações da plataforma",
+    "adminPlugins": "Plugins",
+    "notFound": "Página não encontrada"
+  },
   "search": {
     "label": "Buscar",
     "placeholder": "Buscar cursos e aulas"
