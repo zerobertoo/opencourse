@@ -28,8 +28,10 @@ export function createSmtpMailer(config: Config, getDatabase: () => Database): M
         host: email.host,
         port: email.port,
         secure: email.secure,
+        // the environment password only goes to the environment host: an admin who saves another
+        // host must not be able to collect it
         auth:
-          email.username && config.SMTP_PASSWORD
+          email.username && config.SMTP_PASSWORD && email.host === config.SMTP_HOST
             ? { user: email.username, pass: config.SMTP_PASSWORD }
             : undefined,
       });

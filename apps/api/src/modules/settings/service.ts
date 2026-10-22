@@ -62,6 +62,10 @@ export async function updatePlatformSettings(
     if (!merged.success) throw badRequest('Invalid settings');
     const problem = platformSettingsProblem(merged.data);
     if (problem) throw badRequest(problem);
+    // empty values only exist in the blanked copy non-admins get; saving them would break every e-mail
+    if (!merged.data.email.host.trim() || !merged.data.email.fromAddress.trim()) {
+      throw badRequest('The e-mail server needs a host and a from address');
+    }
 
     await tx
       .insert(settings)

@@ -14,19 +14,20 @@ export const settingsRoutes: FastifyPluginAsyncZod<{ config: Config }> = async (
   app.get(
     '/settings',
     {
-      preHandler: app.authenticate,
+      // public: the sign-in screens are branded too
+      preHandler: app.authenticateOptional,
       schema: {
         tags: ['admin'],
         summary: 'Platform settings',
         description:
-          'Branding and languages for everyone signed in. The e-mail server fields come back ' +
-          'empty unless the caller is an admin.',
+          'Branding and languages for anyone, including signed-out visitors. The e-mail server ' +
+          'fields come back empty unless the caller is an admin.',
         response: { 200: platformSettingsSchema },
       },
     },
     async (request): Promise<PlatformSettings> => {
       const current = await loadPlatformSettings(app.db, config);
-      return request.auth!.user.role === 'admin' ? current : withoutEmailDetails(current);
+      return request.auth?.user.role === 'admin' ? current : withoutEmailDetails(current);
     },
   );
 

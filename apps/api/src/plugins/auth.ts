@@ -31,6 +31,8 @@ declare module 'fastify' {
   interface FastifyInstance {
     /** preHandler that requires a valid session. */
     authenticate: preHandlerAsyncHookHandler;
+    /** preHandler that sets `request.auth` when there is a valid session and lets anyone through. */
+    authenticateOptional: preHandlerAsyncHookHandler;
     /** preHandler that requires a valid session and one of the given roles. */
     requireRole(...roles: Role[]): preHandlerAsyncHookHandler;
     /** Creates a session for the user and sets both cookies on the reply. */
@@ -98,12 +100,17 @@ export const authPlugin = fp<{ config: Config }>(async (app, { config }) => {
     },
   );
 
-  const authenticate: preHandlerAsyncHookHandler = async (request) => {
+  const authenticateOptional: preHandlerAsyncHookHandler = async (request) => {
     const token = request.cookies[ACCESS_COOKIE];
     const sessionId = token ? verifyAccessToken(config.AUTH_SECRET, token, new Date()) : null;
     const active = sessionId ? await findActiveSession(app.db, sessionId, new Date()) : null;
-    if (!active) throw unauthorized();
-    request.auth = { user: active.user, sessionId: active.session.id };
+    if (active) request.auth = { user: active.user, sessionId: active.session.id };
+  };
+  app.decorate('authenticateOptional', authenticateOptional);
+
+  const authenticate: preHandlerAsyncHookHandler = async function (request, reply) {
+    await authenticateOptional.call(this, request, reply);
+    if (!request.auth) throw unauthorized();
   };
   app.decorate('authenticate', authenticate);
 

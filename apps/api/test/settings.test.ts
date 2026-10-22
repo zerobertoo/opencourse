@@ -71,11 +71,14 @@ describe('platform settings', () => {
     expect(orphanDefault.statusCode).toBe(400);
     expect(apiErrorSchema.parse(orphanDefault.json()).error.message).toMatch(/default language/);
 
+    const emptyHost = await admin.client.patch('/api/v1/admin/settings', { email: { host: ' ' } });
+    expect(emptyHost.statusCode).toBe(400);
+
     const reread = await admin.client.get('/api/v1/settings');
     expect(reread.json().enabledLocales).toEqual(['pt-BR', 'en']);
   });
 
-  it('lets everyone signed in read branding, but only admins see or change the mail server', async () => {
+  it('lets anyone read branding, but only admins see or change the mail server', async () => {
     const { student } = await createCast();
 
     const read = await student.client.get('/api/v1/settings');
@@ -86,6 +89,9 @@ describe('platform settings', () => {
 
     const write = await student.client.patch('/api/v1/admin/settings', { brand: { name: 'X' } });
     expect(write.statusCode).toBe(403);
-    expect((await new TestClient(ctx.app).get('/api/v1/settings')).statusCode).toBe(401);
+    // signed-out visitors get the branding too, never the mail server
+    const anonymous = await new TestClient(ctx.app).get('/api/v1/settings');
+    expect(anonymous.statusCode).toBe(200);
+    expect(anonymous.body).not.toContain('smtp.env.test');
   });
 });
