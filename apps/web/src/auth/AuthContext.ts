@@ -30,7 +30,10 @@ export function useAuth(): AuthContextValue {
  */
 export function getPostLoginPath(state: unknown, role: Role): string {
   const from = (state as { from?: unknown } | null)?.from;
-  if (typeof from === 'string' && from.startsWith('/') && !from.startsWith('//')) return from;
+  // the root (with or without a query string) is the student home: it must not override staff homes
+  const isRoot = typeof from === 'string' && /^\/(?:[?#]|$)/.test(from);
+  if (typeof from === 'string' && !isRoot && from.startsWith('/') && !from.startsWith('//'))
+    return from;
   return homePathForRole(role);
 }
 
