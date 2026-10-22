@@ -10,6 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { CertificateTab } from '@/features/studio/CertificateTab';
 import { ContentTab } from '@/features/studio/content/ContentTab';
 import { CourseStatusBadge } from '@/features/studio/CourseStatusBadge';
+import { CoverCard } from '@/features/studio/CoverCard';
 import { DetailsTab } from '@/features/studio/DetailsTab';
 import { SettingsTab } from '@/features/studio/SettingsTab';
 import { StudentsTab } from '@/features/studio/StudentsTab';
@@ -114,7 +115,8 @@ export function CourseEditor() {
         </TabsList>
 
         {/* editors keep their unsaved state while another tab is open */}
-        <TabsContent value="details" forceMount className="data-[state=inactive]:hidden">
+        <TabsContent value="details" forceMount className="space-y-5 data-[state=inactive]:hidden">
+          <CoverCard course={course} />
           <DetailsTab course={course} />
         </TabsContent>
         <TabsContent value="content" forceMount className="data-[state=inactive]:hidden">

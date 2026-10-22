@@ -177,6 +177,7 @@ export function createMockCourseService(context: MockContext): CourseService {
     if (!canManageCourse(user, course)) {
       throw new ServiceError('forbidden', 'Only the course instructor or an admin can edit it');
     }
+    if (course.coverImageUrl?.startsWith('blob:')) URL.revokeObjectURL(course.coverImageUrl);
     store.mutate(() => {
       course.coverImageUrl = url;
       course.updatedAt = context.now().toISOString();

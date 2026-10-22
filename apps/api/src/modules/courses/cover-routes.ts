@@ -144,7 +144,7 @@ export const coverRoutes: FastifyPluginAsyncZod = async (app) => {
       );
       // cached for less than the address lives, so a cached redirect never points at an expired one
       return reply
-        .header('cache-control', `public, max-age=${COVER_READ_TTL_SECONDS / 2}`)
+        .header('cache-control', `private, max-age=${COVER_READ_TTL_SECONDS / 2}`)
         .redirect(address, 302);
     },
   );
