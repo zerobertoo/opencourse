@@ -13,7 +13,7 @@ import { webhookEventKey } from '@/lib/webhookEvents';
 
 function DeliveryRow({ delivery, timeZone }: { delivery: WebhookDelivery; timeZone?: string }) {
   const { t } = useTranslation('admin');
-  const { formatDate } = useFormatters(timeZone);
+  const { formatDateTime } = useFormatters(timeZone);
   const { retryDelivery } = useWebhookMutations();
   const describeError = useServiceErrorMessage();
   const eventLabel = t(`webhooks.events.${webhookEventKey(delivery.eventName)}`);
@@ -35,7 +35,7 @@ function DeliveryRow({ delivery, timeZone }: { delivery: WebhookDelivery; timeZo
         </Badge>
         <span className="text-sm font-medium">{eventLabel}</span>
         <span className="text-xs text-muted-foreground">
-          {formatDate(new Date(delivery.createdAt), { dateStyle: 'short', timeStyle: 'medium' })}
+          {formatDateTime(new Date(delivery.createdAt))}
         </span>
         {delivery.status === 'failed' ? (
           <Button

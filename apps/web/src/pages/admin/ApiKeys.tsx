@@ -25,9 +25,8 @@ function ApiKeyRow({
   onRevoke: (apiKey: ApiKey) => void;
 }) {
   const { t } = useTranslation('admin');
-  const { formatDate } = useFormatters(timeZone);
-  const date = (iso: string) =>
-    formatDate(new Date(iso), { dateStyle: 'short', timeStyle: 'short' });
+  const { formatDateTime } = useFormatters(timeZone);
+  const date = (iso: string) => formatDateTime(new Date(iso));
   const revoked = apiKey.revokedAt !== null;
 
   return (
