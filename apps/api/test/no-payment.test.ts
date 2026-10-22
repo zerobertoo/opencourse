@@ -6,11 +6,12 @@ import { describe, expect, it } from 'vitest';
 // PRD v1 acceptance criterion 4: nothing in v1 depends on payment. Access is always a Grant.
 
 const repoRoot = fileURLToPath(new URL('../../..', import.meta.url));
-// word-start anchored so "striped" or "git checkout" style words in unrelated code stay out
+// deliberately unanchored: it must catch identifiers such as `coursePrice` or `course_price`
 const paymentTerms =
-  /\b(?:price|pricing|purchas|payment|checkout|stripe(?!d)|paypal|billing|invoice|preço|preco|pagamento|compra\b|comprar)/i;
+  /price|pricing|purchas|payment|checkout|stripe(?!d|s\b)|paypal|billing|invoice|preço|preco|pagamento|\bcompra\b|comprar/i;
+// vendor names are anchored where the bare word is common in unrelated packages
 const paymentPackages =
-  /stripe|paypal|mercadopago|pagseguro|pagarme|pagar\.me|asaas|iugu|hotmart|kiwify|eduzz|braintree|paddle|lemonsqueezy|mollie|razorpay|adyen|square|authorize/i;
+  /stripe|paypal|mercadopago|pagseguro|pagarme|pagar\.me|asaas|iugu|hotmart|kiwify|eduzz|braintree|paddle|lemonsqueezy|mollie|razorpay|adyen|^square$|^@square\/|squareup|authorize\.?net/i;
 
 /** Lists files under a directory, skipping build output and dependencies. */
 function listFiles(directory: string): string[] {
