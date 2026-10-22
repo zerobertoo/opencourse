@@ -8,6 +8,7 @@ import { RepositoryLink } from '@/components/RepositoryLink';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { UserMenu } from '@/components/UserMenu';
 import { cn } from '@/lib/utils';
+import { isApiMode } from '@/services';
 
 const NAV_ITEMS = [
   { to: '/', labelKey: 'nav.home', end: true },
@@ -131,9 +132,11 @@ export function StudentLayout() {
       <main id="main-content" className="mx-auto max-w-7xl px-4 py-6 sm:py-8">
         <Outlet />
       </main>
-      <footer className="mx-auto max-w-7xl px-4 pb-8 text-center">
-        <RepositoryLink />
-      </footer>
+      {isApiMode ? null : (
+        <footer className="mx-auto max-w-7xl px-4 pb-8 text-center">
+          <RepositoryLink />
+        </footer>
+      )}
     </div>
   );
 }
