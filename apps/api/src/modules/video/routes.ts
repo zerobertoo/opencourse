@@ -21,9 +21,8 @@ import type { Config } from '../../config';
 import { lessons, users, videoAssets, type CourseRow, type VideoAssetRow } from '../../db/schema';
 import { badRequest, conflict, forbidden, notFound, unauthorized } from '../../errors';
 import {
+  addTranscodeJob,
   DEFAULT_QUEUE_PREFIX,
-  DEFAULT_RETRY_DELAY_MS,
-  jobOptions,
   VIDEO_QUEUE_NAME,
   type JobData,
 } from '../../worker/jobs';
@@ -81,21 +80,8 @@ export const videoRoutes: FastifyPluginAsyncZod<VideoRoutesOptions> = async (
    * Queues the encode of an uploaded video; the fixed job id makes asking twice harmless. A retry
    * passes its own id, because the failed job still holds the fixed one.
    */
-  const queueTranscode = (assetId: string, jobId = `transcode-video-${assetId}`) =>
-    getQueue().add(
-      'transcode-video',
-      {
-        eventId: assetId,
-        eventName: 'video.upload',
-        eventCreatedAt: new Date().toISOString(),
-        payload: { assetId },
-      },
-      {
-        ...jobOptions(DEFAULT_RETRY_DELAY_MS),
-        attempts: 2,
-        jobId,
-      },
-    );
+  const queueTranscode = (assetId: string, jobId?: string) =>
+    addTranscodeJob(getQueue(), assetId, jobId);
 
   const completed = async (course: CourseRow, asset: VideoAssetRow) => ({
     video: toLocalVideoAsset(asset),

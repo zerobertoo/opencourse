@@ -8,6 +8,7 @@ import type { Config } from '../config';
 import { outboxEvents } from '../db/schema';
 import { createSmtpMailer, type Mailer } from '../mail/mailer';
 import { removeStaleAttachments } from '../modules/files/service';
+import { requeueOrphanedVideos } from '../modules/video/requeue';
 import { removeStaleUploads } from '../modules/video/service';
 import { openDatabase } from '../plugins/db';
 import { createS3Storage, type Storage } from '../storage/s3';
@@ -24,6 +25,7 @@ import {
 import { purgeDispatchedEvents, relayPendingEvents } from './relay';
 
 const PURGE_EVERY_MS = 60 * 60 * 1000;
+const REQUEUE_EVERY_MS = 2 * 60 * 1000;
 
 export interface WorkerOptions {
   /** Replaces the SMTP mailer, so tests can read what would have been sent. */
@@ -128,6 +130,7 @@ export async function startWorker(
 
   const stopSignal = new AbortController();
   let lastPurge = 0;
+  let lastRequeue = 0;
   const loop = (async () => {
     while (!stopSignal.signal.aborted) {
       // a full batch means there may be more: go again without waiting
@@ -143,6 +146,14 @@ export async function startWorker(
         await removeStaleAttachments(db, storage, log).catch((error: unknown) =>
           log.error({ err: error }, 'stale attachment cleanup failed'),
         );
+      }
+      if (Date.now() - lastRequeue > REQUEUE_EVERY_MS) {
+        lastRequeue = Date.now();
+        await requeueOrphanedVideos(db, videoQueue)
+          .then(
+            (added) => added > 0 && log.warn({ added }, 'queued videos that had lost their job'),
+          )
+          .catch((error: unknown) => log.error({ err: error }, 'orphaned video requeue failed'));
       }
       await sleep(pollIntervalMs, undefined, { signal: stopSignal.signal }).catch(() => undefined);
     }

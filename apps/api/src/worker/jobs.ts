@@ -36,6 +36,27 @@ export function jobOptions(retryDelayMs: number) {
 }
 
 /**
+ * Queues the encode of an uploaded video. The fixed job id makes asking twice harmless; a retry
+ * passes its own id, because a failed or finished job still holds the fixed one.
+ */
+export function addTranscodeJob(
+  queue: Queue<JobData>,
+  assetId: string,
+  jobId = `transcode-video-${assetId}`,
+) {
+  return queue.add(
+    'transcode-video',
+    {
+      eventId: assetId,
+      eventName: 'video.upload',
+      eventCreatedAt: new Date().toISOString(),
+      payload: { assetId },
+    },
+    { ...jobOptions(DEFAULT_RETRY_DELAY_MS), attempts: 2, jobId },
+  );
+}
+
+/**
  * Queues a `deliver-webhook` job. Not tied to an outbox event, so the job data reuses the
  * delivery id as the event id; `jobId` keeps adding the same delivery twice harmless.
  */
