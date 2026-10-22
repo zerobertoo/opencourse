@@ -19,6 +19,12 @@ export const REFRESH_COOKIE = 'oc_refresh';
 /** The refresh cookie is only sent to the auth endpoints, which keeps it out of every other request. */
 const REFRESH_COOKIE_PATH = '/api/v1/auth';
 
+/**
+ * How a preHandler authenticates, so the OpenAPI document can tell which routes need a session
+ * and which also take an API key.
+ */
+export const AUTH_KINDS = new WeakMap<object, 'session' | 'apiKey' | 'optional'>();
+
 export interface AuthContext {
   user: UserRow;
   /** Empty on requests authenticated by an API key, which only reach routes that opt in. */
@@ -123,46 +129,52 @@ export const authPlugin = fp<{ config: Config }>(async (app, { config }) => {
   };
   app.decorate('authenticate', authenticate);
 
-  app.decorate(
-    'authenticateOrApiKey',
-    async function (request: FastifyRequest, reply: FastifyReply) {
-      // only a bearer that looks like one of our keys counts: any other Authorization header
-      // (a proxy's Basic auth, a foreign token) must not lock out a valid session cookie
-      const header = request.headers.authorization;
-      if (!header?.startsWith(`Bearer ${PLUGIN_TOKEN_PREFIX}`)) {
-        return authenticate.call(this, request, reply);
-      }
+  AUTH_KINDS.set(authenticateOptional, 'optional');
+  AUTH_KINDS.set(authenticate, 'session');
 
-      const token = /^Bearer (\S+)$/.exec(header)?.[1];
-      const [found] = token
-        ? await app.db
-            .select({ key: apiKeys, user: users })
-            .from(apiKeys)
-            .innerJoin(users, eq(users.id, apiKeys.createdById))
-            .where(and(eq(apiKeys.tokenHash, hashToken(token)), isNull(apiKeys.revokedAt)))
-        : [];
-      // the key borrows its creator's powers, so it dies with them
-      if (!found || !found.user.active || found.user.role !== 'admin') throw unauthorized();
+  const authenticateOrApiKey = async function (
+    this: FastifyInstance,
+    request: FastifyRequest,
+    reply: FastifyReply,
+  ) {
+    // only a bearer that looks like one of our keys counts: any other Authorization header
+    // (a proxy's Basic auth, a foreign token) must not lock out a valid session cookie
+    const header = request.headers.authorization;
+    if (!header?.startsWith(`Bearer ${PLUGIN_TOKEN_PREFIX}`)) {
+      return authenticate.call(this, request, reply);
+    }
 
-      // bookkeeping only: at most once a minute, and never a reason to fail the request
-      const now = new Date();
-      if (!found.key.lastUsedAt || now.getTime() - found.key.lastUsedAt.getTime() > 60_000) {
-        await app.db
-          .update(apiKeys)
-          .set({ lastUsedAt: now })
-          .where(eq(apiKeys.id, found.key.id))
-          .catch((error: unknown) =>
-            request.log.warn({ err: error }, 'api key usage not recorded'),
-          );
-      }
-      request.auth = { user: found.user, sessionId: '', apiKeyId: found.key.id };
-    },
-  );
+    const token = /^Bearer (\S+)$/.exec(header)?.[1];
+    const [found] = token
+      ? await app.db
+          .select({ key: apiKeys, user: users })
+          .from(apiKeys)
+          .innerJoin(users, eq(users.id, apiKeys.createdById))
+          .where(and(eq(apiKeys.tokenHash, hashToken(token)), isNull(apiKeys.revokedAt)))
+      : [];
+    // the key borrows its creator's powers, so it dies with them
+    if (!found || !found.user.active || found.user.role !== 'admin') throw unauthorized();
+
+    // bookkeeping only: at most once a minute, and never a reason to fail the request
+    const now = new Date();
+    if (!found.key.lastUsedAt || now.getTime() - found.key.lastUsedAt.getTime() > 60_000) {
+      await app.db
+        .update(apiKeys)
+        .set({ lastUsedAt: now })
+        .where(eq(apiKeys.id, found.key.id))
+        .catch((error: unknown) => request.log.warn({ err: error }, 'api key usage not recorded'));
+    }
+    request.auth = { user: found.user, sessionId: '', apiKeyId: found.key.id };
+  };
+  AUTH_KINDS.set(authenticateOrApiKey, 'apiKey');
+  app.decorate('authenticateOrApiKey', authenticateOrApiKey);
 
   app.decorate('requireRole', (...roles: Role[]): preHandlerAsyncHookHandler => {
-    return async function requireRolePreHandler(request, reply) {
+    const handler: preHandlerAsyncHookHandler = async function (request, reply) {
       await authenticate.call(this, request, reply);
       if (!request.auth || !roles.includes(request.auth.user.role)) throw forbidden();
     };
+    AUTH_KINDS.set(handler, 'session');
+    return handler;
   });
 });
