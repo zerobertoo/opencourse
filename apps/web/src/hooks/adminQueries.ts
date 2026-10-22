@@ -10,6 +10,7 @@ import type {
   PlatformSettings,
   Role,
   UpdateWebhookRequest,
+  WebhookDelivery,
 } from '@opencourse/shared';
 import type { CreateInviteInput, GrantFilters, UserFilters } from '@/services';
 import { useServices } from '@/services/ServicesContext';
@@ -155,18 +156,21 @@ export function useWebhookDeliveries(webhookId: string) {
   return useInfiniteQuery({
     queryKey: webhookKeys.deliveries(webhookId),
     queryFn: ({ pageParam }) =>
-      webhooks.listDeliveries(webhookId, { limit: WEBHOOK_DELIVERIES_PAGE_SIZE, offset: pageParam }),
-    initialPageParam: 0,
-    getNextPageParam: (lastPage, allPages) =>
-      lastPage.length < WEBHOOK_DELIVERIES_PAGE_SIZE
-        ? undefined
-        : allPages.length * WEBHOOK_DELIVERIES_PAGE_SIZE,
-    // new deliveries shift the offsets, so a later page can repeat rows of an earlier one
-    select: (data) => ({
-      deliveries: [...new Map(data.pages.flat().map((delivery) => [delivery.id, delivery])).values()],
-    }),
+      webhooks.listDeliveries(webhookId, {
+        limit: WEBHOOK_DELIVERIES_PAGE_SIZE,
+        ...(pageParam ? { before: pageParam } : {}),
+      }),
+    initialPageParam: '',
+    // each page starts after the last delivery of the previous one
+    getNextPageParam: (lastPage) =>
+      lastPage.length < WEBHOOK_DELIVERIES_PAGE_SIZE ? undefined : lastPage.at(-1)?.id,
+    select: selectDeliveries,
   });
 }
+
+const selectDeliveries = (data: { pages: WebhookDelivery[][] }) => ({
+  deliveries: data.pages.flat(),
+});
 
 export function useWebhookMutations() {
   const { webhooks } = useServices();

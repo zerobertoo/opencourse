@@ -90,13 +90,13 @@ export function createMockWebhookService(context: MockContext): WebhookService {
       context.run('webhooks.listDeliveries', () => {
         context.requireRole('admin');
         find(id);
-        const { limit = 50, offset = 0 } = query;
-        return clone(
-          store.db.webhookDeliveries
-            .filter((entry) => entry.endpointId === id)
-            .sort((a, b) => b.createdAt.localeCompare(a.createdAt) || b.id.localeCompare(a.id))
-            .slice(offset, offset + limit),
-        );
+        const { limit = 50, before } = query;
+        const newestFirst = store.db.webhookDeliveries
+          .filter((entry) => entry.endpointId === id)
+          .sort((a, b) => b.createdAt.localeCompare(a.createdAt) || b.id.localeCompare(a.id));
+        const start = before ? newestFirst.findIndex((entry) => entry.id === before) + 1 : 0;
+        // like the API, an unknown cursor ends the list
+        return clone(before && start === 0 ? [] : newestFirst.slice(start, start + limit));
       }),
 
     retryDelivery: (deliveryId) =>

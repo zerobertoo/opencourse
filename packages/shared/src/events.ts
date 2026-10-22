@@ -33,6 +33,8 @@ export const enrollmentGrantedEventSchema = z.object({
   source: grantSourceSchema,
   /** Null for lifetime access. */
   expiresAt: isoDateSchema.nullable(),
+  /** True when an existing grant got a new expiry; absent or false for a new enrollment. */
+  extended: z.boolean().optional(),
 });
 export type EnrollmentGrantedEvent = z.infer<typeof enrollmentGrantedEventSchema>;
 

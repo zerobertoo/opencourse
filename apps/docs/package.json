@@ -5,9 +5,9 @@
   "version": "0.0.0",
   "scripts": {
     "sync": "node scripts/sync-guides.mjs",
-    "dev": "pnpm sync && astro dev",
-    "build": "pnpm sync && astro build",
-    "preview": "astro preview"
+    "docs:dev": "node scripts/sync-guides.mjs --watch",
+    "docs:build": "node scripts/sync-guides.mjs && astro build",
+    "docs:preview": "astro preview"
   },
   "dependencies": {
     "@astrojs/starlight": "^0.42.6",

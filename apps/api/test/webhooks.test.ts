@@ -491,6 +491,35 @@ describe('outbound webhooks', () => {
       ).toBe(404);
     });
 
+    it('pages the history newest first with a cursor that survives new deliveries', async () => {
+      const admin = await setup();
+      const endpoint = await createEndpoint(admin);
+      const url = `/api/v1/admin/webhooks/${endpoint.id}/deliveries`;
+      await registerClient(ctx.app, 'ana@example.com', 'Ana');
+      await registerClient(ctx.app, 'bia@example.com', 'Bia');
+      worker = await startWorker();
+      await worker.drain();
+
+      const first = (await admin.client.get(`${url}?limit=1`)).json().deliveries;
+      expect(first).toHaveLength(1);
+      // a delivery created after the first page must not shift the second one
+      await registerClient(ctx.app, 'caio@example.com', 'Caio');
+      await worker.drain();
+      const second = (await admin.client.get(`${url}?limit=1&before=${first[0].id}`)).json()
+        .deliveries;
+      expect(second).toHaveLength(1);
+      expect(second[0].id).not.toBe(first[0].id);
+
+      const all = (await admin.client.get(url)).json().deliveries;
+      expect(all.map((row: { id: string }) => row.id)).toEqual(
+        expect.arrayContaining([first[0].id, second[0].id]),
+      );
+      // an unknown cursor ends the list
+      expect((await admin.client.get(`${url}?before=${randomUUID()}`)).json().deliveries).toEqual(
+        [],
+      );
+    });
+
     it('deletes the history with the endpoint', async () => {
       const admin = await setup();
       const endpoint = await createEndpoint(admin);

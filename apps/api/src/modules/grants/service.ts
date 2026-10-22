@@ -46,12 +46,16 @@ export async function createGrantRow(tx: GrantWriter, input: NewGrant): Promise<
       ...input.metadata,
     },
   });
-  await enqueueEnrollmentGranted(tx, row);
+  await enqueueEnrollmentGranted(tx, row, false);
   return row;
 }
 
-/** `enrollment.granted` carries the current expiry, so extending a grant sends it again. */
-async function enqueueEnrollmentGranted(tx: GrantWriter, row: GrantRow): Promise<void> {
+/** `enrollment.granted` carries the current expiry; `extended` tells a new expiry from a new enrollment. */
+async function enqueueEnrollmentGranted(
+  tx: GrantWriter,
+  row: GrantRow,
+  extended: boolean,
+): Promise<void> {
   await enqueueEvents(tx, [
     {
       name: 'enrollment.granted',
@@ -61,6 +65,7 @@ async function enqueueEnrollmentGranted(tx: GrantWriter, row: GrantRow): Promise
         courseId: row.courseId,
         source: row.source,
         expiresAt: row.expiresAt?.toISOString() ?? null,
+        extended,
       },
     },
   ]);
@@ -93,7 +98,7 @@ export async function setGrantExpiry(
   });
   // an extension that changes nothing is not news
   if (grant.expiresAt?.getTime() !== row.expiresAt?.getTime()) {
-    await enqueueEnrollmentGranted(tx, row);
+    await enqueueEnrollmentGranted(tx, row, true);
   }
   return row;
 }

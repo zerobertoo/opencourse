@@ -99,7 +99,8 @@ export type WebhookDelivery = z.infer<typeof webhookDeliverySchema>;
 
 export const listWebhookDeliveriesQuerySchema = z.object({
   limit: z.coerce.number().int().min(1).max(200).default(50),
-  offset: z.coerce.number().int().min(0).default(0),
+  /** Id of the last delivery already seen: the page starts right after it (newest first). */
+  before: idSchema.optional(),
 });
 export type ListWebhookDeliveriesQuery = z.infer<typeof listWebhookDeliveriesQuerySchema>;
 

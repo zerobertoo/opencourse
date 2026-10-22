@@ -69,7 +69,14 @@ describe('domain events written by their producers', () => {
     });
     const grantId = granted.json().grant.id;
     expect(await events('enrollment.granted')).toEqual([
-      { grantId, userId: student.userId, courseId: course.id, source: 'manual', expiresAt: null },
+      {
+        grantId,
+        userId: student.userId,
+        courseId: course.id,
+        source: 'manual',
+        expiresAt: null,
+        extended: false,
+      },
     ]);
 
     // granting again with the same expiry changes nothing: no event
@@ -85,7 +92,7 @@ describe('domain events written by their producers', () => {
     const announced = await events('enrollment.granted');
     expect(announced).toHaveLength(2);
     expect(announced[1]).toEqual(
-      expect.objectContaining({ grantId, expiresAt: future, source: 'manual' }),
+      expect.objectContaining({ grantId, expiresAt: future, source: 'manual', extended: true }),
     );
     expect(await events('grant.revoked')).toHaveLength(0);
 

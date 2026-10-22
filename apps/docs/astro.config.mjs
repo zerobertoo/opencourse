@@ -4,7 +4,11 @@ import { defineConfig } from 'astro/config';
 // The demo lives at the site root today, so the docs get their own path under the same Pages site
 const base = process.env.DOCS_BASE ?? '/';
 
+// full address of the published site (canonical links and the sitemap); optional locally
+const site = process.env.DOCS_SITE;
+
 export default defineConfig({
+  ...(site ? { site } : {}),
   base,
   integrations: [
     starlight({

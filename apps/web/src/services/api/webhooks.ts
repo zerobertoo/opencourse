@@ -53,7 +53,7 @@ export function createApiWebhookService(client: ApiClient): WebhookService {
       const { deliveries } = await client.request('GET', `${path(id)}/deliveries`, {
         query: {
           limit: query.limit === undefined ? undefined : String(query.limit),
-          offset: query.offset === undefined ? undefined : String(query.offset),
+          before: query.before,
         },
         schema: listWebhookDeliveriesResponseSchema,
       });
