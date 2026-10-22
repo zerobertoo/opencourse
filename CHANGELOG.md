@@ -4,7 +4,11 @@ All notable changes to OpenCourse. Releases are tagged `vX.Y.Z`; the PRD in [doc
 
 ## Unreleased
 
-Changes since [v0.1.0](https://github.com/zerobertoo/opencourse/compare/v0.1.0...HEAD).
+Nothing yet.
+
+## 0.1.1 (2026-10-22)
+
+Changes since [v0.1.0](https://github.com/zerobertoo/opencourse/compare/v0.1.0...v0.1.1).
 
 ### Added
 
