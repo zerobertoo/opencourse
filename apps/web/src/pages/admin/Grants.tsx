@@ -45,7 +45,7 @@ function GrantRow({
   const { grant, userName, userEmail, courseTitle } = data;
 
   return (
-    <li className="grid gap-3 p-4 md:grid-cols-[minmax(0,2fr)_minmax(0,2fr)_minmax(0,1.5fr)_auto] md:items-center">
+    <li className="grid gap-3 p-4 md:grid-cols-[minmax(0,2fr)_minmax(0,2fr)_minmax(0,1.5fr)_12rem] md:items-center">
       <div className="min-w-0">
         <p className="truncate font-medium">{userName}</p>
         <p className="truncate text-sm text-muted-foreground">{userEmail}</p>
