@@ -32,7 +32,7 @@ Um plugin de servidor (por exemplo, um que vende cursos em outro lugar e concede
 2. O plugin envia `Authorization: Bearer <token>` e o cabeçalho `X-Requested-With: opencourse`, exigido em toda requisição que altera dados, para as rotas de concessões: `GET /grants`, `POST /grants`, `POST /grants/:id/revoke` e `POST /grants/:id/extend`.
 3. As concessões criadas assim têm a origem `plugin`.
 
-A chave age como o admin que a criou e funciona só nessas quatro rotas. Ela para de funcionar quando esse admin é desativado ou perde o papel, e um admin pode revogá-la na mesma tela ou com `POST /api/v1/admin/api-keys/:id/revoke`. Chaves não criam nem revogam chaves. A criação e a revogação vão para o log de auditoria, e o plugin também pode reagir aos eventos de domínio por [webhooks](../webhooks/).
+A chave age como o admin que a criou e funciona só nessas quatro rotas. Ela para de funcionar quando esse admin é desativado ou perde o papel, e um admin pode revogá-la na mesma tela ou com `POST /api/v1/admin/api-keys/:id/revoke`. Chaves não criam nem revogam chaves. A criação e a revogação vão para o log de auditoria. As concessões que uma chave cria, estende ou revoga também: o autor é o admin e o id da chave fica em `apiKeyId` nos metadados (registros anteriores a esta versão não têm o id). O plugin ainda pode reagir aos eventos de domínio por [webhooks](../webhooks/).
 
 ## Auditoria
 

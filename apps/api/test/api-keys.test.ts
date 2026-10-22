@@ -129,6 +129,71 @@ describe('API keys', () => {
       expect(row!.lastUsedAt).not.toBeNull();
     });
 
+    it('records the key id in the audit entries of what the key did, and only those', async () => {
+      const { cast, course, apiKey } = await setup();
+      const asKey = (method: 'POST', url: string, body?: object) =>
+        pluginClient().request(method, url, {
+          ...(body ? { body } : {}),
+          headers: bearer(apiKey.token),
+        });
+
+      const created = await asKey('POST', '/api/v1/grants', {
+        userId: cast.student.userId,
+        courseId: course.id,
+        expiresAt: null,
+      });
+      const grantId = created.json().grant.id as string;
+      // granting again extends the open grant, which is audited as an extension
+      const regranted = await asKey('POST', '/api/v1/grants', {
+        userId: cast.student.userId,
+        courseId: course.id,
+        expiresAt: new Date(Date.now() + 86_400_000).toISOString(),
+      });
+      expect(regranted.statusCode).toBe(200);
+      const extended = await asKey('POST', `/api/v1/grants/${grantId}/extend`, { expiresAt: null });
+      expect(extended.statusCode).toBe(200);
+      expect((await asKey('POST', `/api/v1/grants/${grantId}/revoke`)).statusCode).toBe(200);
+
+      // the same actions with the admin's session carry no key id
+      const other = await cast.admin.client.post('/api/v1/grants', {
+        userId: cast.student.userId,
+        courseId: course.id,
+        expiresAt: null,
+      });
+      await cast.admin.client.post(`/api/v1/grants/${other.json().grant.id}/revoke`);
+
+      const rows = await ctx.app.db
+        .select()
+        .from(auditLog)
+        .orderBy(auditLog.createdAt, auditLog.id);
+      const keyRows = rows.filter(
+        (row) =>
+          row.action.startsWith('grant.') &&
+          row.actorId === cast.admin.userId &&
+          (row.metadata as { apiKeyId?: string }).apiKeyId === apiKey.id,
+      );
+      // every entry of the key belongs to the grant it created, and none leaks to the other one
+      for (const row of keyRows) expect(row.targetId).toBe(grantId);
+      // revoking again changes nothing, so it adds no entry
+      await asKey('POST', `/api/v1/grants/${grantId}/revoke`);
+      const afterSecondRevoke = await ctx.app.db
+        .select()
+        .from(auditLog)
+        .where(eq(auditLog.targetId, grantId));
+      expect(afterSecondRevoke).toHaveLength(keyRows.length);
+      expect(keyRows.map((row) => row.action)).toEqual([
+        'grant.created',
+        'grant.extended',
+        'grant.extended',
+        'grant.revoked',
+      ]);
+      const sessionRows = rows.filter(
+        (row) => row.targetId === other.json().grant.id && row.action.startsWith('grant.'),
+      );
+      expect(sessionRows.map((row) => row.action)).toEqual(['grant.created', 'grant.revoked']);
+      for (const row of sessionRows) expect(row.metadata).not.toHaveProperty('apiKeyId');
+    });
+
     it('still marks session grants as manual', async () => {
       const { cast, course } = await setup();
       const response = await cast.admin.client.post('/api/v1/grants', {

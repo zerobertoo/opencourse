@@ -9,12 +9,17 @@ import { requireManagedCourse } from '../courses/access';
 /** A transaction (or the database itself): helpers here commit together with their audit entry. */
 export type GrantWriter = Pick<Database, 'select' | 'insert' | 'update'>;
 
+/** Audit metadata naming the API key behind an action; empty for actions made with a session. */
+const viaApiKey = (apiKeyId?: string) => (apiKeyId ? { apiKeyId } : {});
+
 export interface NewGrant {
   userId: string;
   courseId: string;
   source: GrantSource;
   createdById: string;
   actorId: string | null;
+  /** API key that made the request, recorded in the audit entry. */
+  apiKeyId?: string;
   /** Null means lifetime access. */
   expiresAt: Date | null;
   metadata?: Record<string, unknown>;
@@ -44,6 +49,8 @@ export async function createGrantRow(tx: GrantWriter, input: NewGrant): Promise<
       source: row.source,
       expiresAt: row.expiresAt?.toISOString() ?? null,
       ...input.metadata,
+      // last, so extra metadata can never replace who made the request
+      ...viaApiKey(input.apiKeyId),
     },
   });
   await enqueueEnrollmentGranted(tx, row, false);
@@ -77,6 +84,7 @@ export async function setGrantExpiry(
   grant: GrantRow,
   expiresAt: Date | null,
   actorId: string,
+  apiKeyId?: string,
 ): Promise<GrantRow> {
   const [row] = await tx
     .update(grants)
@@ -94,6 +102,7 @@ export async function setGrantExpiry(
       courseId: row.courseId,
       from: grant.expiresAt?.toISOString() ?? null,
       to: row.expiresAt?.toISOString() ?? null,
+      ...viaApiKey(apiKeyId),
     },
   });
   // an extension that changes nothing is not news
@@ -129,6 +138,7 @@ export async function revokeGrantRow(
   grant: GrantRow,
   actorId: string,
   now: Date,
+  apiKeyId?: string,
 ): Promise<GrantRow> {
   if (grant.revokedAt) return grant;
   const [row] = await tx
@@ -142,7 +152,7 @@ export async function revokeGrantRow(
     action: 'grant.revoked',
     targetType: 'grant',
     targetId: row.id,
-    metadata: { userId: row.userId, courseId: row.courseId },
+    metadata: { userId: row.userId, courseId: row.courseId, ...viaApiKey(apiKeyId) },
   });
   await enqueueEvents(tx, [
     {
@@ -166,6 +176,7 @@ export async function grantOrExtend(
     courseId: string;
     expiresAt: Date | null;
     actorId: string;
+    apiKeyId?: string;
     source?: GrantSource;
   },
 ): Promise<{ row: GrantRow; created: boolean }> {
@@ -181,7 +192,10 @@ export async function grantOrExtend(
     )
     .for('update');
   if (open) {
-    return { row: await setGrantExpiry(tx, open, input.expiresAt, input.actorId), created: false };
+    return {
+      row: await setGrantExpiry(tx, open, input.expiresAt, input.actorId, input.apiKeyId),
+      created: false,
+    };
   }
   const row = await createGrantRow(tx, {
     userId: input.userId,
@@ -189,6 +203,7 @@ export async function grantOrExtend(
     source: input.source ?? 'manual',
     createdById: input.actorId,
     actorId: input.actorId,
+    ...(input.apiKeyId ? { apiKeyId: input.apiKeyId } : {}),
     expiresAt: input.expiresAt,
   });
   return { row, created: true };
