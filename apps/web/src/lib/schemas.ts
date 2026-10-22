@@ -128,9 +128,6 @@ export const moduleTitlesSchema = z
   .superRefine((values, ctx) => requireDefaultLocaleText('title', values, ctx));
 export type ModuleTitlesValues = z.infer<typeof moduleTitlesSchema>;
 
-export const newModuleSchema = z.object({ title: z.string().trim().min(1, required) });
-export type NewModuleValues = z.infer<typeof newModuleSchema>;
-
 export const newLessonSchema = z.object({
   type: lessonTypeSchema,
   title: z.string().trim().min(1, required),

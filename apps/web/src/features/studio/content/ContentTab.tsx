@@ -41,6 +41,22 @@ export function ContentTab({ course }: { course: CourseDetail }) {
 
   const selectedLesson = flattenLessons(course).find((lesson) => lesson.id === selectedLessonId);
 
+  /** Creates the module in the default language, then adds the titles written in the others. */
+  const createModule = async (titles: Array<{ locale: Locale; title: string }>) => {
+    const defaultTitle = titles.find((item) => item.locale === course.defaultLocale)?.title ?? '';
+    const { moduleId } = await mutations.createModule.mutateAsync({
+      title: defaultTitle,
+      locale: course.defaultLocale,
+    });
+    const others = titles.filter(
+      (item) => item.locale !== course.defaultLocale && item.title.trim() !== '',
+    );
+    if (others.length > 0) {
+      await mutations.updateModule.mutateAsync({ moduleId, input: { translations: others } });
+    }
+    toast.success(t('studio:content.moduleCreatedToast'));
+  };
+
   /** Changes the open lesson, asking first when the current one has unsaved edits. */
   const requestSelection = (lessonId: string | null) => {
     if (lessonId === selectedLessonId) return;
@@ -90,10 +106,8 @@ export function ContentTab({ course }: { course: CourseDetail }) {
           open={addingModule}
           onOpenChange={setAddingModule}
           defaultLocale={course.defaultLocale}
-          onSubmit={async (title) => {
-            await mutations.createModule.mutateAsync({ title, locale: course.defaultLocale });
-            toast.success(t('studio:content.moduleCreatedToast'));
-          }}
+          locales={locales}
+          onSubmit={createModule}
         />
       </>
     );
@@ -148,10 +162,8 @@ export function ContentTab({ course }: { course: CourseDetail }) {
         open={addingModule}
         onOpenChange={setAddingModule}
         defaultLocale={course.defaultLocale}
-        onSubmit={async (title) => {
-          await mutations.createModule.mutateAsync({ title, locale: course.defaultLocale });
-          toast.success(t('studio:content.moduleCreatedToast'));
-        }}
+        locales={locales}
+        onSubmit={createModule}
       />
       <NewLessonDialog
         open={addingLessonTo !== null}

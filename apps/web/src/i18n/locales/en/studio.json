@@ -102,6 +102,7 @@
     "lessonCount": "{count, plural, =0 {No lessons} one {# lesson} other {# lessons}}",
     "moduleActions": "Actions for module {title}",
     "renameModule": "Rename",
+    "moduleTitleIncomplete": "Module \"{title}\" has no title in every language. Open it to translate.",
     "deleteModule": "Delete module",
     "moveUp": "Move up",
     "moveDown": "Move down",
@@ -117,7 +118,7 @@
     "lessonCreatedToast": "Lesson created.",
     "newModule": {
       "title": "New module",
-      "description": "Name the module in {language}. You can translate it afterwards.",
+      "description": "The title in {language} is required; other languages can stay empty and be translated later.",
       "name": "Module title",
       "submit": "Create module"
     },
