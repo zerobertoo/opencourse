@@ -30,7 +30,7 @@ function StudentRow({
   const { user, grant, progress, lastActivityAt } = entry;
 
   return (
-    <li className="grid gap-3 p-4 md:grid-cols-[minmax(0,2fr)_minmax(0,1.5fr)_minmax(0,1.5fr)_auto] md:items-center">
+    <li className="grid gap-3 p-4 md:grid-cols-[minmax(0,2fr)_minmax(0,1.5fr)_minmax(0,1.5fr)_8rem] md:items-center">
       <div className="min-w-0">
         <p className="truncate font-medium">{user.name}</p>
         <p className="truncate text-sm text-muted-foreground">{user.email}</p>
