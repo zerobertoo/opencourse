@@ -93,6 +93,9 @@ export const failedVideoSchema = z.object({
 });
 export type FailedVideo = z.infer<typeof failedVideoSchema>;
 
+/** The failed list shows this many videos; older failures wait until these are dealt with. */
+export const FAILED_VIDEOS_LIMIT = 100;
+
 /** The newest failures first. */
 export const failedVideosResponseSchema = z.object({ videos: z.array(failedVideoSchema) });
 export type FailedVideosResponse = z.infer<typeof failedVideosResponseSchema>;

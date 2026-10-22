@@ -1,4 +1,5 @@
 import {
+  FAILED_VIDEOS_LIMIT,
   resolveVideoUrl,
   type ExternalVideoAsset,
   type FailedVideo,
@@ -66,9 +67,6 @@ export async function findAssetContext(
     .where(eq(videoAssets.id, assetId));
   return found;
 }
-
-/** The failed list shows this many videos; older failures wait until these are dealt with. */
-const FAILED_VIDEOS_LIMIT = 100;
 
 /** Videos the encoder gave up on, newest failure first, with titles in the course's language. */
 export async function listFailedVideos(db: Pick<Database, 'select'>): Promise<FailedVideo[]> {

@@ -209,11 +209,14 @@ describe('admin grants', () => {
 });
 
 describe('admin plugins', () => {
-  it('lists the planned extensions as coming soon', async () => {
+  it('links the available extensions and marks the rest as coming soon', async () => {
     await renderApp('/admin/plugins', { signInAs: 'admin' });
-    const items = await listItems('Extensões planejadas');
+    const items = await listItems('Extensões');
     expect(items).toHaveLength(3);
-    expect(within(items[0]!).getByText('Em breve')).toBeVisible();
+    expect(within(items[0]!).getByRole('link')).toHaveAttribute('href', '/admin/webhooks');
+    expect(within(items[0]!).getByText('Disponível')).toBeVisible();
+    expect(within(items[1]!).getByRole('link')).toHaveAttribute('href', '/admin/api-keys');
+    expect(within(items[2]!).getByText('Em breve')).toBeVisible();
   });
 
   it('lists the installed video provider plugins', async () => {

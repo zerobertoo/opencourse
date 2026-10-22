@@ -158,8 +158,9 @@
   },
   "plugins": {
     "title": "Plugins",
-    "listLabel": "Extensões planejadas",
-    "description": "As extensões permitirão conectar a plataforma a outras ferramentas. Nenhuma está disponível ainda.",
+    "listLabel": "Extensões",
+    "description": "As extensões permitem conectar a plataforma a outras ferramentas.",
+    "available": "Disponível",
     "comingSoon": "Em breve",
     "videoProviders": {
       "title": "Provedores de vídeo",
@@ -281,6 +282,7 @@
     "listLabel": "Vídeos com falha",
     "emptyTitle": "Nenhum vídeo com falha",
     "emptyDescription": "Todos os vídeos enviados foram processados. As falhas aparecem aqui.",
+    "limitNotice": "Mostrando as {count} falhas mais recentes. As mais antigas aparecem aqui quando estas forem resolvidas.",
     "failedAt": "Falhou em {date}",
     "retry": "Tentar de novo",
     "retryFor": "Tentar de novo: {lesson}",
