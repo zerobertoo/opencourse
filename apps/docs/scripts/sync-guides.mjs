@@ -1,24 +1,32 @@
-// Copies docs/video.md and docs/files.md into the site, so the repository docs stay the single
-// source of truth. The H1 becomes the Starlight title and links between guides are rewritten.
+// Copies docs/video.md and docs/files.md (and their docs/pt-BR translations) into the site, so the
+// repository docs stay the single source of truth. The H1 becomes the Starlight title and links
+// between guides are rewritten.
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const docsDirectory = join(here, '..', '..', '..', 'docs');
-const outputDirectory = join(here, '..', 'src', 'content', 'docs', 'guides');
+const siteDirectory = join(here, '..', 'src', 'content', 'docs');
 
-mkdirSync(outputDirectory, { recursive: true });
+// repository folder -> site folder
+const locales = [
+  { source: docsDirectory, target: join(siteDirectory, 'guides') },
+  { source: join(docsDirectory, 'pt-BR'), target: join(siteDirectory, 'pt-br', 'guides') },
+];
 
-for (const name of ['video', 'files']) {
-  const source = readFileSync(join(docsDirectory, `${name}.md`), 'utf8').replaceAll('\r\n', '\n');
-  const [, title, body] = /^# (.+)\n([\s\S]*)$/.exec(source) ?? [];
-  if (!title) throw new Error(`docs/${name}.md must start with an H1`);
-  const linked = body
-    .replaceAll('](video.md)', '](../video/)')
-    .replaceAll('](files.md)', '](../files/)');
-  writeFileSync(
-    join(outputDirectory, `${name}.md`),
-    `---\ntitle: ${JSON.stringify(title)}\n---\n${linked}`,
-  );
+for (const { source, target } of locales) {
+  mkdirSync(target, { recursive: true });
+  for (const name of ['video', 'files']) {
+    const text = readFileSync(join(source, `${name}.md`), 'utf8').replaceAll('\r\n', '\n');
+    const [, title, body] = /^# (.+)\n([\s\S]*)$/.exec(text) ?? [];
+    if (!title) throw new Error(`${source}/${name}.md must start with an H1`);
+    const linked = body
+      .replaceAll('](video.md)', '](../video/)')
+      .replaceAll('](files.md)', '](../files/)');
+    writeFileSync(
+      join(target, `${name}.md`),
+      `---\ntitle: ${JSON.stringify(title)}\n---\n${linked}`,
+    );
+  }
 }

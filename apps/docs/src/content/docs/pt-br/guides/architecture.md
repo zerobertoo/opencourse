@@ -37,7 +37,7 @@ A entrega é pelo menos uma vez, então os consumidores precisam ser idempotente
 
 ## Pontos de extensão
 
-- **Provedores de vídeo.** Os links são resolvidos por `VideoProviderPlugin`s listados em um registro. Veja [Vídeo](../video/#writing-a-provider-plugin).
+- **Provedores de vídeo.** Os links são resolvidos por `VideoProviderPlugin`s listados em um registro. Veja [Vídeo](../video/#escrevendo-um-plugin-de-provedor).
 - **Eventos e webhooks.** Assine de fora com [webhooks](../webhooks/) ou adicione um consumidor em `apps/api/src/worker/consumers.ts`.
 - **Acesso.** Crie concessões pela API.
 

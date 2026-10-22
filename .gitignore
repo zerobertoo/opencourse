@@ -18,3 +18,5 @@ coverage
 apps/docs/src/content/docs/guides/video.md
 apps/docs/src/content/docs/guides/files.md
 apps/docs/.astro/
+apps/docs/src/content/docs/pt-br/guides/video.md
+apps/docs/src/content/docs/pt-br/guides/files.md
