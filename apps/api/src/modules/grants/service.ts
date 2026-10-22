@@ -91,7 +91,10 @@ export async function setGrantExpiry(
       to: row.expiresAt?.toISOString() ?? null,
     },
   });
-  await enqueueEnrollmentGranted(tx, row);
+  // an extension that changes nothing is not news
+  if (grant.expiresAt?.getTime() !== row.expiresAt?.getTime()) {
+    await enqueueEnrollmentGranted(tx, row);
+  }
   return row;
 }
 

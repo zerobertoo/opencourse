@@ -26,7 +26,7 @@ Mudanças de estado gravam um evento de domínio na tabela `outbox_events`, na m
 | Evento                | Gravado quando                                    |
 | --------------------- | ------------------------------------------------- |
 | `user.created`        | uma conta é criada ou um convite é aceito         |
-| `enrollment.granted`  | uma concessão é criada ou tem a validade estendida |
+| `enrollment.granted`  | uma concessão é criada ou muda de validade        |
 | `grant.revoked`       | uma concessão é revogada (uma vez)                |
 | `lesson.completed`    | um aluno conclui uma aula                         |
 | `course.completed`    | um aluno conclui a última aula de um curso        |

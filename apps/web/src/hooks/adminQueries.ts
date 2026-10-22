@@ -161,7 +161,10 @@ export function useWebhookDeliveries(webhookId: string) {
       lastPage.length < WEBHOOK_DELIVERIES_PAGE_SIZE
         ? undefined
         : allPages.length * WEBHOOK_DELIVERIES_PAGE_SIZE,
-    select: (data) => ({ deliveries: data.pages.flat() }),
+    // new deliveries shift the offsets, so a later page can repeat rows of an earlier one
+    select: (data) => ({
+      deliveries: [...new Map(data.pages.flat().map((delivery) => [delivery.id, delivery])).values()],
+    }),
   });
 }
 

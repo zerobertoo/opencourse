@@ -94,7 +94,7 @@ export function createMockWebhookService(context: MockContext): WebhookService {
         return clone(
           store.db.webhookDeliveries
             .filter((entry) => entry.endpointId === id)
-            .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
+            .sort((a, b) => b.createdAt.localeCompare(a.createdAt) || b.id.localeCompare(a.id))
             .slice(offset, offset + limit),
         );
       }),

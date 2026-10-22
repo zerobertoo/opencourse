@@ -72,17 +72,19 @@ describe('domain events written by their producers', () => {
       { grantId, userId: student.userId, courseId: course.id, source: 'manual', expiresAt: null },
     ]);
 
-    // granting again and extending both reuse the open grant and announce its new expiry
+    // granting again with the same expiry changes nothing: no event
     await admin.client.post('/api/v1/grants', {
       userId: student.userId,
       courseId: course.id,
       expiresAt: null,
     });
+    expect(await events('enrollment.granted')).toHaveLength(1);
+    // a new expiry is announced
     const future = new Date(Date.now() + 86_400_000).toISOString();
     await admin.client.post(`/api/v1/grants/${grantId}/extend`, { expiresAt: future });
-    const granted3 = await events('enrollment.granted');
-    expect(granted3).toHaveLength(3);
-    expect(granted3[2]).toEqual(
+    const announced = await events('enrollment.granted');
+    expect(announced).toHaveLength(2);
+    expect(announced[1]).toEqual(
       expect.objectContaining({ grantId, expiresAt: future, source: 'manual' }),
     );
     expect(await events('grant.revoked')).toHaveLength(0);

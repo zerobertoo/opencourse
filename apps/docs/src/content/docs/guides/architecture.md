@@ -26,7 +26,7 @@ State changes write a domain event to the `outbox_events` table in the same tran
 | Event                 | Written when                                    |
 | --------------------- | ----------------------------------------------- |
 | `user.created`        | an account is registered or an invite accepted  |
-| `enrollment.granted`  | a grant is created or its expiry is extended    |
+| `enrollment.granted`  | a grant is created or its expiry changes     |
 | `grant.revoked`       | a grant is revoked (once)                       |
 | `lesson.completed`    | a student completes a lesson                    |
 | `course.completed`    | a student completes the last lesson of a course |

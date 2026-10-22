@@ -22,8 +22,7 @@ for (const { source, target } of locales) {
     const [, title, body] = /^# (.+)\n([\s\S]*)$/.exec(text) ?? [];
     if (!title) throw new Error(`${source}/${name}.md must start with an H1`);
     const linked = body
-      .replaceAll('](video.md)', '](../video/)')
-      .replaceAll('](files.md)', '](../files/)');
+      .replace(/\]\((?:\.\/)?(video|files)\.md(#[^)]*)?\)/g, '](../$1/$2)');
     writeFileSync(
       join(target, `${name}.md`),
       `---\ntitle: ${JSON.stringify(title)}\n---\n${linked}`,

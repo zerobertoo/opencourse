@@ -6,6 +6,7 @@ WORKDIR /repo
 # manifests first, so the dependency layer is cached until a package.json changes
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY apps/api/package.json apps/api/
+COPY apps/docs/package.json apps/docs/
 COPY apps/web/package.json apps/web/
 COPY packages/shared/package.json packages/shared/
 RUN pnpm install --frozen-lockfile --filter @opencourse/api...
