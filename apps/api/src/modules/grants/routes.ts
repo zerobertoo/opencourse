@@ -85,7 +85,7 @@ export const grantRoutes: FastifyPluginAsyncZod = async (app) => {
       const now = new Date();
       const row = await app.db.transaction(async (tx) => {
         const grant = await loadManagedGrant(tx, manager, request.params.id);
-        return revokeGrantRow(tx, grant, manager.id, now);
+        return revokeGrantRow(tx, grant, manager.id, now, request.auth!.apiKeyId);
       });
       return { grant: toGrant(row, now) };
     },
@@ -114,7 +114,7 @@ export const grantRoutes: FastifyPluginAsyncZod = async (app) => {
         const grant = await loadManagedGrant(tx, manager, request.params.id);
         if (grant.revokedAt) throw conflict('A revoked grant cannot be extended');
         if (expiresAt && expiresAt <= now) throw badRequest('Expiry must be in the future');
-        return setGrantExpiry(tx, grant, expiresAt, manager.id);
+        return setGrantExpiry(tx, grant, expiresAt, manager.id, request.auth!.apiKeyId);
       });
       return { grant: toGrant(row, now) };
     },
@@ -158,6 +158,7 @@ export const grantRoutes: FastifyPluginAsyncZod = async (app) => {
             courseId,
             expiresAt,
             actorId: manager.id,
+            ...(request.auth!.apiKeyId ? { apiKeyId: request.auth!.apiKeyId } : {}),
             source: request.auth!.apiKeyId ? 'plugin' : 'manual',
           }),
         );
