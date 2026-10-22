@@ -4,6 +4,8 @@ All notable changes to OpenCourse. Releases are tagged `vX.Y.Z`; the PRD in [doc
 
 ## Unreleased
 
+Changes since [v0.1.0](https://github.com/zerobertoo/opencourse/compare/v0.1.0...HEAD).
+
 ### Added
 
 - Documentation site (Starlight, English and Portuguese) published next to the live demo.
@@ -24,6 +26,6 @@ All notable changes to OpenCourse. Releases are tagged `vX.Y.Z`; the PRD in [doc
 - A poster that failed once is not regenerated.
 - No server-side certificate PDF (rendered on the client).
 
-## 0.1.0
+## 0.1.0 (2026-10-18)
 
 First public pre-release: accounts, roles and invites, courses with modules, lessons and translations, access grants, progress, graded quizzes, notes, certificates, outbound webhooks, video upload with HLS transcoding, lesson attachments and captions. The frontend runs fully mocked (demo mode) or against the real API; settings were still mocked.
