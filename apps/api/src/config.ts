@@ -57,6 +57,11 @@ const configSchema = z
       .enum(['true', 'false'])
       .transform((value) => value === 'true')
       .default(false),
+    /** Serves the API reference at `/docs` and the OpenAPI document at `/docs/openapi.json`. */
+    API_DOCS_ENABLED: z
+      .enum(['true', 'false'])
+      .transform((value) => value === 'true')
+      .default(true),
     /** Disables rate limiting. Meant for automated tests only. */
     RATE_LIMIT_DISABLED: z
       .enum(['true', 'false'])

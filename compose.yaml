@@ -106,6 +106,7 @@ services:
       # cookies are Secure by default in production; plain-HTTP localhost needs this off
       COOKIE_SECURE: ${COOKIE_SECURE:-false}
       TRUST_PROXY: ${TRUST_PROXY:-false}
+      API_DOCS_ENABLED: ${API_DOCS_ENABLED:-true}
       # automated tests only: never enable this on a real deployment
       RATE_LIMIT_DISABLED: ${RATE_LIMIT_DISABLED:-false}
       WEBHOOKS_ALLOW_PRIVATE_NETWORKS: ${WEBHOOKS_ALLOW_PRIVATE_NETWORKS:-false}

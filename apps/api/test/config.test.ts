@@ -14,6 +14,11 @@ describe('loadConfig', () => {
     expect(config.CORS_ORIGINS).toEqual(['http://a.test', 'http://b.test']);
   });
 
+  it('serves the API docs unless told otherwise', () => {
+    expect(loadConfig(required).API_DOCS_ENABLED).toBe(true);
+    expect(loadConfig({ ...required, API_DOCS_ENABLED: 'false' }).API_DOCS_ENABLED).toBe(false);
+  });
+
   it('fails fast with every missing variable named', () => {
     expect(() => loadConfig({})).toThrow(/DATABASE_URL[\s\S]*REDIS_URL[\s\S]*AUTH_SECRET/);
   });

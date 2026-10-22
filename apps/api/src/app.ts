@@ -84,8 +84,10 @@ export async function buildApp(
     methods: ['GET', 'HEAD', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   });
 
-  await app.register(swagger, swaggerOptions);
-  await app.register(scalar, { routePrefix: '/docs' });
+  if (config.API_DOCS_ENABLED) {
+    await app.register(swagger, swaggerOptions);
+    await app.register(scalar, { routePrefix: '/docs' });
+  }
 
   await app.register(dbPlugin, { databaseUrl: config.DATABASE_URL });
   await app.register(redisPlugin, { redisUrl: config.REDIS_URL });
