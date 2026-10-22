@@ -10,7 +10,7 @@ import { eq } from 'drizzle-orm';
 import { Redis } from 'ioredis';
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import { videoAssets } from '../src/db/schema';
-import { requeueOrphanedVideos } from '../src/modules/video/service';
+import { requeueOrphanedVideos } from '../src/modules/video/requeue';
 import { VIDEO_QUEUE_NAME, type JobData } from '../src/worker/jobs';
 import { createCast, insertCourse, insertLesson, insertModule } from './fixtures';
 import {
@@ -154,8 +154,25 @@ describe('failed videos', () => {
       await claimed(new Date());
       expect(await requeueOrphanedVideos(ctx.app.db, queue)).toBe(0);
 
-      // claimed long ago and nothing queued, as after an API crash
-      await claimed(new Date(Date.now() - 3600_000));
+      // claimed long ago but a job is already waiting for it: a long encode is not doubled
+      const old = new Date(Date.now() - 3600_000);
+      await claimed(old);
+      // delayed, so the worker leaves it alone
+      const waiting = await queue.add(
+        'transcode-video',
+        {
+          eventId: assetId,
+          eventName: 'video.upload',
+          eventCreatedAt: new Date().toISOString(),
+          payload: { assetId },
+        },
+        { delay: 60_000 },
+      );
+      expect(await requeueOrphanedVideos(ctx.app.db, queue)).toBe(0);
+      await waiting.remove();
+
+      // nothing queued, as after an API crash
+      await claimed(old);
       expect(await requeueOrphanedVideos(ctx.app.db, queue)).toBe(1);
       await worker.drain(60_000);
       const [asset] = await ctx.app.db
