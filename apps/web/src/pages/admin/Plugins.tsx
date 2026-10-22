@@ -1,17 +1,18 @@
 import { videoProviders } from '@opencourse/shared';
 import { KeyRound, PlugZap, Video, Webhook } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { Link } from 'react-router-dom';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
 
-/** Extension points planned for the platform (see the PRD); none is installable yet. */
-const PLANNED_EXTENSIONS = [
-  { id: 'webhooks', icon: Webhook },
-  { id: 'apiTokens', icon: KeyRound },
-  { id: 'examplePlugin', icon: PlugZap },
+/** Extension points of the platform; the ones with a `to` already have an admin screen. */
+const EXTENSIONS = [
+  { id: 'webhooks', icon: Webhook, to: '/admin/webhooks' },
+  { id: 'apiTokens', icon: KeyRound, to: '/admin/api-keys' },
+  { id: 'examplePlugin', icon: PlugZap, to: undefined },
 ] as const;
 
-/** Placeholder listing the extensions that will be available in future versions. */
+/** Lists the extension points, linking to the ones that are available and marking the rest. */
 export function AdminPlugins() {
   const { t } = useTranslation('admin');
 
@@ -24,7 +25,7 @@ export function AdminPlugins() {
         <p className="text-sm text-muted-foreground">{t('plugins.description')}</p>
       </div>
       <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2" aria-label={t('plugins.listLabel')}>
-        {PLANNED_EXTENSIONS.map(({ id, icon: Icon }) => (
+        {EXTENSIONS.map(({ id, icon: Icon, to }) => (
           <li key={id} className="flex min-w-0">
             <Card className="flex w-full items-start gap-3 p-4">
               <span className="grid size-10 shrink-0 place-items-center rounded-md bg-muted text-muted-foreground">
@@ -32,8 +33,20 @@ export function AdminPlugins() {
               </span>
               <div className="min-w-0 space-y-1">
                 <div className="flex flex-wrap items-center gap-2">
-                  <h3 className="text-base font-semibold">{t(`plugins.items.${id}.name`)}</h3>
-                  <Badge>{t('plugins.comingSoon')}</Badge>
+                  <h3 className="text-base font-semibold">
+                    {to ? (
+                      <Link to={to} className="hover:underline">
+                        {t(`plugins.items.${id}.name`)}
+                      </Link>
+                    ) : (
+                      t(`plugins.items.${id}.name`)
+                    )}
+                  </h3>
+                  {to ? (
+                    <Badge variant="success">{t('plugins.available')}</Badge>
+                  ) : (
+                    <Badge>{t('plugins.comingSoon')}</Badge>
+                  )}
                 </div>
                 <p className="text-sm text-muted-foreground">
                   {t(`plugins.items.${id}.description`)}

@@ -1,4 +1,4 @@
-import type { FailedVideo } from '@opencourse/shared';
+import { FAILED_VIDEOS_LIMIT, type FailedVideo } from '@opencourse/shared';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { toast } from 'sonner';
@@ -94,20 +94,27 @@ export function AdminVideos() {
     );
   } else {
     body = (
-      <ul
-        className="divide-y rounded-xl border bg-surface"
-        aria-label={t('admin:videos.listLabel')}
-      >
-        {query.data.map((video) => (
-          <FailedVideoRow
-            key={video.assetId}
-            video={video}
-            onRetry={(failed) => void retryVideo(failed)}
-            isRetrying={retry.isPending && retry.variables === video.assetId}
-            timeZone={user?.timeZone}
-          />
-        ))}
-      </ul>
+      <>
+        <ul
+          className="divide-y rounded-xl border bg-surface"
+          aria-label={t('admin:videos.listLabel')}
+        >
+          {query.data.map((video) => (
+            <FailedVideoRow
+              key={video.assetId}
+              video={video}
+              onRetry={(failed) => void retryVideo(failed)}
+              isRetrying={retry.isPending && retry.variables === video.assetId}
+              timeZone={user?.timeZone}
+            />
+          ))}
+        </ul>
+        {query.data.length >= FAILED_VIDEOS_LIMIT && (
+          <p className="text-sm text-muted-foreground">
+            {t('admin:videos.limitNotice', { count: FAILED_VIDEOS_LIMIT })}
+          </p>
+        )}
+      </>
     );
   }
 

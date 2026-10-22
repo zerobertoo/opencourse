@@ -1,4 +1,4 @@
-import type { FailedVideo, LocalVideoAsset } from '@opencourse/shared';
+import { FAILED_VIDEOS_LIMIT, type FailedVideo, type LocalVideoAsset } from '@opencourse/shared';
 import { screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
@@ -68,6 +68,19 @@ describe('admin videos', () => {
     await user.click(list.getByRole('button', { name: 'Tentar de novo: Teoria das cores' }));
     await waitFor(() => expect(retry).toHaveBeenCalledWith(failed.assetId));
     expect(await screen.findByText('Nenhum vídeo com falha')).toBeVisible();
+  });
+
+  it('says so when the list is cut at the limit', async () => {
+    const full = Array.from({ length: FAILED_VIDEOS_LIMIT }, (_, index) => ({
+      ...failed,
+      assetId: `${index}-${failed.assetId}`,
+    }));
+    await renderApp('/admin/videos', {
+      signInAs: 'admin',
+      override: (services) => ({ video: { ...services.video, listFailed: async () => full } }),
+    });
+
+    expect(await screen.findByText(/Mostrando as 100 falhas mais recentes/)).toBeVisible();
   });
 
   it('tells the admin when the retry is refused', async () => {

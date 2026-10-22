@@ -158,8 +158,9 @@
   },
   "plugins": {
     "title": "Plugins",
-    "listLabel": "Planned extensions",
-    "description": "Extensions will let you connect the platform to other tools. None is available yet.",
+    "listLabel": "Extensions",
+    "description": "Extensions let you connect the platform to other tools.",
+    "available": "Available",
     "comingSoon": "Coming soon",
     "videoProviders": {
       "title": "Video providers",
@@ -281,6 +282,7 @@
     "listLabel": "Failed videos",
     "emptyTitle": "No failed videos",
     "emptyDescription": "Every uploaded video was processed. Failures show up here.",
+    "limitNotice": "Showing the latest {count} failures. Older ones appear here once these are dealt with.",
     "failedAt": "Failed {date}",
     "retry": "Try again",
     "retryFor": "Try again: {lesson}",
