@@ -16,6 +16,7 @@ import { conflict, forbidden, isUniqueViolation, notFound } from '../../errors';
 import { escapeLike } from '../../sql';
 import { requireManagedCourse, resolveCourseAccess } from './access';
 import { toGrant } from '../grants/mappers';
+import { deleteReplacedCover } from './cover';
 import { loadCourseDetail, loadCourseDetails } from './detail';
 import { toListedCourse } from './listed';
 import { assertPublishable } from './publish';
@@ -224,7 +225,7 @@ export const courseRoutes: FastifyPluginAsyncZod = async (app) => {
       const { translations, ...fields } = request.body;
       const actorId = request.auth!.user.id;
 
-      return app.db.transaction(async (tx) => {
+      const result = await app.db.transaction(async (tx) => {
         const before = course.status === 'published' ? await loadCourseDetail(tx, course) : null;
         const [updated] = await tx
           .update(courses)
@@ -260,6 +261,11 @@ export const courseRoutes: FastifyPluginAsyncZod = async (app) => {
         }
         return { course: detail };
       });
+      // a link set here replaces an uploaded cover, whose file would otherwise stay behind
+      if (result.course.coverImageUrl !== course.coverImageUrl) {
+        await deleteReplacedCover(app.storage, course.id, course.coverImageUrl, request.log);
+      }
+      return result;
     },
   );
 };

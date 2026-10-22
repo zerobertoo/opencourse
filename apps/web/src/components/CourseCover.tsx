@@ -1,3 +1,4 @@
+import { resolveApiFileUrl } from '@/lib/apiUrl';
 import { cn } from '@/lib/utils';
 import { generateCoverShapes, type CoverShape } from './coverShapes';
 
@@ -43,7 +44,9 @@ export function CourseCover({
 }) {
   if (imageUrl) {
     // decorative: the course title is always rendered next to the cover
-    return <img src={imageUrl} alt={''} className={cn('object-cover', className)} />;
+    return (
+      <img src={resolveApiFileUrl(imageUrl)} alt={''} className={cn('object-cover', className)} />
+    );
   }
   return (
     <div aria-hidden="true" className={cn('overflow-hidden bg-accent text-primary', className)}>

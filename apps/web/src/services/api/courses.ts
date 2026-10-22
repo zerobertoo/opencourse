@@ -1,11 +1,23 @@
-import { courseResponseSchema, listCoursesResponseSchema } from '@opencourse/shared';
+import {
+  courseResponseSchema,
+  createCoverUploadResponseSchema,
+  listCoursesResponseSchema,
+} from '@opencourse/shared';
 import type { CourseService } from '../courses';
+import { ServiceError } from '../errors';
 import type { ApiClient } from './client';
 
-/** CourseService backed by the real API. */
-export function createApiCourseService(client: ApiClient): CourseService {
-  const readCourse = async (method: 'GET' | 'POST' | 'PATCH', path: string, body?: unknown) =>
-    (await client.request(method, path, { body, schema: courseResponseSchema })).course;
+/** CourseService backed by the real API. Cover images go straight to the storage. */
+export function createApiCourseService(
+  client: ApiClient,
+  // injectable for tests
+  sendFile: typeof fetch = (...args) => fetch(...args),
+): CourseService {
+  const readCourse = async (
+    method: 'GET' | 'POST' | 'PATCH' | 'DELETE',
+    path: string,
+    body?: unknown,
+  ) => (await client.request(method, path, { body, schema: courseResponseSchema })).course;
 
   return {
     async list(filters = {}) {
@@ -36,5 +48,32 @@ export function createApiCourseService(client: ApiClient): CourseService {
       }),
 
     update: (id, input) => readCourse('PATCH', `/courses/${encodeURIComponent(id)}`, input),
+
+    async uploadCover(id, file) {
+      const coverUrl = `/courses/${encodeURIComponent(id)}/cover`;
+      const started = await client.request('POST', coverUrl, {
+        body: { contentType: file.type, sizeBytes: file.size },
+        schema: createCoverUploadResponseSchema,
+      });
+      let response: Response;
+      try {
+        response = await sendFile(started.uploadUrl, {
+          method: 'PUT',
+          headers: { 'content-type': file.type },
+          body: file,
+        });
+      } catch {
+        throw new ServiceError('unavailable', 'Could not reach the storage to upload the image');
+      }
+      if (!response.ok) throw new ServiceError('unavailable', 'The image upload failed');
+      return (
+        await client.request('POST', `${coverUrl}/complete`, {
+          body: { coverId: started.coverId },
+          schema: courseResponseSchema,
+        })
+      ).course;
+    },
+
+    removeCover: (id) => readCourse('DELETE', `/courses/${encodeURIComponent(id)}/cover`),
   };
 }

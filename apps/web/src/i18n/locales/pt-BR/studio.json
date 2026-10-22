@@ -77,7 +77,19 @@
     "outcomesField": "O que você vai aprender",
     "outcomesHint": "Um item por linha.",
     "save": "Salvar detalhes",
-    "savedToast": "Detalhes salvos."
+    "savedToast": "Detalhes salvos.",
+    "cover": {
+      "title": "Imagem de capa",
+      "hint": "PNG, JPEG ou WebP, até {max} MB. Sem imagem, o curso recebe uma capa gerada.",
+      "fileLabel": "Arquivo da imagem de capa",
+      "upload": "Enviar imagem",
+      "replace": "Trocar imagem",
+      "remove": "Remover imagem",
+      "invalidType": "Escolha uma imagem PNG, JPEG ou WebP.",
+      "tooLarge": "A imagem é maior que {max} MB.",
+      "savedToast": "Capa atualizada.",
+      "removedToast": "Capa removida."
+    }
   },
   "content": {
     "curriculum": "Currículo",

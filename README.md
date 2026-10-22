@@ -6,8 +6,6 @@ Open source, self-hosted course platform: courses with video, text and quizzes, 
 - **Documentation**: https://zerobertoo.github.io/opencourse/docs/ (English and Portuguese)
 - **Specification**: [docs/PRD.md](docs/PRD.md), the original intent. The documentation describes the current state.
 
-Current gap: course covers are links with no upload.
-
 ## Quick start
 
 Requirements: Docker (with Compose). To work on the code you also need Node 20 or newer (`.nvmrc` pins 24) and pnpm 9.

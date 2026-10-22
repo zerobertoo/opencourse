@@ -136,6 +136,22 @@ export function useUpdateCourse(courseId: string) {
   });
 }
 
+/** Sends or removes the cover image; either way the cached course is refreshed. */
+export function useCourseCover(courseId: string) {
+  const { courses } = useServices();
+  const sync = useCourseSync(courseId);
+  return {
+    upload: useMutation({
+      mutationFn: (file: File) => courses.uploadCover(courseId, file),
+      onSuccess: sync,
+    }),
+    remove: useMutation({
+      mutationFn: () => courses.removeCover(courseId),
+      onSuccess: sync,
+    }),
+  };
+}
+
 /** Every curriculum operation of the editor; each one refreshes the cached course. */
 export function useCurriculumMutations(courseId: string) {
   const { curriculum } = useServices();

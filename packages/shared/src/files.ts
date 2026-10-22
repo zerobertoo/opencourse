@@ -45,6 +45,44 @@ export type CompleteAttachmentResponse = z.infer<typeof completeAttachmentRespon
 export const attachmentDownloadResponseSchema = z.object({ url: z.string() });
 export type AttachmentDownloadResponse = z.infer<typeof attachmentDownloadResponseSchema>;
 
+/** Largest course cover image. */
+export const COVER_MAX_BYTES = 5 * 1024 ** 2;
+
+/** Image types accepted as a cover. No SVG: an uploaded SVG can carry script. */
+export const COVER_CONTENT_TYPES = ['image/png', 'image/jpeg', 'image/webp'] as const;
+
+export const coverParamsSchema = z.object({ id: idSchema });
+export const coverFileParamsSchema = z.object({ id: idSchema, coverId: idSchema });
+
+/** Asks for permission to upload a cover image to a course. */
+export const createCoverUploadRequestSchema = z
+  .object({
+    contentType: z.enum(COVER_CONTENT_TYPES),
+    sizeBytes: z.number().int().positive().max(COVER_MAX_BYTES),
+  })
+  .strict();
+export type CreateCoverUploadRequest = z.infer<typeof createCoverUploadRequestSchema>;
+
+/** The browser PUTs the whole image to `uploadUrl`, then calls `complete` with the `coverId`. */
+export const createCoverUploadResponseSchema = z.object({
+  coverId: idSchema,
+  uploadUrl: z.string(),
+});
+export type CreateCoverUploadResponse = z.infer<typeof createCoverUploadResponseSchema>;
+
+export const completeCoverUploadRequestSchema = z.object({ coverId: idSchema }).strict();
+
+/** API path of an uploaded cover; the `coverImageUrl` of a course. It changes with every upload. */
+export function uploadedCoverPath(courseId: string, coverId: string): string {
+  return `/api/v1/courses/${courseId}/cover/${coverId}`;
+}
+
+/** The cover id inside `uploadedCoverPath`, or null for any other address (an https link, say). */
+export function uploadedCoverId(courseId: string, url: string | null): string | null {
+  const prefix = `/api/v1/courses/${courseId}/cover/`;
+  return url?.startsWith(prefix) ? url.slice(prefix.length) : null;
+}
+
 /** API path of an uploaded caption; the `url` of its entry in a lesson's captions. */
 export function uploadedCaptionPath(lessonId: string, locale: string): string {
   return `/api/v1/lessons/${lessonId}/captions/${locale}.vtt`;

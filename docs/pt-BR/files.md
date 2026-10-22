@@ -27,6 +27,13 @@ e ambos são entregues apenas a quem pode ver o conteúdo do curso.
   acesso ao curso.
 - As legendas ainda podem ser coladas como um link `https` por `PATCH /lessons/:id`.
 
+## Capas de curso
+
+- No Studio, abra **Detalhes** e use **Imagem de capa**: PNG, JPEG ou WebP de até 5 MiB (sem SVG, que pode carregar script). Sem imagem, o curso recebe uma capa gerada.
+- Como nos anexos, a imagem vai direto para o storage com um `PUT` assinado; depois a API confirma e a torna a capa do curso. Trocar ou remover a capa apaga o arquivo antigo.
+- O endereço da capa é `GET /api/v1/courses/:id/cover/:coverId`, que redireciona para um endereço temporário da imagem. Ele não exige sessão de propósito: um `<img>` não consegue renovar uma sessão expirada, e a capa não é segredo. Só a capa atual responde, e cada envio gera um endereço novo, então o navegador nunca mostra uma capa velha.
+- Um link para imagem hospedada em outro lugar ainda pode ser definido por `PATCH /courses/:id` (`coverImageUrl`, só https).
+
 ## Limpeza
 
 Excluir uma aula ou um módulo também exclui seus anexos e legendas do armazenamento.
