@@ -90,6 +90,8 @@ jobs:
       - run: pnpm typecheck
       - run: pnpm test
       - run: pnpm build
+      # the docs site is not part of `pnpm build`, so check it here and keep it from blocking the demo deploy
+      - run: pnpm --filter @opencourse/docs docs:build
 
   e2e:
     name: End-to-end (Docker Compose stack)

@@ -107,8 +107,10 @@ export function WebhookDeliveriesDialog({
             />
           ))}
         </ul>
-        {query.isError ? <ErrorState onRetry={() => void query.fetchNextPage()} /> : null}
-        {query.hasNextPage && !query.isError ? (
+        {query.isFetchNextPageError ? (
+          <ErrorState onRetry={() => void query.fetchNextPage()} />
+        ) : null}
+        {query.hasNextPage && !query.isFetchNextPageError ? (
           <Button
             variant="outline"
             className="w-full"

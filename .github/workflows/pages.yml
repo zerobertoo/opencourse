@@ -33,12 +33,15 @@ jobs:
       # Pages has no SPA fallback, 404.html serves index.html on deep links
       - run: cp apps/web/dist/index.html apps/web/dist/404.html
       # the documentation site is served under /docs/ of the same Pages site
-      # separate from `pnpm build` (turbo): a docs failure must not break the application build
-      - run: pnpm --filter @opencourse/docs docs:build
+      # a docs failure must not stop the demo from being published (ci.yml already builds the docs)
+      - id: docs
+        continue-on-error: true
+        run: pnpm --filter @opencourse/docs docs:build
         env:
           DOCS_BASE: /${{ github.event.repository.name }}/docs/
           DOCS_SITE: https://${{ github.repository_owner }}.github.io
-      - run: cp -r apps/docs/dist apps/web/dist/docs
+      - if: steps.docs.outcome == 'success'
+        run: cp -r apps/docs/dist apps/web/dist/docs
       - uses: actions/upload-pages-artifact@v5
         with:
           path: apps/web/dist

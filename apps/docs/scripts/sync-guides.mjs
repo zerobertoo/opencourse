@@ -31,7 +31,9 @@ function rewriteGuideLinks(markdown) {
 /** A relative `.md` link that is not a synced guide would be dead on the site: fail loudly. */
 function assertNoDeadLinks(markdown, file) {
   const outsideCode = markdown.replace(/^```[\s\S]*?^```/gm, '');
-  for (const [, target] of outsideCode.matchAll(/\]\((?!https?:|#|\.\.\/)([^)\s]*\.md)(?:#[^)]*)?\)/g)) {
+  const syncedGuide = `(?:\\./)?(?:${GUIDES.join('|')})\\.md`;
+  const deadLink = new RegExp(`\\]\\((?!https?:|#|${syncedGuide}[)#])([^)\\s]*\\.md)(?:#[^)]*)?\\)`, 'g');
+  for (const [, target] of outsideCode.matchAll(deadLink)) {
     throw new Error(`${file}: link to ${target} would be dead on the site; add it to GUIDES`);
   }
 }
@@ -45,8 +47,8 @@ function sync() {
       const text = readFileSync(file, 'utf8').replace(/^﻿/, '').replaceAll('\r\n', '\n');
       const [, title, body] = /^# (.+)\n([\s\S]*)$/.exec(text) ?? [];
       if (!title) throw new Error(`${file} must start with an H1 (no front matter)`);
+      assertNoDeadLinks(body, file);
       const linked = rewriteGuideLinks(body);
-      assertNoDeadLinks(linked, file);
       writeFileSync(
         join(target, `${name}.md`),
         `---\ntitle: ${JSON.stringify(title)}\n---\n${linked}`,
