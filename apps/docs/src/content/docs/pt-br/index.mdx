@@ -1,0 +1,31 @@
+---
+title: OpenCourse
+description: Plataforma de cursos open source e auto-hospedada.
+template: splash
+hero:
+  tagline: Cursos com vídeo, texto e quizzes, acesso por concessões, certificados e webhooks. Hospede você mesmo.
+  actions:
+    - text: Guia de auto-hospedagem
+      link: ./guides/self-hosting/
+      icon: right-arrow
+    - text: Arquitetura
+      link: ./guides/architecture/
+      variant: minimal
+---
+
+import { Card, CardGrid } from '@astrojs/starlight/components';
+
+<CardGrid>
+  <Card title="Auto-hospedada" icon="seti:docker">
+    Um `docker compose up` sobe a API, o worker, o app web, o Postgres, o Redis e o armazenamento compatível com S3.
+  </Card>
+  <Card title="Acesso é uma concessão" icon="approve-check">
+    Nenhum pagamento dentro da plataforma. Quem vende um curso cria uma concessão pela API ou reage aos eventos.
+  </Card>
+  <Card title="Vídeo sob seu controle" icon="seti:video">
+    Envie uma vez e receba HLS adaptativo, ou cole um link do YouTube, Vimeo, Bunny, Cloudflare ou Panda.
+  </Card>
+  <Card title="Dois idiomas" icon="translate">
+    A interface e cada curso são traduzíveis. Português (Brasil) e inglês já vêm prontos.
+  </Card>
+</CardGrid>

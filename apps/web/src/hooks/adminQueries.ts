@@ -1,9 +1,16 @@
-import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import {
+  keepPreviousData,
+  useInfiniteQuery,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from '@tanstack/react-query';
 import type {
   CreateWebhookRequest,
   PlatformSettings,
   Role,
   UpdateWebhookRequest,
+  WebhookDelivery,
 } from '@opencourse/shared';
 import type { CreateInviteInput, GrantFilters, UserFilters } from '@/services';
 import { useServices } from '@/services/ServicesContext';
@@ -141,13 +148,29 @@ export function useWebhooks() {
   return useQuery({ queryKey: webhookKeys.list, queryFn: () => webhooks.list() });
 }
 
+export const WEBHOOK_DELIVERIES_PAGE_SIZE = 50;
+
+/** Delivery history, newest first, one page per request; `hasNextPage` is true while pages come back full. */
 export function useWebhookDeliveries(webhookId: string) {
   const { webhooks } = useServices();
-  return useQuery({
+  return useInfiniteQuery({
     queryKey: webhookKeys.deliveries(webhookId),
-    queryFn: () => webhooks.listDeliveries(webhookId),
+    queryFn: ({ pageParam }) =>
+      webhooks.listDeliveries(webhookId, {
+        limit: WEBHOOK_DELIVERIES_PAGE_SIZE,
+        ...(pageParam ? { before: pageParam } : {}),
+      }),
+    initialPageParam: '',
+    // each page starts after the last delivery of the previous one
+    getNextPageParam: (lastPage) =>
+      lastPage.length < WEBHOOK_DELIVERIES_PAGE_SIZE ? undefined : lastPage.at(-1)?.id,
+    select: selectDeliveries,
   });
 }
+
+const selectDeliveries = (data: { pages: WebhookDelivery[][] }) => ({
+  deliveries: data.pages.flat(),
+});
 
 export function useWebhookMutations() {
   const { webhooks } = useServices();

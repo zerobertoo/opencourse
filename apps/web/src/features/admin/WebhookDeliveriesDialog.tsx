@@ -83,9 +83,9 @@ export function WebhookDeliveriesDialog({
         <Skeleton className="h-14" />
       </div>
     );
-  } else if (query.isError) {
+  } else if (query.isError && !query.data) {
     body = <ErrorState onRetry={() => void query.refetch()} />;
-  } else if (query.data.length === 0) {
+  } else if (query.data.deliveries.length === 0) {
     body = (
       <EmptyState
         title={t('admin:webhooks.deliveries.emptyTitle')}
@@ -94,14 +94,33 @@ export function WebhookDeliveriesDialog({
     );
   } else {
     body = (
-      <ul
-        className="divide-y rounded-xl border bg-surface"
-        aria-label={t('admin:webhooks.deliveries.listLabel')}
-      >
-        {query.data.map((delivery) => (
-          <DeliveryRow key={delivery.id} delivery={delivery} {...(timeZone ? { timeZone } : {})} />
-        ))}
-      </ul>
+      <div className="space-y-3">
+        <ul
+          className="divide-y rounded-xl border bg-surface"
+          aria-label={t('admin:webhooks.deliveries.listLabel')}
+        >
+          {query.data.deliveries.map((delivery) => (
+            <DeliveryRow
+              key={delivery.id}
+              delivery={delivery}
+              {...(timeZone ? { timeZone } : {})}
+            />
+          ))}
+        </ul>
+        {query.isFetchNextPageError ? (
+          <ErrorState onRetry={() => void query.fetchNextPage()} />
+        ) : null}
+        {query.hasNextPage && !query.isFetchNextPageError ? (
+          <Button
+            variant="outline"
+            className="w-full"
+            disabled={query.isFetchingNextPage}
+            onClick={() => void query.fetchNextPage()}
+          >
+            {t('admin:webhooks.deliveries.loadMore')}
+          </Button>
+        ) : null}
+      </div>
     );
   }
 

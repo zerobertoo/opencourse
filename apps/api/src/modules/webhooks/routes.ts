@@ -15,7 +15,7 @@ import {
   type WebhookEnvelope,
 } from '@opencourse/shared';
 import { Queue } from 'bullmq';
-import { and, desc, eq } from 'drizzle-orm';
+import { and, desc, eq, sql } from 'drizzle-orm';
 import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod';
 import { z } from 'zod';
 import { recordAudit } from '../../audit';
@@ -288,10 +288,18 @@ export const webhookRoutes: FastifyPluginAsyncZod<WebhookRoutesOptions> = async 
       const rows = await app.db
         .select()
         .from(webhookDeliveries)
-        .where(eq(webhookDeliveries.endpointId, endpoint.id))
+        .where(
+          and(
+            eq(webhookDeliveries.endpointId, endpoint.id),
+            // keyset paging: unlike an offset it does not move when deliveries are added or purged;
+            // a cursor row that was purged meanwhile ends the list
+            request.query.before
+              ? sql`(${webhookDeliveries.createdAt}, ${webhookDeliveries.id}) < (select created_at, id from webhook_deliveries where id = ${request.query.before})`
+              : undefined,
+          ),
+        )
         .orderBy(desc(webhookDeliveries.createdAt), desc(webhookDeliveries.id))
-        .limit(request.query.limit)
-        .offset(request.query.offset);
+        .limit(request.query.limit);
       return { deliveries: rows.map(toWebhookDelivery) };
     },
   );

@@ -99,6 +99,17 @@ describe('stack: courses and grants', () => {
     });
     expect(savedQuiz.status).toBe(200);
 
+    // a video lesson pasted from a provider: its player reports no position, so students mark it
+    const video = await instructor.call('POST', `/modules/${moduleId}/lessons`, {
+      type: 'video',
+      title: 'Vídeo',
+      locale: 'pt-BR',
+    });
+    const linked = await instructor.call('PATCH', `/lessons/${video.body.lessonId}`, {
+      video: { url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ' },
+    });
+    expect(linked.status).toBe(200);
+
     const published = await instructor.call('PATCH', `/courses/${courseId}`, {
       status: 'published',
     });
@@ -112,7 +123,7 @@ describe('stack: courses and grants', () => {
       const student = await registerStudent('student');
       const catalog = await student.browser.call('GET', '/courses');
       const listed = catalog.body.courses.find((course: { id: string }) => course.id === courseId);
-      expect(listed).toMatchObject({ lessonCount: 2, moduleCount: 1, myGrant: null });
+      expect(listed).toMatchObject({ lessonCount: 3, moduleCount: 1, myGrant: null });
       expect(listed.modules).toBeUndefined();
 
       // the summary is public to signed-in users, the content is not
@@ -205,7 +216,7 @@ describe('stack: courses and grants', () => {
     // straight in, with no separate grant step
     const opened = await guest.call('GET', `/courses/${courseId}`);
     expect(opened.status).toBe(200);
-    expect(opened.body.course.modules[0].lessons).toHaveLength(2);
+    expect(opened.body.course.modules[0].lessons).toHaveLength(3);
     const mine = (await guest.call('GET', '/courses')).body.courses.find(
       (course: { id: string }) => course.id === courseId,
     );
@@ -224,7 +235,7 @@ describe('stack: courses and grants', () => {
       );
       expect(enrolled.progress).toMatchObject({
         completedCount: 0,
-        totalCount: 2,
+        totalCount: 3,
         isComplete: false,
       });
       expect((await student.browser.call('GET', '/me/continue-learning')).body.item).toBeNull();
@@ -255,6 +266,13 @@ describe('stack: courses and grants', () => {
       expect(resume.lesson.id).toBe(quizLesson.id);
       expect(resume.lesson).not.toHaveProperty('quiz');
 
+      const videoLesson = lessons.find((lesson: { type: string }) => lesson.type === 'video');
+      expect(videoLesson.video).toMatchObject({ provider: 'external', status: 'ready' });
+      const watched = await student.browser.call('PUT', `/lessons/${videoLesson.id}/progress`, {
+        completed: true,
+      });
+      expect(watched.body.progress.completed).toBe(true);
+
       const failed = await student.browser.call('POST', `/quizzes/${quizLesson.id}/attempts`, {
         answers: { [answerKey.id]: wrong.id },
       });
@@ -271,7 +289,7 @@ describe('stack: courses and grants', () => {
       const after = (await student.browser.call('GET', '/me/courses')).body.courses.find(
         (item: { course: { id: string } }) => item.course.id === courseId,
       );
-      expect(after.progress).toMatchObject({ completedCount: 2, isComplete: true });
+      expect(after.progress).toMatchObject({ completedCount: 3, isComplete: true });
       expect((await student.browser.call('GET', '/me/continue-learning')).body.item).toBeNull();
       expect(
         (await student.browser.call('GET', `/quizzes/${quizLesson.id}/attempts`)).body.attempts,

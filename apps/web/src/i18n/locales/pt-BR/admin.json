@@ -259,6 +259,7 @@
       "title": "Histórico de entregas",
       "description": "Requisições dos últimos 7 dias, da mais recente para a mais antiga.",
       "listLabel": "Entregas",
+      "loadMore": "Carregar mais",
       "emptyTitle": "Nada enviado ainda",
       "emptyDescription": "As entregas aparecem aqui depois que um evento acontece.",
       "status": {
