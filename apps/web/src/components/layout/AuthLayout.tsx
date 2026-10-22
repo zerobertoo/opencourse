@@ -3,6 +3,7 @@ import { Link, Outlet } from 'react-router-dom';
 import { LanguageSwitcher } from '@/components/LanguageSwitcher';
 import { Logo } from '@/components/Logo';
 import { RepositoryLink } from '@/components/RepositoryLink';
+import { isApiMode } from '@/services';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { Card } from '@/components/ui/card';
 
@@ -25,9 +26,11 @@ export function AuthLayout() {
           <Outlet />
         </Card>
         <p className="mt-6 text-center text-sm text-muted-foreground">{t('app.tagline')}</p>
-        <p className="mt-2 text-center">
-          <RepositoryLink />
-        </p>
+        {isApiMode ? null : (
+          <p className="mt-2 text-center">
+            <RepositoryLink />
+          </p>
+        )}
       </main>
     </div>
   );
