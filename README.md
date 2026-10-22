@@ -128,7 +128,7 @@ Without `VITE_API_URL` the app stays in demo mode. With it, the demo sign-in but
 ## Tests
 
 - `pnpm test`: unit and API integration tests. The API tests use their own `<database>_test` database on the Compose Postgres, never the development one.
-- `pnpm --filter @opencourse/api test:e2e`: end-to-end tests against the running Compose stack (accounts, courses and grants, e-mail links through Mailpit, resilience). The first account of an instance is the admin, so the flows that need one (invites, courses and grants) run only on a fresh database; elsewhere they skip themselves (`docker compose down -v` wipes the local volumes). Set `E2E_API_URL` to point the tests at another API, for example one started by hand on a scratch database; the resilience file stops Compose services, so run only `e2e/auth` and `e2e/courses` that way.
+- `pnpm --filter @opencourse/api test:e2e`: end-to-end tests against the running Compose stack, started with `RATE_LIMIT_DISABLED=true` (the suite registers more accounts than the sign-up limit of 10 per hour allows; CI does the same) and, for a clean run, an `AUTH_SECRET` of your own (accounts, courses and grants, e-mail links through Mailpit, resilience). The first account of an instance is the admin, so the flows that need one (invites, courses and grants) run only on a fresh database; elsewhere they skip themselves (`docker compose down -v` wipes the local volumes). Set `E2E_API_URL` to point the tests at another API, for example one started by hand on a scratch database; the resilience file stops Compose services, so run only `e2e/auth` and `e2e/courses` that way.
 
 ## Demo
 
