@@ -69,6 +69,26 @@ describe('request logs', () => {
     expect(logged).not.toContain(secret);
   });
 
+  it('logs a refused API key without writing the token', async () => {
+    lines.length = 0;
+    const secret = 'oc_super-secret-api-key-1234';
+    const response = await app.inject({
+      method: 'POST',
+      url: '/api/v1/grants',
+      headers: { authorization: `Bearer ${secret}`, 'x-requested-with': 'opencourse' },
+      payload: {
+        userId: '3f2b8a54-6d1e-4c3f-9a7b-2d5e8c1f0a11',
+        courseId: '3f2b8a54-6d1e-4c3f-9a7b-2d5e8c1f0a12',
+        expiresAt: null,
+      },
+    });
+
+    expect(response.statusCode).toBe(401);
+    const logged = lines.join('');
+    expect(logged).toContain('api key not recognised');
+    expect(logged).not.toContain(secret);
+  });
+
   it('still logs the request line with method and masked URL', async () => {
     lines.length = 0;
     await app.inject({ method: 'GET', url: '/health/live' });
