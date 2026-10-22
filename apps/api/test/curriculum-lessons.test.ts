@@ -1,4 +1,4 @@
-import { courseResponseSchema, createLessonResponseSchema } from '@opencourse/shared';
+import { courseResponseSchema, createLessonResponseSchema, type Quiz } from '@opencourse/shared';
 import { eq } from 'drizzle-orm';
 import { randomUUID } from 'node:crypto';
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
@@ -6,7 +6,7 @@ import { lessons } from '../src/db/schema';
 import { createCast, insertCourseWithLesson, insertLesson } from './fixtures';
 import { createTestApp, resetDatabase, type TestApp } from './helpers';
 
-function validQuiz() {
+function validQuiz(): Quiz {
   return {
     passingScore: 60,
     questions: [
@@ -194,5 +194,45 @@ describe('lesson routes', () => {
     expect(ready.json().course.status).toBe('published');
     // with the video lesson in place, the first one is no longer the last
     expect((await client.delete(`/api/v1/lessons/${lesson.id}`)).statusCode).toBe(200);
+  });
+
+  it('lets a new quiz lesson start empty in a published course, but never saves a broken quiz', async () => {
+    const cast = await createCast(ctx.app);
+    const { courseModule, lesson } = await insertCourseWithLesson(ctx.app, {
+      instructorId: cast.instructorA.userId,
+      status: 'published',
+    });
+    const client = cast.instructorA.client;
+    const added = await client.post(`/api/v1/modules/${courseModule.id}/lessons`, {
+      type: 'quiz',
+      title: 'Quiz',
+      locale: 'en',
+    });
+    expect(added.statusCode).toBe(201);
+    const quizId = added.json().lessonId as string;
+    const saveQuiz = (quiz: unknown) => client.patch(`/api/v1/lessons/${quizId}`, { quiz });
+
+    const noCorrect = validQuiz();
+    noCorrect.questions[0]!.options.forEach((option) => (option.isCorrect = false));
+    const twoCorrect = validQuiz();
+    twoCorrect.questions[0]!.options.forEach((option) => (option.isCorrect = true));
+    const noPrompt = validQuiz();
+    noPrompt.questions[0]!.translations = [{ locale: 'en' as const, prompt: ' ', explanation: '' }];
+    for (const broken of [noCorrect, twoCorrect, noPrompt]) {
+      const refused = await saveQuiz(broken);
+      expect(refused.statusCode).toBe(400);
+      expect(refused.json().error.details.issues).toEqual(['invalidQuiz']);
+    }
+
+    expect((await saveQuiz(validQuiz())).statusCode).toBe(200);
+    // once it plays, a later edit cannot break it either
+    expect((await saveQuiz(noCorrect)).statusCode).toBe(400);
+
+    // a quiz that was already broken before the edit does not freeze the rest of the course
+    await ctx.app.db.update(lessons).set({ quiz: noCorrect }).where(eq(lessons.id, quizId));
+    const other = await client.patch(`/api/v1/lessons/${lesson.id}`, { durationSeconds: 90 });
+    expect(other.statusCode).toBe(200);
+    const sameQuiz = await saveQuiz(noCorrect);
+    expect(sameQuiz.statusCode).toBe(200);
   });
 });
