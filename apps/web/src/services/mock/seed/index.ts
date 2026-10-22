@@ -292,6 +292,7 @@ export function createEmptyDatabase(): MockDatabase {
     settings: buildSettings(),
     webhooks: [],
     webhookDeliveries: [],
+    apiKeys: [],
     counters: {},
   };
 }
@@ -319,6 +320,7 @@ export function createSeedDatabase(now: Date): MockDatabase {
     settings: buildSettings(),
     webhooks: [],
     webhookDeliveries: [],
+    apiKeys: [],
     counters: {},
   });
 }

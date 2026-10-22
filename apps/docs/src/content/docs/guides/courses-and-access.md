@@ -28,11 +28,11 @@ Access to a course is always a grant. Instructors (for their own courses) and ad
 
 A server-side plugin (for example one that sells courses elsewhere and grants access) authenticates with an API key instead of a browser session:
 
-1. An admin creates a key with `POST /api/v1/admin/api-keys` (`{ "name": "..." }`). The `token` (it starts with `oc_`) is in that response only; the database keeps just its hash.
+1. An admin creates a key under **Administration → API keys** (the screen shows the token once, with a copy button) or with `POST /api/v1/admin/api-keys` (`{ "name": "..." }`). The `token` (it starts with `oc_`) is in that response only; the database keeps just its hash.
 2. The plugin sends `Authorization: Bearer <token>` plus the `X-Requested-With: opencourse` header that every state-changing request needs, to the grant routes: `GET /grants`, `POST /grants`, `POST /grants/:id/revoke` and `POST /grants/:id/extend`.
 3. Grants created this way have the source `plugin`.
 
-A key acts as the admin who created it and works only on those four routes. It stops working when that admin is deactivated or loses the role, and an admin can revoke it with `POST /api/v1/admin/api-keys/:id/revoke`. Keys cannot create or revoke keys. Creation and revocation are written to the audit log, and the plugin can also react to the domain events through [webhooks](../webhooks/).
+A key acts as the admin who created it and works only on those four routes. It stops working when that admin is deactivated or loses the role, and an admin can revoke it on the same screen or with `POST /api/v1/admin/api-keys/:id/revoke`. Keys cannot create or revoke keys. Creation and revocation are written to the audit log, and the plugin can also react to the domain events through [webhooks](../webhooks/).
 
 ## Audit
 

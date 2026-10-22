@@ -18,6 +18,7 @@ import { AdminPlugins } from '@/pages/admin/Plugins';
 import { AdminSettings } from '@/pages/admin/Settings';
 import { AdminUsers } from '@/pages/admin/Users';
 import { AdminVideos } from '@/pages/admin/Videos';
+import { AdminApiKeys } from '@/pages/admin/ApiKeys';
 import { AdminWebhooks } from '@/pages/admin/Webhooks';
 import { Showcase } from '@/pages/Showcase';
 import { VerifyCertificate } from '@/pages/VerifyCertificate';
@@ -70,6 +71,7 @@ export function App() {
                 <Route path="grants" element={<AdminGrants />} />
                 <Route path="videos" element={<AdminVideos />} />
                 <Route path="webhooks" element={<AdminWebhooks />} />
+                <Route path="api-keys" element={<AdminApiKeys />} />
                 <Route path="settings" element={<AdminSettings />} />
                 <Route path="plugins" element={<AdminPlugins />} />
               </Route>

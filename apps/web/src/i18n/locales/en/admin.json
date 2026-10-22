@@ -10,7 +10,8 @@
     "settings": "Settings",
     "plugins": "Plugins",
     "videos": "Videos",
-    "webhooks": "Webhooks"
+    "webhooks": "Webhooks",
+    "api-keys": "API keys"
   },
   "roles": {
     "student": "Student",
@@ -284,5 +285,49 @@
     "retry": "Try again",
     "retryFor": "Try again: {lesson}",
     "retriedToast": "Video queued again."
+  },
+  "apiKeys": {
+    "title": "API keys",
+    "description": "Let server-side plugins create and manage access through the API. A key acts as the admin who created it and works only on the grant routes.",
+    "listLabel": "API keys",
+    "add": "Create API key",
+    "emptyTitle": "No API keys yet",
+    "emptyDescription": "Create a key for a plugin that grants access, for example one that sells courses elsewhere.",
+    "status": {
+      "active": "Active",
+      "revoked": "Revoked"
+    },
+    "tokenPrefix": "Starts with {prefix}",
+    "createdAt": "Created {date}",
+    "lastUsed": "Last used {date}",
+    "neverUsed": "Never used",
+    "revokedAt": "Revoked {date}",
+    "revoke": "Revoke",
+    "revokeFor": "Revoke {name}",
+    "revokedToast": "API key revoked.",
+    "revokeDialog": {
+      "title": "Revoke this API key?",
+      "description": "{name} stops working immediately and cannot be restored. Plugins that use it lose access.",
+      "confirm": "Revoke"
+    },
+    "form": {
+      "title": "Create API key",
+      "description": "Give it a name that tells you which plugin uses it.",
+      "name": "Name",
+      "nameHint": "For example, the store that sells your courses.",
+      "submit": "Create key",
+      "createdToast": "API key created."
+    },
+    "token": {
+      "title": "API key token",
+      "description": "Copy it now. It is shown only this once and cannot be retrieved later.",
+      "warning": "Anyone with this token can create and revoke access to your courses. Store it somewhere safe and never share it.",
+      "label": "Token",
+      "copy": "Copy",
+      "copied": "Copied",
+      "copyFailed": "Could not copy. Select the text and copy it by hand.",
+      "howTo": "The plugin sends it as Authorization: Bearer <token>, together with the X-Requested-With: opencourse header, to the grant routes.",
+      "done": "I saved it"
+    }
   }
 }

@@ -295,3 +295,8 @@ export const webhookFormSchema = z.object({
     .min(1, 'validation.eventsRequired'),
 });
 export type WebhookFormValues = z.infer<typeof webhookFormSchema>;
+
+export const apiKeyFormSchema = z.object({
+  name: z.string().trim().min(1, 'validation.required').max(100, 'validation.apiKeyNameTooLong'),
+});
+export type ApiKeyFormValues = z.infer<typeof apiKeyFormSchema>;

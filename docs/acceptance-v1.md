@@ -32,4 +32,4 @@ The wording scan covers the product roots (`apps/api/src`, `apps/api/migrations`
 
 ### Resolved gap: machine credential for plugins
 
-Until the API keys landed, a plugin could only call `POST /grants` by signing in as a user. Admins now create keys (`/admin/api-keys`) that work only on the grant routes and act as their creator; see the courses and access guide. Remaining: there is no admin screen for keys yet, so they are managed through the API.
+Until the API keys landed, a plugin could only call `POST /grants` by signing in as a user. Admins now create keys (`/admin/api-keys`) that work only on the grant routes and act as their creator; see the courses and access guide. They are managed on the admin screen "API keys".
