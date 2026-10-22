@@ -1,5 +1,5 @@
 import type { DomainEventName, WebhookEnvelope } from '@opencourse/shared';
-import { and, arrayContains, eq, sql } from 'drizzle-orm';
+import { and, arrayContains, eq, inArray, sql } from 'drizzle-orm';
 import { webhookDeliveries, webhookEndpoints } from '../../db/schema';
 import type { Database } from '../../plugins/db';
 import { postWebhook } from './http';
@@ -40,31 +40,32 @@ export async function fanOutWebhooks(
     createdAt: event.createdAt,
     data: event.data,
   };
-  // endpoints are independent, so they go in parallel; a failure rejects and the relay retries all
-  await Promise.all(
-    endpoints.map(async (endpoint) => {
-      await db
-        .insert(webhookDeliveries)
-        .values({
-          endpointId: endpoint.id,
-          eventId: event.eventId,
-          eventName: event.eventName,
-          payload: envelope,
-        })
-        .onConflictDoNothing();
-      // read back instead of using the insert result: after a crash the row already exists
-      const [delivery] = await db
-        .select({ id: webhookDeliveries.id })
-        .from(webhookDeliveries)
-        .where(
-          and(
-            eq(webhookDeliveries.eventId, event.eventId),
-            eq(webhookDeliveries.endpointId, endpoint.id),
-          ),
-        );
-      if (delivery) await addJob(delivery.id, delivery.id);
-    }),
-  );
+  if (endpoints.length === 0) return;
+  const endpointIds = endpoints.map((endpoint) => endpoint.id);
+  // two queries however many endpoints there are
+  await db
+    .insert(webhookDeliveries)
+    .values(
+      endpointIds.map((endpointId) => ({
+        endpointId,
+        eventId: event.eventId,
+        eventName: event.eventName,
+        payload: envelope,
+      })),
+    )
+    .onConflictDoNothing();
+  // read back instead of using the insert result: after a crash the rows already exist
+  const deliveries = await db
+    .select({ id: webhookDeliveries.id })
+    .from(webhookDeliveries)
+    .where(
+      and(
+        eq(webhookDeliveries.eventId, event.eventId),
+        inArray(webhookDeliveries.endpointId, endpointIds),
+      ),
+    );
+  // job ids are the delivery ids, so queueing again after a failure adds nothing twice
+  await Promise.all(deliveries.map((delivery) => addJob(delivery.id, delivery.id)));
 }
 
 export interface DeliveryOptions {

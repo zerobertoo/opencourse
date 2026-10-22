@@ -83,7 +83,7 @@ export function WebhookDeliveriesDialog({
         <Skeleton className="h-14" />
       </div>
     );
-  } else if (query.isError) {
+  } else if (query.isError && !query.data) {
     body = <ErrorState onRetry={() => void query.refetch()} />;
   } else if (query.data.deliveries.length === 0) {
     body = (
@@ -107,7 +107,8 @@ export function WebhookDeliveriesDialog({
             />
           ))}
         </ul>
-        {query.hasNextPage ? (
+        {query.isError ? <ErrorState onRetry={() => void query.fetchNextPage()} /> : null}
+        {query.hasNextPage && !query.isError ? (
           <Button
             variant="outline"
             className="w-full"
