@@ -28,11 +28,11 @@ O acesso a um curso é sempre uma concessão (grant). Instrutores (nos próprios
 
 Um plugin de servidor (por exemplo, um que vende cursos em outro lugar e concede o acesso) se autentica com uma chave de API em vez de uma sessão de navegador:
 
-1. Um admin cria a chave com `POST /api/v1/admin/api-keys` (`{ "name": "..." }`). O `token` (começa com `oc_`) aparece só nessa resposta; o banco guarda apenas o hash.
+1. Um admin cria a chave em **Administração → Chaves de API** (a tela mostra o token uma única vez, com botão de copiar) ou com `POST /api/v1/admin/api-keys` (`{ "name": "..." }`). O `token` (começa com `oc_`) aparece só nessa resposta; o banco guarda apenas o hash.
 2. O plugin envia `Authorization: Bearer <token>` e o cabeçalho `X-Requested-With: opencourse`, exigido em toda requisição que altera dados, para as rotas de concessões: `GET /grants`, `POST /grants`, `POST /grants/:id/revoke` e `POST /grants/:id/extend`.
 3. As concessões criadas assim têm a origem `plugin`.
 
-A chave age como o admin que a criou e funciona só nessas quatro rotas. Ela para de funcionar quando esse admin é desativado ou perde o papel, e um admin pode revogá-la com `POST /api/v1/admin/api-keys/:id/revoke`. Chaves não criam nem revogam chaves. A criação e a revogação vão para o log de auditoria, e o plugin também pode reagir aos eventos de domínio por [webhooks](../webhooks/).
+A chave age como o admin que a criou e funciona só nessas quatro rotas. Ela para de funcionar quando esse admin é desativado ou perde o papel, e um admin pode revogá-la na mesma tela ou com `POST /api/v1/admin/api-keys/:id/revoke`. Chaves não criam nem revogam chaves. A criação e a revogação vão para o log de auditoria, e o plugin também pode reagir aos eventos de domínio por [webhooks](../webhooks/).
 
 ## Auditoria
 

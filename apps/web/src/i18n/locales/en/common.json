@@ -96,6 +96,7 @@
     "passwordLength": "The password must have at least 8 characters.",
     "passwordTooLong": "The password can have at most 128 characters.",
     "nameTooLong": "The name can have at most 120 characters.",
+    "apiKeyNameTooLong": "The name can have at most 100 characters.",
     "passwordMismatch": "The passwords do not match.",
     "duration": "Use minutes or m:ss, for example 12 or 5:30.",
     "url": "Enter a valid link starting with http:// or https://.",

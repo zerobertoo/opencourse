@@ -10,7 +10,8 @@
     "settings": "Configurações",
     "plugins": "Plugins",
     "videos": "Vídeos",
-    "webhooks": "Webhooks"
+    "webhooks": "Webhooks",
+    "api-keys": "Chaves de API"
   },
   "roles": {
     "student": "Aluno",
@@ -284,5 +285,49 @@
     "retry": "Tentar de novo",
     "retryFor": "Tentar de novo: {lesson}",
     "retriedToast": "Vídeo colocado na fila de novo."
+  },
+  "apiKeys": {
+    "title": "Chaves de API",
+    "description": "Permita que plugins no servidor criem e gerenciem acessos pela API. A chave age como o admin que a criou e funciona apenas nas rotas de concessão.",
+    "listLabel": "Chaves de API",
+    "add": "Criar chave de API",
+    "emptyTitle": "Nenhuma chave de API ainda",
+    "emptyDescription": "Crie uma chave para um plugin que concede acesso, por exemplo um que vende cursos em outro lugar.",
+    "status": {
+      "active": "Ativa",
+      "revoked": "Revogada"
+    },
+    "tokenPrefix": "Começa com {prefix}",
+    "createdAt": "Criada em {date}",
+    "lastUsed": "Último uso em {date}",
+    "neverUsed": "Nunca usada",
+    "revokedAt": "Revogada em {date}",
+    "revoke": "Revogar",
+    "revokeFor": "Revogar {name}",
+    "revokedToast": "Chave de API revogada.",
+    "revokeDialog": {
+      "title": "Revogar esta chave de API?",
+      "description": "{name} deixa de funcionar na hora e não pode ser restaurada. Os plugins que a usam perdem o acesso.",
+      "confirm": "Revogar"
+    },
+    "form": {
+      "title": "Criar chave de API",
+      "description": "Dê um nome que indique qual plugin vai usá-la.",
+      "name": "Nome",
+      "nameHint": "Por exemplo, a loja que vende seus cursos.",
+      "submit": "Criar chave",
+      "createdToast": "Chave de API criada."
+    },
+    "token": {
+      "title": "Token da chave de API",
+      "description": "Copie agora. Ele aparece só desta vez e não pode ser recuperado depois.",
+      "warning": "Quem tiver este token pode criar e revogar acessos aos seus cursos. Guarde em local seguro e nunca compartilhe.",
+      "label": "Token",
+      "copy": "Copiar",
+      "copied": "Copiado",
+      "copyFailed": "Não foi possível copiar. Selecione o texto e copie manualmente.",
+      "howTo": "O plugin envia o token como Authorization: Bearer <token>, junto com o cabeçalho X-Requested-With: opencourse, às rotas de concessão.",
+      "done": "Já guardei"
+    }
   }
 }

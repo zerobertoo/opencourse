@@ -10,6 +10,7 @@ import type { SettingsService } from './settings';
 import type { StudioService } from './studio';
 import type { UserService } from './users';
 import type { VideoService } from './video';
+import type { ApiKeyService } from './apiKeys';
 import type { WebhookService } from './webhooks';
 
 /** All application services. Components depend only on these interfaces. */
@@ -27,4 +28,5 @@ export interface Services {
   studio: StudioService;
   video: VideoService;
   webhooks: WebhookService;
+  apiKeys: ApiKeyService;
 }

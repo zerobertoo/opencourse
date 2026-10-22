@@ -1,4 +1,5 @@
 import type {
+  ApiKey,
   Certificate,
   CourseDetail,
   Grant,
@@ -35,6 +36,7 @@ export interface MockDatabase {
   settings: PlatformSettings;
   webhooks: StoredWebhook[];
   webhookDeliveries: WebhookDelivery[];
+  apiKeys: ApiKey[];
   /** Counters by prefix, used to generate new stable ids. */
   counters: Record<string, number>;
 }
@@ -43,7 +45,7 @@ export interface MockDatabase {
  * Version of the format and the seed. When the seed or the format changes, bump it: state saved
  * in the session with another version is discarded and the seed is recreated.
  */
-export const MOCK_DB_VERSION = 7;
+export const MOCK_DB_VERSION = 8;
 
 export const DB_STORAGE_KEY = 'opencourse.mock.db';
 export const SESSION_STORAGE_KEY = 'opencourse.mock.session';

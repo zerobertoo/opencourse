@@ -15,6 +15,7 @@ import {
 import { createApiSettingsService } from './api/settings';
 import { createApiUserService } from './api/users';
 import { createApiVideoService } from './api/video';
+import { createApiApiKeyService } from './api/apiKeys';
 import { createApiWebhookService } from './api/webhooks';
 import type { AuthService } from './auth';
 import type { MockServices } from './mock';
@@ -87,5 +88,6 @@ export function createHybridServices(
     studio: createApiStudioService(client),
     video: createApiVideoService(client),
     webhooks: createApiWebhookService(client),
+    apiKeys: createApiApiKeyService(client),
   };
 }

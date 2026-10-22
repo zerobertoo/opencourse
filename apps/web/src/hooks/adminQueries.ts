@@ -6,6 +6,7 @@ import {
   useQueryClient,
 } from '@tanstack/react-query';
 import type {
+  CreateApiKeyRequest,
   CreateWebhookRequest,
   PlatformSettings,
   Role,
@@ -197,5 +198,26 @@ export function useWebhookMutations() {
       mutationFn: (deliveryId: string) => webhooks.retryDelivery(deliveryId),
       onSuccess: () => queryClient.invalidateQueries({ queryKey: webhookKeys.list }),
     }),
+  };
+}
+
+const apiKeysKey = ['admin', 'api-keys'] as const;
+
+export function useApiKeys() {
+  const { apiKeys } = useServices();
+  return useQuery({ queryKey: apiKeysKey, queryFn: () => apiKeys.list() });
+}
+
+export function useApiKeyMutations() {
+  const { apiKeys } = useServices();
+  const queryClient = useQueryClient();
+  const refresh = () => queryClient.invalidateQueries({ queryKey: apiKeysKey });
+
+  return {
+    create: useMutation({
+      mutationFn: (input: CreateApiKeyRequest) => apiKeys.create(input),
+      onSuccess: refresh,
+    }),
+    revoke: useMutation({ mutationFn: (id: string) => apiKeys.revoke(id), onSuccess: refresh }),
   };
 }
