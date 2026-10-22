@@ -16,6 +16,7 @@
     "markComplete": "Mark as completed",
     "markIncomplete": "Completed (undo)",
     "passQuizToComplete": "Pass the quiz to complete this lesson.",
+    "quizPassedNote": "You passed this quiz, so the lesson stays completed.",
     "completedToast": "Lesson completed.",
     "courseFinishedToast": "Course completed! Your certificate was issued.",
     "noDescription": "This lesson has no description."

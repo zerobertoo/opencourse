@@ -70,7 +70,7 @@ export const progressRoutes: FastifyPluginAsyncZod = async (app) => {
         tags: ['progress'],
         summary: 'Mark a lesson completed or not, and save the video position',
         description:
-          'Fields left out keep their value. Quiz lessons complete only by passing the quiz. ' +
+          'Fields left out keep their value. Quiz lessons complete only by passing the quiz and cannot be unmarked, so `completed` is refused for them. ' +
           'Locked lessons of sequential courses refuse completion and position saves.',
         params: lessonIdParamsSchema,
         body: updateProgressRequestSchema,
@@ -85,8 +85,9 @@ export const progressRoutes: FastifyPluginAsyncZod = async (app) => {
       const row = await app.db.transaction(async (tx) => {
         const { course, lesson } = await requireReadableLesson(tx, user, request.params.id);
         await lockStudentCourse(tx, user.id, course.id);
-        if (completed === true && lesson.type === 'quiz') {
-          throw badRequest('A quiz lesson is completed by passing the quiz');
+        // passing is the only way in, and a pass is never taken back by hand
+        if (completed !== undefined && lesson.type === 'quiz') {
+          throw badRequest('A quiz lesson is completed by passing the quiz and stays completed');
         }
         if (videoPositionSeconds !== undefined && lesson.type !== 'video') {
           throw badRequest('Only video lessons have a playback position');

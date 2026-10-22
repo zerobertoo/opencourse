@@ -195,6 +195,19 @@ describe('lesson progress', () => {
       expect(response.statusCode).toBe(400);
     });
 
+    it('refuses to un-complete a passed quiz lesson by hand', async () => {
+      const { cast, quiz, quizFixture, course } = await setup();
+      const { questionIds, correct } = quizFixture;
+      await cast.student.client.post(`/api/v1/quizzes/${quiz.id}/attempts`, {
+        answers: { [questionIds[0]!]: correct[0], [questionIds[1]!]: correct[1] },
+      });
+
+      const response = await mark(cast.student.client, quiz.id, { completed: false });
+      expect(response.statusCode).toBe(400);
+      const records = await cast.student.client.get(`/api/v1/courses/${course.id}/progress`);
+      expect(records.json().progress).toMatchObject([{ lessonId: quiz.id, completed: true }]);
+    });
+
     it('is scoped to the caller', async () => {
       const { cast, text, course } = await setup();
       await insertGrant(ctx.app, {

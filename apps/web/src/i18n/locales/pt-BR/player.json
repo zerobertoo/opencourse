@@ -16,6 +16,7 @@
     "markComplete": "Marcar como concluída",
     "markIncomplete": "Concluída (desmarcar)",
     "passQuizToComplete": "Seja aprovado no quiz para concluir esta aula.",
+    "quizPassedNote": "Você foi aprovado neste quiz, então a aula fica concluída.",
     "completedToast": "Aula concluída.",
     "courseFinishedToast": "Curso concluído! Seu certificado foi emitido.",
     "noDescription": "Esta aula não tem descrição."
