@@ -2,7 +2,7 @@
 
 Open source, self-hosted platform for creators to publish recorded courses, tutorials and learning paths.
 
-> This is the original specification. It states the intent and scope; where the implementation differs, the [README](../README.md) and the guides in this folder describe the current state (for example, domain events go through a transactional outbox instead of an in-process bus, and video providers are plugins).
+> This is the original specification. It states the intent and scope; where the implementation differs, the [documentation](https://zerobertoo.github.io/opencourse/docs/) and the guides in this folder describe the current state (for example, domain events go through a transactional outbox instead of an in-process bus, and video providers are plugins).
 
 ## 1. Vision and goals
 

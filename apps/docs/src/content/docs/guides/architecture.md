@@ -33,6 +33,8 @@ State changes write a domain event to the `outbox_events` table in the same tran
 | `certificate.issued`  | a certificate is issued                         |
 | `video.processed`     | an uploaded video finished encoding             |
 
+The worker (`apps/api/src/worker.ts`, same image as the API, `node dist/worker.js`) polls the outbox about once a second, and rows already dispatched are deleted after 7 days. Consumers live in `src/worker/consumers.ts`. A failed job is retried 5 times with exponential backoff and then kept for inspection.
+
 Delivery is at-least-once, so consumers must be idempotent. Without a running worker nothing is lost: events wait in the outbox. Consumers shipped today: certificates and their e-mail, [webhooks](../webhooks/) and the video encoder.
 
 ## Extension points
