@@ -57,7 +57,7 @@ describe('domain events written by their producers', () => {
     ]);
   });
 
-  it('writes enrollment.granted for a new grant, not for extending it, and grant.revoked once', async () => {
+  it('writes enrollment.granted for a new grant and again when it is extended, and grant.revoked once', async () => {
     const cast = await createCast(ctx.app);
     const course = await insertCourse(ctx.app, { instructorId: cast.instructorA.userId });
     const { admin, student } = cast;
@@ -72,7 +72,7 @@ describe('domain events written by their producers', () => {
       { grantId, userId: student.userId, courseId: course.id, source: 'manual', expiresAt: null },
     ]);
 
-    // granting again and extending both reuse the open grant: no new enrollment
+    // granting again and extending both reuse the open grant and announce its new expiry
     await admin.client.post('/api/v1/grants', {
       userId: student.userId,
       courseId: course.id,
@@ -80,7 +80,11 @@ describe('domain events written by their producers', () => {
     });
     const future = new Date(Date.now() + 86_400_000).toISOString();
     await admin.client.post(`/api/v1/grants/${grantId}/extend`, { expiresAt: future });
-    expect(await events('enrollment.granted')).toHaveLength(1);
+    const granted3 = await events('enrollment.granted');
+    expect(granted3).toHaveLength(3);
+    expect(granted3[2]).toEqual(
+      expect.objectContaining({ grantId, expiresAt: future, source: 'manual' }),
+    );
     expect(await events('grant.revoked')).toHaveLength(0);
 
     await admin.client.post(`/api/v1/grants/${grantId}/revoke`);

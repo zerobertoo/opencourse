@@ -46,6 +46,12 @@ export async function createGrantRow(tx: GrantWriter, input: NewGrant): Promise<
       ...input.metadata,
     },
   });
+  await enqueueEnrollmentGranted(tx, row);
+  return row;
+}
+
+/** `enrollment.granted` carries the current expiry, so extending a grant sends it again. */
+async function enqueueEnrollmentGranted(tx: GrantWriter, row: GrantRow): Promise<void> {
   await enqueueEvents(tx, [
     {
       name: 'enrollment.granted',
@@ -58,7 +64,6 @@ export async function createGrantRow(tx: GrantWriter, input: NewGrant): Promise<
       },
     },
   ]);
-  return row;
 }
 
 /** Replaces the expiry of an open grant (expired ones become active again) and audits it. */
@@ -86,6 +91,7 @@ export async function setGrantExpiry(
       to: row.expiresAt?.toISOString() ?? null,
     },
   });
+  await enqueueEnrollmentGranted(tx, row);
   return row;
 }
 

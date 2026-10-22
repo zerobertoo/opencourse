@@ -40,28 +40,31 @@ export async function fanOutWebhooks(
     createdAt: event.createdAt,
     data: event.data,
   };
-  for (const endpoint of endpoints) {
-    await db
-      .insert(webhookDeliveries)
-      .values({
-        endpointId: endpoint.id,
-        eventId: event.eventId,
-        eventName: event.eventName,
-        payload: envelope,
-      })
-      .onConflictDoNothing();
-    // read back instead of using the insert result: after a crash the row already exists
-    const [delivery] = await db
-      .select({ id: webhookDeliveries.id })
-      .from(webhookDeliveries)
-      .where(
-        and(
-          eq(webhookDeliveries.eventId, event.eventId),
-          eq(webhookDeliveries.endpointId, endpoint.id),
-        ),
-      );
-    if (delivery) await addJob(delivery.id, delivery.id);
-  }
+  // endpoints are independent, so they go in parallel; a failure rejects and the relay retries all
+  await Promise.all(
+    endpoints.map(async (endpoint) => {
+      await db
+        .insert(webhookDeliveries)
+        .values({
+          endpointId: endpoint.id,
+          eventId: event.eventId,
+          eventName: event.eventName,
+          payload: envelope,
+        })
+        .onConflictDoNothing();
+      // read back instead of using the insert result: after a crash the row already exists
+      const [delivery] = await db
+        .select({ id: webhookDeliveries.id })
+        .from(webhookDeliveries)
+        .where(
+          and(
+            eq(webhookDeliveries.eventId, event.eventId),
+            eq(webhookDeliveries.endpointId, endpoint.id),
+          ),
+        );
+      if (delivery) await addJob(delivery.id, delivery.id);
+    }),
+  );
 }
 
 export interface DeliveryOptions {
