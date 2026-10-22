@@ -1,5 +1,6 @@
 import {
   domainEventNameSchema,
+  isHttpUrl,
   isSenderAddress,
   lessonTypeSchema,
   localeSchema,
@@ -253,10 +254,7 @@ export const platformSettingsFormSchema = z
       .string()
       .trim()
       // same rule as the API: only http(s) addresses
-      .refine(
-        (value) => value === '' || z.url({ protocol: /^https?$/ }).safeParse(value).success,
-        'validation.url',
-      ),
+      .refine((value) => value === '' || isHttpUrl(value), 'validation.url'),
     primaryColor: z.string().regex(/^#[0-9a-fA-F]{6}$/, 'validation.color'),
     // An empty checkbox group may arrive as `false`, so every failure maps to the same message.
     enabledLocales: z
@@ -274,7 +272,7 @@ export const platformSettingsFormSchema = z
       }, 'validation.port'),
     username: z.string().trim(),
     // same rule as the API ("user@host" or "Name <user@host>")
-    fromAddress: z.string().trim().refine(isSenderAddress, 'validation.email'),
+    fromAddress: z.string().trim().min(1, required).refine(isSenderAddress, 'validation.email'),
     secure: z.boolean(),
   })
   .refine((values) => values.enabledLocales.includes(values.defaultLocale), {

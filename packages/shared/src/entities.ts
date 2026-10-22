@@ -282,20 +282,27 @@ export const platformSettingsSchema = z.object({
 });
 export type PlatformSettings = z.infer<typeof platformSettingsSchema>;
 
-const DISPLAY_NAME_ADDRESS = /^[^<>\r\n]+<([^<>\s]+)>$/;
+// The name may not hold characters the mail library reads as address-list syntax (`,` `;` `@`,
+// quotes), so one value can never turn into several From addresses.
+const DISPLAY_NAME_ADDRESS = /^[^<>\r\n,;:"@\\]*<([^<>\s]+)>$/;
 
-/** True for `user@host` and for `Display Name <user@host>`, the form the mail server accepts as `From`. */
+/** True for `user@host`, `<user@host>` and `Display Name <user@host>`, the forms accepted as `From`. */
 export function isSenderAddress(value: string): boolean {
   const trimmed = value.trim();
   const bare = DISPLAY_NAME_ADDRESS.exec(trimmed)?.[1] ?? trimmed;
   return z.email().safeParse(bare).success;
 }
 
+/** True for an absolute http or https address; anything else (`javascript:`, `data:`) is refused. */
+export function isHttpUrl(value: string): boolean {
+  return z.url({ protocol: /^https?$/ }).safeParse(value).success;
+}
+
 /** Merged-then-validated by the server, so every group may carry only the fields that change. */
 export const updatePlatformSettingsRequestSchema = z
   .object({
     brand: platformSettingsSchema.shape.brand
-      .extend({ logoUrl: z.url({ protocol: /^https?$/ }).nullable() })
+      .extend({ logoUrl: z.string().refine(isHttpUrl, 'Enter an http(s) address').nullable() })
       .partial()
       .strict()
       .optional(),
@@ -303,7 +310,7 @@ export const updatePlatformSettingsRequestSchema = z
     defaultLocale: localeSchema.optional(),
     email: platformSettingsSchema.shape.email
       .extend({
-        fromAddress: z.string().refine(isSenderAddress, 'Enter an e-mail, or Name <e-mail>'),
+        fromAddress: z.string().trim().refine(isSenderAddress, 'Enter an e-mail, or Name <e-mail>'),
       })
       .partial()
       .strict()
