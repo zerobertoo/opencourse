@@ -4,15 +4,12 @@ import helmet from '@fastify/helmet';
 import swagger from '@fastify/swagger';
 import scalar from '@scalar/fastify-api-reference';
 import Fastify, { type FastifyInstance } from 'fastify';
-import {
-  jsonSchemaTransform,
-  serializerCompiler,
-  validatorCompiler,
-} from 'fastify-type-provider-zod';
+import { serializerCompiler, validatorCompiler } from 'fastify-type-provider-zod';
 import type { Config } from './config';
 import { serializeRequest } from './logging';
 import { createSmtpMailer, type Mailer } from './mail/mailer';
 import { healthRoutes } from './modules/health/routes';
+import { swaggerOptions } from './openapi';
 import { authPlugin } from './plugins/auth';
 import { backgroundPlugin } from './plugins/background';
 import { dbPlugin } from './plugins/db';
@@ -87,13 +84,10 @@ export async function buildApp(
     methods: ['GET', 'HEAD', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   });
 
-  await app.register(swagger, {
-    openapi: {
-      info: { title: 'OpenCourse API', version: '0.0.0' },
-    },
-    transform: jsonSchemaTransform,
-  });
-  await app.register(scalar, { routePrefix: '/docs' });
+  if (config.API_DOCS_ENABLED) {
+    await app.register(swagger, swaggerOptions);
+    await app.register(scalar, { routePrefix: '/docs' });
+  }
 
   await app.register(dbPlugin, { databaseUrl: config.DATABASE_URL });
   await app.register(redisPlugin, { redisUrl: config.REDIS_URL });

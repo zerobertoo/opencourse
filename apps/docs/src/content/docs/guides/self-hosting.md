@@ -49,6 +49,7 @@ It runs the migrations, API, worker and web, and reads every connection from `.e
 | `AUTH_SECRET`                     | Signs access tokens. The API refuses to start in production with the placeholder.           |
 | `COOKIE_SECURE=true`              | Set it when the API is served over HTTPS.                                                   |
 | `TRUST_PROXY=true`                | Only behind a reverse proxy you control, so rate limits see the real client IP.             |
+| `API_DOCS_ENABLED=false`          | Hides the API reference (`/docs`) and the OpenAPI document. On by default; for a password, protect `/docs` in your reverse proxy. |
 | `CORS_ORIGINS`, `WEB_BASE_URL`    | Your web address: CORS and the links inside e-mails.                                        |
 | `S3_PUBLIC_URL`                   | Where browsers reach the storage. Uploads and video segments go straight to it.             |
 | `SMTP_*`                          | Real e-mail for invites, password recovery and certificates.                                |

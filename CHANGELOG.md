@@ -4,7 +4,13 @@ All notable changes to OpenCourse. Releases are tagged `vX.Y.Z`; the PRD in [doc
 
 ## Unreleased
 
-Nothing yet.
+### Added
+
+- `API_DOCS_ENABLED=false` hides the API reference (`/docs`) and the OpenAPI document; both stay on by default.
+
+### Changed
+
+- The OpenAPI document now carries the real version, the cookie and API key security schemes, the CSRF header and the standard error responses.
 
 ## 0.1.1 (2026-10-22)
 
