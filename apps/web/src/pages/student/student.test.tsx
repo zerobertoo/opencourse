@@ -112,6 +112,24 @@ describe('student home', () => {
     expect(screen.getByRole('button', { name: 'Verificar novamente' })).toBeVisible();
   });
 
+  it('says the search covers my courses, not lessons', async () => {
+    await renderApp('/', { signInAs: 'student' });
+
+    expect(
+      (await screen.findAllByPlaceholderText('Buscar nos meus cursos')).length,
+    ).toBeGreaterThan(0);
+  });
+
+  it('drops the hero banner when the search does not match its course, keeps it when it does', async () => {
+    const { unmount } = await renderApp('/?q=zzz', { signInAs: 'student' });
+    expect(await screen.findByText('Nenhum curso encontrado')).toBeVisible();
+    expect(screen.queryByText('Continuar de onde parou')).not.toBeInTheDocument();
+    unmount();
+
+    await renderApp('/?q=javascript', { signInAs: 'student' });
+    expect(await screen.findByText('Continuar de onde parou')).toBeInTheDocument();
+  });
+
   it('filters my courses by the search query and offers to clear it', async () => {
     const user = userEvent.setup();
     await renderApp('/?q=zzz', { signInAs: 'student' });
