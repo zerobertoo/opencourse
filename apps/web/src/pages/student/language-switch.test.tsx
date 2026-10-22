@@ -25,7 +25,7 @@ describe('language switching on the course page', () => {
     await user.selectOptions(screen.getByRole('combobox', { name: 'Idioma' }), 'en');
 
     await waitFor(() => expect(heading).toHaveTextContent('Modern JavaScript Fundamentals'));
-    // same DOM node: React updated the page instead of mounting a new one
+    // the heading node captured before the switch is still the one on screen (no remount)
     expect(heading.isConnected).toBe(true);
     expect(screen.getByRole('combobox', { name: 'Language' })).toBeVisible();
     expect(screen.queryByText(/has not been translated yet/)).not.toBeInTheDocument();
@@ -35,8 +35,12 @@ describe('language switching on the course page', () => {
     const user = userEvent.setup();
     await renderApp('/courses/analise-de-dados-com-sql', { signInAs: 'student' });
 
-    const heading = await screen.findByRole('heading', { level: 1 });
+    const heading = await screen.findByRole('heading', {
+      level: 1,
+      name: /Análise de Dados com SQL/,
+    });
     const originalTitle = heading.textContent;
+    expect(screen.queryByText(/ainda não foi traduzido/)).not.toBeInTheDocument();
 
     await user.selectOptions(screen.getByRole('combobox', { name: 'Idioma' }), 'en');
 

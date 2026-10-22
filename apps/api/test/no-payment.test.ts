@@ -24,21 +24,32 @@ function listFiles(directory: string): string[] {
 function productFiles(): string[] {
   const roots = ['apps/api/src', 'apps/api/migrations', 'apps/web/src', 'packages/shared/src'];
   return roots
-    .flatMap((root) => listFiles(join(repoRoot, root)))
+    .flatMap((root) => {
+      const files = listFiles(join(repoRoot, root));
+      // guards against a root that silently scans nothing
+      expect(files.length, root).toBeGreaterThan(0);
+      return files;
+    })
     .filter((file) => /\.(ts|tsx|json|sql)$/.test(file) && !/\.test\.tsx?$/.test(file));
 }
 
 describe('no payment dependency', () => {
   it('has no price, purchase or payment wording in code, schema, migrations or UI strings', () => {
     const files = productFiles();
-    // guards against a scan that silently finds nothing
-    expect(files.length).toBeGreaterThan(100);
     const offenders = files.filter((file) => paymentTerms.test(readFileSync(file, 'utf8')));
     expect(offenders.map((file) => relative(repoRoot, file))).toEqual([]);
   });
 
   it('depends on no payment SDK', () => {
-    const manifests = ['package.json', 'apps/api/package.json', 'apps/web/package.json'];
+    // every workspace package, as in pnpm-workspace.yaml (apps/* and packages/*)
+    const manifests = [
+      'package.json',
+      ...['apps', 'packages'].flatMap((group) =>
+        readdirSync(join(repoRoot, group), { withFileTypes: true })
+          .filter((entry) => entry.isDirectory())
+          .map((entry) => `${group}/${entry.name}/package.json`),
+      ),
+    ];
     for (const manifest of manifests) {
       const { dependencies = {}, devDependencies = {} } = JSON.parse(
         readFileSync(join(repoRoot, manifest), 'utf8'),

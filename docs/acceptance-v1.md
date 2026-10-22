@@ -26,7 +26,9 @@ Not covered: the lesson player has the same fallback notice (`lesson.fallbackNot
 | No payment SDK in any `package.json` | `apps/api/test/no-payment.test.ts` | Pass (automated) |
 | Course access is always a `Grant`; no other path to course content | `apps/api/src/modules/grants`, `invites`, `enrollments` (code read) | Pass (manual) |
 | Domain events (`enrollment.granted`, `grant.revoked`, ...) leave through the outbox and webhooks, not an in-process bus | `apps/api/src/modules/webhooks`, `worker/consumers.ts` (code read) | Pass (manual) |
-| A plugin can create grants through `POST /grants` | `apps/api/src/modules/grants/routes.ts` | Pass, with the gap below |
+| A plugin can create grants through `POST /grants` | `apps/api/src/modules/grants/routes.ts` | Partial: possible only by logging in as a user (gap below) |
+
+The wording scan covers the product roots (`apps/api/src`, `apps/api/migrations`, `apps/web/src`, `packages/shared/src`). It skips `apps/docs`, which mentions the absence of payment on purpose, and test files. The wording regex is deliberately broad; if it ever flags a legitimate word, fix the word rather than allowlisting.
 
 ### Gap: no machine credential for plugins
 
