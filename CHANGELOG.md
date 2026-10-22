@@ -9,7 +9,7 @@ Changes since [v0.1.0](https://github.com/zerobertoo/opencourse/compare/v0.1.0..
 ### Added
 
 - API keys for plugins: admins create them under `/admin/api-keys`; a key works only on the grant routes, acts as its creator and creates grants with the source `plugin`.
-- Audit entries for grants created, extended or revoked with an API key carry its id (`apiKeyId` in the metadata).
+- Audit entries for grants created, extended or revoked with an API key carry its id (`apiKeyId` in the metadata). Older entries stay attributed to the creator admin only.
 - Admin screen for API keys (Administration → API keys): list, create with the token shown once, and revoke.
 
 - Documentation site (Starlight, English and Portuguese) published next to the live demo.

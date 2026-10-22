@@ -48,8 +48,9 @@ export async function createGrantRow(tx: GrantWriter, input: NewGrant): Promise<
       courseId: row.courseId,
       source: row.source,
       expiresAt: row.expiresAt?.toISOString() ?? null,
-      ...viaApiKey(input.apiKeyId),
       ...input.metadata,
+      // last, so extra metadata can never replace who made the request
+      ...viaApiKey(input.apiKeyId),
     },
   });
   await enqueueEnrollmentGranted(tx, row, false);

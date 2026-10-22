@@ -32,7 +32,7 @@ A server-side plugin (for example one that sells courses elsewhere and grants ac
 2. The plugin sends `Authorization: Bearer <token>` plus the `X-Requested-With: opencourse` header that every state-changing request needs, to the grant routes: `GET /grants`, `POST /grants`, `POST /grants/:id/revoke` and `POST /grants/:id/extend`.
 3. Grants created this way have the source `plugin`.
 
-A key acts as the admin who created it and works only on those four routes. It stops working when that admin is deactivated or loses the role, and an admin can revoke it on the same screen or with `POST /api/v1/admin/api-keys/:id/revoke`. Keys cannot create or revoke keys. Creation and revocation are written to the audit log, and so are the grants a key creates, extends or revokes (the admin is the actor and the key id is `apiKeyId` in the metadata), and the plugin can also react to the domain events through [webhooks](../webhooks/).
+A key acts as the admin who created it and works only on those four routes. It stops working when that admin is deactivated or loses the role, and an admin can revoke it on the same screen or with `POST /api/v1/admin/api-keys/:id/revoke`. Keys cannot create or revoke keys. Creation and revocation are written to the audit log, and so are the grants a key creates, extends or revokes (the admin is the actor and the key id is `apiKeyId` in the metadata; entries from before this was added have no id), and the plugin can also react to the domain events through [webhooks](../webhooks/).
 
 ## Audit
 

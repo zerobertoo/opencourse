@@ -166,12 +166,22 @@ describe('API keys', () => {
         .select()
         .from(auditLog)
         .orderBy(auditLog.createdAt, auditLog.id);
-      const withKey = (key: string) =>
-        rows
-          .filter((row) => row.action.startsWith('grant.') && row.actorId === cast.admin.userId)
-          .filter((row) => (row.metadata as { apiKeyId?: string }).apiKeyId === key)
-          .map((row) => row.action);
-      expect(withKey(apiKey.id)).toEqual([
+      const keyRows = rows.filter(
+        (row) =>
+          row.action.startsWith('grant.') &&
+          row.actorId === cast.admin.userId &&
+          (row.metadata as { apiKeyId?: string }).apiKeyId === apiKey.id,
+      );
+      // every entry of the key belongs to the grant it created, and none leaks to the other one
+      for (const row of keyRows) expect(row.targetId).toBe(grantId);
+      // revoking again changes nothing, so it adds no entry
+      await asKey('POST', `/api/v1/grants/${grantId}/revoke`);
+      const afterSecondRevoke = await ctx.app.db
+        .select()
+        .from(auditLog)
+        .where(eq(auditLog.targetId, grantId));
+      expect(afterSecondRevoke).toHaveLength(keyRows.length);
+      expect(keyRows.map((row) => row.action)).toEqual([
         'grant.created',
         'grant.extended',
         'grant.extended',
