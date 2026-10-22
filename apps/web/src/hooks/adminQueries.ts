@@ -1,4 +1,10 @@
-import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import {
+  keepPreviousData,
+  useInfiniteQuery,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from '@tanstack/react-query';
 import type {
   CreateWebhookRequest,
   PlatformSettings,
@@ -141,11 +147,21 @@ export function useWebhooks() {
   return useQuery({ queryKey: webhookKeys.list, queryFn: () => webhooks.list() });
 }
 
+export const WEBHOOK_DELIVERIES_PAGE_SIZE = 50;
+
+/** Delivery history, newest first, one page per request; `hasNextPage` is true while pages come back full. */
 export function useWebhookDeliveries(webhookId: string) {
   const { webhooks } = useServices();
-  return useQuery({
+  return useInfiniteQuery({
     queryKey: webhookKeys.deliveries(webhookId),
-    queryFn: () => webhooks.listDeliveries(webhookId),
+    queryFn: ({ pageParam }) =>
+      webhooks.listDeliveries(webhookId, { limit: WEBHOOK_DELIVERIES_PAGE_SIZE, offset: pageParam }),
+    initialPageParam: 0,
+    getNextPageParam: (lastPage, allPages) =>
+      lastPage.length < WEBHOOK_DELIVERIES_PAGE_SIZE
+        ? undefined
+        : allPages.length * WEBHOOK_DELIVERIES_PAGE_SIZE,
+    select: (data) => ({ deliveries: data.pages.flat() }),
   });
 }
 

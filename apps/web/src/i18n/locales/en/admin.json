@@ -259,6 +259,7 @@
       "title": "Delivery history",
       "description": "Requests from the last 7 days, newest first.",
       "listLabel": "Deliveries",
+      "loadMore": "Load more",
       "emptyTitle": "Nothing sent yet",
       "emptyDescription": "Deliveries show up here after an event happens.",
       "status": {
