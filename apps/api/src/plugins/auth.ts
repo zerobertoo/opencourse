@@ -153,7 +153,16 @@ export const authPlugin = fp<{ config: Config }>(async (app, { config }) => {
           .where(and(eq(apiKeys.tokenHash, hashToken(token)), isNull(apiKeys.revokedAt)))
       : [];
     // the key borrows its creator's powers, so it dies with them
-    if (!found || !found.user.active || found.user.role !== 'admin') throw unauthorized();
+    if (!found || !found.user.active || found.user.role !== 'admin') {
+      // the token itself is never logged, only that a key was refused and from where
+      request.log.warn(
+        { ip: request.ip, apiKeyId: found?.key.id },
+        found
+          ? 'api key refused: its owner is no longer an active admin'
+          : 'api key not recognised',
+      );
+      throw unauthorized();
+    }
 
     // bookkeeping only: at most once a minute, and never a reason to fail the request
     const now = new Date();
