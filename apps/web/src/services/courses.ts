@@ -44,4 +44,8 @@ export interface CourseService {
   /** Creates a draft for the authenticated instructor. */
   create(input: CreateCourseInput): Promise<CourseDetail>;
   update(id: string, input: UpdateCourseInput): Promise<CourseDetail>;
+  /** Makes the image the cover (PNG, JPEG or WebP up to `COVER_MAX_BYTES`). */
+  uploadCover(id: string, file: File): Promise<CourseDetail>;
+  /** Goes back to the generated cover. */
+  removeCover(id: string): Promise<CourseDetail>;
 }

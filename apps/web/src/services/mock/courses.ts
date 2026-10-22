@@ -1,4 +1,6 @@
 import {
+  COVER_CONTENT_TYPES,
+  COVER_MAX_BYTES,
   getCourseSummaryStats,
   getPublishIssues,
   type CourseDetail,
@@ -153,5 +155,32 @@ export function createMockCourseService(context: MockContext): CourseService {
         });
         return clone(course);
       }),
+
+    uploadCover: (id, file) =>
+      context.run('courses.uploadCover', () => {
+        if (!COVER_CONTENT_TYPES.some((type) => type === file.type)) {
+          throw new ServiceError('validation', 'The cover must be a PNG, JPEG or WebP image');
+        }
+        if (file.size > COVER_MAX_BYTES) {
+          throw new ServiceError('validation', 'The cover image is too large');
+        }
+        // ponytail: a blob address lasts until the tab is reloaded, which is fine for a demo
+        return changeCover(id, URL.createObjectURL(file));
+      }),
+
+    removeCover: (id) => context.run('courses.removeCover', () => changeCover(id, null)),
   };
+
+  function changeCover(id: string, url: string | null): CourseDetail {
+    const user = context.requireRole('instructor', 'admin');
+    const course = findCourseById(store.db, id);
+    if (!canManageCourse(user, course)) {
+      throw new ServiceError('forbidden', 'Only the course instructor or an admin can edit it');
+    }
+    store.mutate(() => {
+      course.coverImageUrl = url;
+      course.updatedAt = context.now().toISOString();
+    });
+    return clone(course);
+  }
 }

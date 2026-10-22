@@ -77,7 +77,19 @@
     "outcomesField": "What you will learn",
     "outcomesHint": "One item per line.",
     "save": "Save details",
-    "savedToast": "Details saved."
+    "savedToast": "Details saved.",
+    "cover": {
+      "title": "Cover image",
+      "hint": "PNG, JPEG or WebP, up to {max} MB. Without one, the course gets a generated cover.",
+      "fileLabel": "Cover image file",
+      "upload": "Upload image",
+      "replace": "Replace image",
+      "remove": "Remove image",
+      "invalidType": "Choose a PNG, JPEG or WebP image.",
+      "tooLarge": "The image is larger than {max} MB.",
+      "savedToast": "Cover updated.",
+      "removedToast": "Cover removed."
+    }
   },
   "content": {
     "curriculum": "Curriculum",

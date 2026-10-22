@@ -17,6 +17,7 @@ import { TextField } from '@/components/TextField';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { ProgressBar } from '@/components/ui/progress';
+import { CoverCard } from '@/features/studio/CoverCard';
 import { LocaleTabs } from '@/features/studio/LocaleTabs';
 import { useEnabledLocales, useUpdateCourse } from '@/hooks/studioQueries';
 import { courseDetailsSchema, type CourseDetailsValues } from '@/lib/schemas';
@@ -106,108 +107,111 @@ export function DetailsTab({ course }: { course: CourseDetail }) {
   );
 
   return (
-    <form onSubmit={onSubmit} noValidate className="max-w-3xl space-y-5">
-      <FormError message={formError} />
+    <div className="space-y-5">
+      <CoverCard course={course} />
+      <form onSubmit={onSubmit} noValidate className="max-w-3xl space-y-5">
+        <FormError message={formError} />
 
-      <SelectField
-        label={t('studio:details.defaultLanguage')}
-        hint={t('studio:details.defaultLanguageHint')}
-        error={errors.defaultLocale}
-        className="max-w-xs"
-        {...register('defaultLocale')}
-      >
-        {locales.map((locale) => (
-          <option key={locale} value={locale}>
-            {t(`common:language.${locale}`)}
-          </option>
-        ))}
-      </SelectField>
-
-      <Card className="p-4 sm:p-5">
-        <LocaleTabs
-          locales={locales}
-          value={activeLocale}
-          onValueChange={setActiveLocale}
-          incomplete={incomplete}
-          label={t('studio:details.languagesLabel')}
+        <SelectField
+          label={t('studio:details.defaultLanguage')}
+          hint={t('studio:details.defaultLanguageHint')}
+          error={errors.defaultLocale}
+          className="max-w-xs"
+          {...register('defaultLocale')}
         >
-          {(locale) => {
-            const stats = coverage.get(locale);
-            const isDefault = locale === course.defaultLocale;
-            return (
-              <div className="space-y-4">
-                {stats && !stats.isComplete ? (
-                  <div
-                    role="status"
-                    className="space-y-2 rounded-lg border border-destructive/40 p-3 text-sm"
-                  >
-                    <p className="flex items-center gap-2 font-medium text-destructive">
-                      <AlertTriangle className="size-4 shrink-0" aria-hidden="true" />
-                      {t('studio:translation.incompleteTitle', {
+          {locales.map((locale) => (
+            <option key={locale} value={locale}>
+              {t(`common:language.${locale}`)}
+            </option>
+          ))}
+        </SelectField>
+
+        <Card className="p-4 sm:p-5">
+          <LocaleTabs
+            locales={locales}
+            value={activeLocale}
+            onValueChange={setActiveLocale}
+            incomplete={incomplete}
+            label={t('studio:details.languagesLabel')}
+          >
+            {(locale) => {
+              const stats = coverage.get(locale);
+              const isDefault = locale === course.defaultLocale;
+              return (
+                <div className="space-y-4">
+                  {stats && !stats.isComplete ? (
+                    <div
+                      role="status"
+                      className="space-y-2 rounded-lg border border-destructive/40 p-3 text-sm"
+                    >
+                      <p className="flex items-center gap-2 font-medium text-destructive">
+                        <AlertTriangle className="size-4 shrink-0" aria-hidden="true" />
+                        {t('studio:translation.incompleteTitle', {
+                          language: t(`common:language.${locale}`),
+                        })}
+                      </p>
+                      <p className="text-muted-foreground">
+                        {isDefault
+                          ? t('studio:translation.incompleteDefaultHint')
+                          : t('studio:translation.incompleteHint', {
+                              language: t(`common:language.${course.defaultLocale}`),
+                            })}
+                      </p>
+                      <ProgressBar
+                        value={stats.ratio}
+                        label={t('studio:translation.progressLabel', {
+                          language: t(`common:language.${locale}`),
+                        })}
+                      />
+                      <p className="font-mono text-xs text-muted-foreground">
+                        {t('studio:translation.coverage', {
+                          translated: stats.translated,
+                          total: stats.total,
+                        })}
+                      </p>
+                      <Button asChild variant="outline" size="sm">
+                        <Link to={`/studio/courses/${course.id}/content`}>
+                          {t('studio:translation.goToContent')}
+                        </Link>
+                      </Button>
+                    </div>
+                  ) : (
+                    <p className="text-sm text-muted-foreground">
+                      {t('studio:translation.complete', {
                         language: t(`common:language.${locale}`),
                       })}
                     </p>
-                    <p className="text-muted-foreground">
-                      {isDefault
-                        ? t('studio:translation.incompleteDefaultHint')
-                        : t('studio:translation.incompleteHint', {
-                            language: t(`common:language.${course.defaultLocale}`),
-                          })}
-                    </p>
-                    <ProgressBar
-                      value={stats.ratio}
-                      label={t('studio:translation.progressLabel', {
-                        language: t(`common:language.${locale}`),
-                      })}
-                    />
-                    <p className="font-mono text-xs text-muted-foreground">
-                      {t('studio:translation.coverage', {
-                        translated: stats.translated,
-                        total: stats.total,
-                      })}
-                    </p>
-                    <Button asChild variant="outline" size="sm">
-                      <Link to={`/studio/courses/${course.id}/content`}>
-                        {t('studio:translation.goToContent')}
-                      </Link>
-                    </Button>
-                  </div>
-                ) : (
-                  <p className="text-sm text-muted-foreground">
-                    {t('studio:translation.complete', {
-                      language: t(`common:language.${locale}`),
-                    })}
-                  </p>
-                )}
+                  )}
 
-                <TextField
-                  label={t('studio:details.titleField')}
-                  hint={isDefault ? t('studio:details.titleRequiredHint') : undefined}
-                  error={errors.translations?.[locale]?.title}
-                  {...register(`translations.${locale}.title`)}
-                />
-                <TextAreaField
-                  label={t('studio:details.descriptionField')}
-                  className="min-h-32"
-                  error={errors.translations?.[locale]?.description}
-                  {...register(`translations.${locale}.description`)}
-                />
-                <TextAreaField
-                  label={t('studio:details.outcomesField')}
-                  hint={t('studio:details.outcomesHint')}
-                  error={errors.translations?.[locale]?.learningOutcomes}
-                  {...register(`translations.${locale}.learningOutcomes`)}
-                />
-              </div>
-            );
-          }}
-        </LocaleTabs>
-      </Card>
+                  <TextField
+                    label={t('studio:details.titleField')}
+                    hint={isDefault ? t('studio:details.titleRequiredHint') : undefined}
+                    error={errors.translations?.[locale]?.title}
+                    {...register(`translations.${locale}.title`)}
+                  />
+                  <TextAreaField
+                    label={t('studio:details.descriptionField')}
+                    className="min-h-32"
+                    error={errors.translations?.[locale]?.description}
+                    {...register(`translations.${locale}.description`)}
+                  />
+                  <TextAreaField
+                    label={t('studio:details.outcomesField')}
+                    hint={t('studio:details.outcomesHint')}
+                    error={errors.translations?.[locale]?.learningOutcomes}
+                    {...register(`translations.${locale}.learningOutcomes`)}
+                  />
+                </div>
+              );
+            }}
+          </LocaleTabs>
+        </Card>
 
-      <Button type="submit" disabled={!isDirty || updateCourse.isPending}>
-        {updateCourse.isPending ? <Spinner /> : null}
-        {t('studio:details.save')}
-      </Button>
-    </form>
+        <Button type="submit" disabled={!isDirty || updateCourse.isPending}>
+          {updateCourse.isPending ? <Spinner /> : null}
+          {t('studio:details.save')}
+        </Button>
+      </form>
+    </div>
   );
 }
