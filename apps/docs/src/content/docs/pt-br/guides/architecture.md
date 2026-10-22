@@ -33,6 +33,8 @@ Mudanças de estado gravam um evento de domínio na tabela `outbox_events`, na m
 | `certificate.issued`  | um certificado é emitido                          |
 | `video.processed`     | um vídeo enviado terminou de ser codificado       |
 
+O worker (`apps/api/src/worker.ts`, mesma imagem da API, `node dist/worker.js`) consulta o outbox cerca de uma vez por segundo, e as linhas já despachadas são apagadas após 7 dias. Os consumidores ficam em `src/worker/consumers.ts`. Um job que falha é repetido 5 vezes com espera exponencial e depois guardado para inspeção.
+
 A entrega é pelo menos uma vez, então os consumidores precisam ser idempotentes. Sem o worker rodando nada se perde: os eventos esperam no outbox. Consumidores atuais: certificados e seu e-mail, [webhooks](../webhooks/) e o codificador de vídeo.
 
 ## Pontos de extensão

@@ -35,9 +35,12 @@ export default defineConfig({
           label: 'Guides',
           translations: { 'pt-BR': 'Guias' },
           items: [
+            { slug: 'guides/courses-and-access' },
+            { slug: 'guides/learning' },
             { slug: 'guides/video' },
             { slug: 'guides/files' },
             { slug: 'guides/webhooks' },
+            { slug: 'guides/development' },
           ],
         },
       ],

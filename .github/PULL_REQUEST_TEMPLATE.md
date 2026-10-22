@@ -9,4 +9,4 @@
 - [ ] Tests added or updated
 - [ ] Schema change includes the generated migration
 - [ ] UI text goes through i18n (`pt-BR` and `en`)
-- [ ] Docs / README updated if behavior changed
+- [ ] Docs / documentation updated if behavior changed

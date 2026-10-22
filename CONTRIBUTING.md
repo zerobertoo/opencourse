@@ -21,7 +21,7 @@ pnpm infra                      # Postgres, Redis, storage (bucket included) and
 pnpm dev
 ```
 
-The README has the full backend, demo and test instructions.
+The [development guide](https://zerobertoo.github.io/opencourse/docs/guides/development/) has the full backend, demo and test instructions.
 
 ## Checks
 
