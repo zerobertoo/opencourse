@@ -20,6 +20,8 @@ function HeroSection({ timeZone }: { timeZone: string }) {
   const { formatPercent } = useFormatters(timeZone);
   const continueQuery = useContinueLearning();
   const coursesQuery = useMyCourses();
+  const [params] = useSearchParams();
+  const search = params.get('q')?.trim() ?? '';
   const locale = toLocale(i18n.resolvedLanguage);
 
   if (continueQuery.isPending || coursesQuery.isPending) {
@@ -44,6 +46,8 @@ function HeroSection({ timeZone }: { timeZone: string }) {
   const course = resume ? resume.course : featured!.course;
   const progress = resume ? resume.progress : featured!.progress;
   const courseContent = localizeCourse(course, locale);
+  // the banner follows the search: a query that does not match its course hides it
+  if (search && !courseContent.title.toLowerCase().includes(search.toLowerCase())) return null;
   const lessonContent = resume ? localizeLesson(resume.lesson, locale, course.defaultLocale) : null;
   const target = resume
     ? `/courses/${course.slug}/lessons/${resume.lesson.id}`
