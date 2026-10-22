@@ -60,6 +60,15 @@ describe('OpenAPI contract', () => {
     await app.close();
   });
 
+  it('answers 404 on /docs when API_DOCS_ENABLED is false', async () => {
+    const hidden = await buildApp(loadConfig({ ...process.env, API_DOCS_ENABLED: 'false' }));
+    await hidden.ready();
+    for (const url of ['/docs', '/docs/openapi.json']) {
+      expect((await hidden.inject({ method: 'GET', url })).statusCode).toBe(404);
+    }
+    await hidden.close();
+  });
+
   it('takes its version from the API package', () => {
     expect(document.info.version).toBe(packageJson.version);
     expect(document.info.version).toMatch(/^\d+\.\d+\.\d+$/);

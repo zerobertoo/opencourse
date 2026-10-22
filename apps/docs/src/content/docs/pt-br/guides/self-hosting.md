@@ -49,6 +49,7 @@ Ela roda as migrações, a API, o worker e o web, e lê todas as conexões de `.
 | `AUTH_SECRET`                     | Assina os tokens de acesso. A API recusa iniciar em produção com o valor de exemplo.            |
 | `COOKIE_SECURE=true`              | Ative quando a API for servida por HTTPS.                                                       |
 | `TRUST_PROXY=true`                | Só atrás de um proxy reverso seu, para o rate limit enxergar o IP real do cliente.              |
+| `API_DOCS_ENABLED=false`          | Esconde a referência da API (`/docs`) e o documento OpenAPI. Ligado por padrão; para ter senha, proteja `/docs` no proxy reverso. |
 | `CORS_ORIGINS`, `WEB_BASE_URL`    | O endereço do seu web: CORS e links dos e-mails.                                                |
 | `S3_PUBLIC_URL`                   | Onde os navegadores acessam o storage. Uploads e segmentos de vídeo vão direto para ele.        |
 | `SMTP_*`                          | E-mail de verdade para convites, recuperação de senha e certificados.                           |
