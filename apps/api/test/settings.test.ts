@@ -86,6 +86,14 @@ describe('platform settings', () => {
     const emptyHost = await admin.client.patch('/api/v1/admin/settings', { email: { host: ' ' } });
     expect(emptyHost.statusCode).toBe(400);
 
+    const scriptLogo = await admin.client.patch('/api/v1/admin/settings', {
+      brand: { logoUrl: 'javascript:alert(1)' },
+    });
+    expect(scriptLogo.statusCode).toBe(400);
+
+    const unknownKey = await admin.client.patch('/api/v1/admin/settings', { foo: 1 });
+    expect(unknownKey.statusCode).toBe(400);
+
     const badSender = await admin.client.patch('/api/v1/admin/settings', {
       email: { fromAddress: 'nope' },
     });

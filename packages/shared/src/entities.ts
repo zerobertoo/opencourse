@@ -292,17 +292,24 @@ export function isSenderAddress(value: string): boolean {
 }
 
 /** Merged-then-validated by the server, so every group may carry only the fields that change. */
-export const updatePlatformSettingsRequestSchema = z.object({
-  brand: platformSettingsSchema.shape.brand.partial().optional(),
-  enabledLocales: platformSettingsSchema.shape.enabledLocales.optional(),
-  defaultLocale: localeSchema.optional(),
-  email: platformSettingsSchema.shape.email
-    .extend({
-      fromAddress: z.string().refine(isSenderAddress, 'Enter an e-mail, or Name <e-mail>'),
-    })
-    .partial()
-    .optional(),
-});
+export const updatePlatformSettingsRequestSchema = z
+  .object({
+    brand: platformSettingsSchema.shape.brand
+      .extend({ logoUrl: z.url({ protocol: /^https?$/ }).nullable() })
+      .partial()
+      .strict()
+      .optional(),
+    enabledLocales: platformSettingsSchema.shape.enabledLocales.optional(),
+    defaultLocale: localeSchema.optional(),
+    email: platformSettingsSchema.shape.email
+      .extend({
+        fromAddress: z.string().refine(isSenderAddress, 'Enter an e-mail, or Name <e-mail>'),
+      })
+      .partial()
+      .strict()
+      .optional(),
+  })
+  .strict();
 export type UpdatePlatformSettingsRequest = z.infer<typeof updatePlatformSettingsRequestSchema>;
 
 /** Why a settings change was refused, or null when the default language is among the enabled ones. */

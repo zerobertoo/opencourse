@@ -75,11 +75,13 @@ export type ChangePasswordRequest = z.infer<typeof changePasswordRequestSchema>;
 
 // ---------- Profile and users ----------
 
-export const updateProfileRequestSchema = z.object({
-  name: nameSchema.optional(),
-  locale: localeSchema.optional(),
-  timeZone: timeZoneSchema.optional(),
-});
+export const updateProfileRequestSchema = z
+  .object({
+    name: nameSchema.optional(),
+    locale: localeSchema.optional(),
+    timeZone: timeZoneSchema.optional(),
+  })
+  .strict();
 export type UpdateProfileRequest = z.infer<typeof updateProfileRequestSchema>;
 
 export const listUsersQuerySchema = z.object({

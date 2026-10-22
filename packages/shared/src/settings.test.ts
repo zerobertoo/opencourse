@@ -30,6 +30,30 @@ describe('updatePlatformSettingsRequestSchema', () => {
     expect(parsed.success).toBe(true);
   });
 
+  it('takes only http and https for the logo, or null to clear it', () => {
+    const logo = (logoUrl: string | null) =>
+      updatePlatformSettingsRequestSchema.safeParse({ brand: { logoUrl } }).success;
+    expect(logo('https://cdn.acme.test/logo.png')).toBe(true);
+    expect(logo('http://cdn.acme.test/logo.png')).toBe(true);
+    expect(logo(null)).toBe(true);
+    for (const value of [
+      'javascript:alert(1)',
+      'data:image/svg+xml,<svg/>',
+      'ftp://x.test/a',
+      '',
+    ]) {
+      expect(logo(value)).toBe(false);
+    }
+  });
+
+  it('refuses keys it does not know, at the top level and inside a group', () => {
+    const parses = (body: unknown) => updatePlatformSettingsRequestSchema.safeParse(body).success;
+    expect(parses({ foo: 1 })).toBe(false);
+    expect(parses({ brand: { name: 'Acme', color: 'red' } })).toBe(false);
+    expect(parses({ email: { host: 'smtp.acme.test', password: 'x' } })).toBe(false);
+    expect(parses({ brand: { name: 'Acme' } })).toBe(true);
+  });
+
   it('refuses a sender that is not an address', () => {
     expect(
       updatePlatformSettingsRequestSchema.safeParse({ email: { fromAddress: 'nope' } }).success,

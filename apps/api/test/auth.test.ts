@@ -210,6 +210,8 @@ describe('authentication', () => {
 
       const { client } = await registerClient(ctx.app, 'maria@example.com');
       expect((await client.patch('/api/v1/me', { timeZone: 'Not/AZone' })).statusCode).toBe(400);
+      // unknown fields are refused, not silently dropped
+      expect((await client.patch('/api/v1/me', { role: 'admin' })).statusCode).toBe(400);
       const valid = await client.patch('/api/v1/me', { timeZone: 'America/Sao_Paulo' });
       expect(valid.json().user.timeZone).toBe('America/Sao_Paulo');
     });

@@ -252,7 +252,11 @@ export const platformSettingsFormSchema = z
     logoUrl: z
       .string()
       .trim()
-      .refine((value) => value === '' || /^https?:\/\//i.test(value), 'validation.url'),
+      // same rule as the API: only http(s) addresses
+      .refine(
+        (value) => value === '' || z.url({ protocol: /^https?$/ }).safeParse(value).success,
+        'validation.url',
+      ),
     primaryColor: z.string().regex(/^#[0-9a-fA-F]{6}$/, 'validation.color'),
     // An empty checkbox group may arrive as `false`, so every failure maps to the same message.
     enabledLocales: z

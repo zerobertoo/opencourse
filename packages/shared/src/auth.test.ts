@@ -47,6 +47,13 @@ describe('auth request schemas', () => {
     expect(updateProfileRequestSchema.safeParse({ timeZone: 'Not/AZone' }).success).toBe(false);
   });
 
+  it('refuses unknown fields on a profile update instead of ignoring them', () => {
+    expect(updateProfileRequestSchema.safeParse({ name: 'Maria', role: 'admin' }).success).toBe(
+      false,
+    );
+    expect(updateProfileRequestSchema.safeParse({ name: 'Maria' }).success).toBe(true);
+  });
+
   it('parses boolean text in the users query', () => {
     expect(listUsersQuerySchema.parse({ active: 'false' }).active).toBe(false);
     expect(listUsersQuerySchema.safeParse({ active: 'maybe' }).success).toBe(false);
