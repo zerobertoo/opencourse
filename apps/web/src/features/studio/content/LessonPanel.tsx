@@ -107,10 +107,7 @@ export function LessonPanel({
   });
 
   const watchedContent = useWatch({ control, name: 'translations' });
-  useEffect(
-    () => onDirtyChange(isDirty || quizDirty),
-    [isDirty, quizDirty, onDirtyChange],
-  );
+  useEffect(() => onDirtyChange(isDirty || quizDirty), [isDirty, quizDirty, onDirtyChange]);
 
   const layout = useMemo(() => toLayout(course), [course]);
   const moduleId = findLessonModuleId(layout, lesson.id);

@@ -64,7 +64,10 @@ function ApiKeyRow({
 }
 
 type Dialogs =
-  { kind: 'form' } | { kind: 'token'; token: string } | { kind: 'revoke'; apiKey: ApiKey } | null;
+  | { kind: 'form' }
+  | { kind: 'token'; token: string }
+  | { kind: 'revoke'; apiKey: ApiKey }
+  | null;
 
 /** API keys for server-side plugins: list, create (token shown once) and revoke. */
 export function AdminApiKeys() {

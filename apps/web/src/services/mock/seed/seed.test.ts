@@ -36,8 +36,13 @@ describe('seed data', () => {
   });
 
   it('uses UUIDs for every entity id', () => {
-    const everyId = [...db.users, ...db.courses, ...db.grants, ...db.invites, ...db.certificates]
-      .map((entity) => entity.id);
+    const everyId = [
+      ...db.users,
+      ...db.courses,
+      ...db.grants,
+      ...db.invites,
+      ...db.certificates,
+    ].map((entity) => entity.id);
     everyId.forEach((id) => expect(idSchema.safeParse(id).success, id).toBe(true));
   });
 

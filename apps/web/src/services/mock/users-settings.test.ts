@@ -91,7 +91,8 @@ describe('mock user service', () => {
       const { services } = await createServicesSignedInAs('camila');
       expect((await services.auth.getCurrentUser())?.name).toBe('Camila Duarte');
 
-      services.mock.store.db.users.find((user) => user.id === demoId('user-camila'))!.active = false;
+      services.mock.store.db.users.find((user) => user.id === demoId('user-camila'))!.active =
+        false;
       expect(await services.auth.getCurrentUser()).toBeNull();
       await expect(services.enrollments.listMyCourses()).rejects.toMatchObject({
         code: 'unauthorized',
@@ -100,7 +101,9 @@ describe('mock user service', () => {
 
     it('keeps at least one active admin', async () => {
       const { services } = await createServicesSignedInAs('marina');
-      await expect(services.users.updateRole(demoId('user-marina'), 'student')).rejects.toMatchObject({
+      await expect(
+        services.users.updateRole(demoId('user-marina'), 'student'),
+      ).rejects.toMatchObject({
         code: 'conflict',
       });
       await expect(services.users.setActive(demoId('user-marina'), false)).rejects.toMatchObject({
@@ -108,14 +111,18 @@ describe('mock user service', () => {
       });
 
       await services.users.updateRole(demoId('user-lucas'), 'admin');
-      await expect(services.users.updateRole(demoId('user-marina'), 'instructor')).resolves.toMatchObject({
+      await expect(
+        services.users.updateRole(demoId('user-marina'), 'instructor'),
+      ).resolves.toMatchObject({
         role: 'instructor',
       });
     });
 
     it('is restricted to admins', async () => {
       const instructor = (await createServicesSignedInAs('rafael')).services;
-      await expect(instructor.users.updateRole(demoId('user-camila'), 'admin')).rejects.toMatchObject({
+      await expect(
+        instructor.users.updateRole(demoId('user-camila'), 'admin'),
+      ).rejects.toMatchObject({
         code: 'forbidden',
       });
       await expect(instructor.users.setActive(demoId('user-camila'), false)).rejects.toMatchObject({

@@ -32,7 +32,10 @@ function rewriteGuideLinks(markdown) {
 function assertNoDeadLinks(markdown, file) {
   const outsideCode = markdown.replace(/^```[\s\S]*?^```/gm, '');
   const syncedGuide = `(?:\\./)?(?:${GUIDES.join('|')})\\.md`;
-  const deadLink = new RegExp(`\\]\\((?!https?:|#|${syncedGuide}[)#])([^)\\s]*\\.md)(?:#[^)]*)?\\)`, 'g');
+  const deadLink = new RegExp(
+    `\\]\\((?!https?:|#|${syncedGuide}[)#])([^)\\s]*\\.md)(?:#[^)]*)?\\)`,
+    'g',
+  );
   for (const [, target] of outsideCode.matchAll(deadLink)) {
     throw new Error(`${file}: link to ${target} would be dead on the site; add it to GUIDES`);
   }

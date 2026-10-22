@@ -38,9 +38,7 @@ export function SettingsTab({ course }: { course: CourseDetail }) {
     <div className="max-w-3xl space-y-6">
       <Card className="space-y-4 p-5">
         <div className="flex flex-wrap items-center justify-between gap-2">
-          <h2 className="text-xl font-semibold">
-            {t('studio:settings.visibility.title')}
-          </h2>
+          <h2 className="text-xl font-semibold">{t('studio:settings.visibility.title')}</h2>
           <CourseStatusBadge status={course.status} />
         </div>
         <p className="text-sm text-muted-foreground">

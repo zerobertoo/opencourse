@@ -301,7 +301,9 @@ describe('getQuizIssues', () => {
   it('accepts a question with a prompt, two filled options and one correct answer', () => {
     const quiz: Quiz = {
       passingScore: 70,
-      questions: [question('q1', 'Pergunta?', [option('a', true, 'Sim'), option('b', false, 'Não')])],
+      questions: [
+        question('q1', 'Pergunta?', [option('a', true, 'Sim'), option('b', false, 'Não')]),
+      ],
     };
     expect(getQuizIssues(quiz, 'pt-BR')).toEqual([]);
   });

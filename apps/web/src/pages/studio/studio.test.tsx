@@ -26,7 +26,9 @@ describe('studio access', () => {
   });
 
   it('shows the forbidden screen when an instructor opens someone else’s course', async () => {
-    await renderApp(`/studio/courses/${demoId('course-javascript')}`, { email: 'beatriz@opencourse.example' });
+    await renderApp(`/studio/courses/${demoId('course-javascript')}`, {
+      email: 'beatriz@opencourse.example',
+    });
     expect(await screen.findByText('Acesso negado')).toBeVisible();
   });
 
@@ -211,7 +213,9 @@ describe('course editor: content', () => {
     await user.selectOptions(await screen.findByLabelText('Módulo'), demoId('mod-sql-2'));
     await waitFor(async () => {
       const course = await services.courses.getById(demoId('course-sql'));
-      expect(course.modules[1]?.lessons.some((lesson) => lesson.id === demoId('les-sql-1-1'))).toBe(true);
+      expect(course.modules[1]?.lessons.some((lesson) => lesson.id === demoId('les-sql-1-1'))).toBe(
+        true,
+      );
     });
 
     await user.click(screen.getByRole('button', { name: 'Mover para cima' }));
@@ -247,7 +251,9 @@ describe('course editor: content', () => {
 
     await waitFor(async () => {
       const course = await services.courses.getById(demoId('course-sql'));
-      expect(course.modules[0]?.lessons.some((lesson) => lesson.id === demoId('les-sql-1-1'))).toBe(false);
+      expect(course.modules[0]?.lessons.some((lesson) => lesson.id === demoId('les-sql-1-1'))).toBe(
+        false,
+      );
     });
     expect(await screen.findByText('Selecione uma aula')).toBeInTheDocument();
   });
@@ -341,7 +347,10 @@ describe('course editor: students', () => {
     await user.click(within(dialog).getByRole('button', { name: 'Conceder acesso' }));
 
     expect(await screen.findByText('Acesso concedido.')).toBeVisible();
-    const grants = await services.grants.list({ courseId: demoId('course-sql'), userId: demoId('user-thiago') });
+    const grants = await services.grants.list({
+      courseId: demoId('course-sql'),
+      userId: demoId('user-thiago'),
+    });
     expect(grants[0]?.expiresAt).toMatch(/^2099-12-31|^2100-01-01/);
   });
 
@@ -371,13 +380,20 @@ describe('course editor: students', () => {
 
     // the lazy students tab is slow to mount on a cold CI runner: the default 1s is tight
     await user.click(
-      await screen.findByRole('button', { name: 'Revogar o acesso de Gustavo Lima' }, { timeout: 5000 }),
+      await screen.findByRole(
+        'button',
+        { name: 'Revogar o acesso de Gustavo Lima' },
+        { timeout: 5000 },
+      ),
     );
     const dialog = await screen.findByRole('alertdialog');
     await user.click(within(dialog).getByRole('button', { name: 'Revogar acesso' }));
 
     expect(await screen.findByText('Acesso de Gustavo Lima revogado.')).toBeVisible();
-    const grants = await services.grants.list({ courseId: demoId('course-sql'), userId: demoId('user-gustavo') });
+    const grants = await services.grants.list({
+      courseId: demoId('course-sql'),
+      userId: demoId('user-gustavo'),
+    });
     expect(grants[0]?.status).toBe('revoked');
   });
 });
@@ -401,9 +417,9 @@ describe('course editor: certificate', () => {
 
     await user.click(screen.getByRole('button', { name: 'Salvar modelo' }));
     expect(await screen.findByText('Modelo de certificado salvo.')).toBeVisible();
-    expect((await services.courses.getById(demoId('course-sql'))).certificateTemplate.signatoryName).toBe(
-      'Dra. Teste',
-    );
+    expect(
+      (await services.courses.getById(demoId('course-sql'))).certificateTemplate.signatoryName,
+    ).toBe('Dra. Teste');
   });
 
   it('stops issuing certificates when turned off', async () => {

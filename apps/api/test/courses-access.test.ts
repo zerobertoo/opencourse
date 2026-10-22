@@ -54,9 +54,7 @@ describe('resolveCourseAccess', () => {
       courseId: course.id,
       createdById: cast.admin.userId,
     });
-    expect((await resolveCourseAccess(ctx.app.db, student, course, now)).canViewContent).toBe(
-      true,
-    );
+    expect((await resolveCourseAccess(ctx.app.db, student, course, now)).canViewContent).toBe(true);
   });
 
   it('treats expired and revoked grants as no access', async () => {

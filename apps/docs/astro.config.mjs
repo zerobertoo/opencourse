@@ -26,10 +26,7 @@ export default defineConfig({
         {
           label: 'Start here',
           translations: { 'pt-BR': 'Comece aqui' },
-          items: [
-            { slug: 'guides/self-hosting' },
-            { slug: 'guides/architecture' },
-          ],
+          items: [{ slug: 'guides/self-hosting' }, { slug: 'guides/architecture' }],
         },
         {
           label: 'Guides',

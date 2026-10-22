@@ -4,7 +4,6 @@ import tseslint from 'typescript-eslint';
 import reactHooks from 'eslint-plugin-react-hooks';
 import reactRefresh from 'eslint-plugin-react-refresh';
 import jsxA11y from 'eslint-plugin-jsx-a11y';
-import prettier from 'eslint-config-prettier';
 
 // physical Tailwind classes that would break future RTL support
 // (String.raw keeps the `\s` escapes: in a plain string they would silently become "s")
@@ -14,7 +13,6 @@ export default tseslint.config(
   { ignores: ['**/dist/**', '**/node_modules/**', '**/.turbo/**', 'docs/**'] },
   js.configs.recommended,
   ...tseslint.configs.recommended,
-  prettier,
   {
     files: ['**/*.{ts,tsx}'],
     languageOptions: { globals: { ...globals.browser } },
