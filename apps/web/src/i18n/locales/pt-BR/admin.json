@@ -209,6 +209,16 @@
     "testFor": "Enviar um teste para {url}",
     "testSuccess": "Teste entregue: o destino respondeu {status}.",
     "testFailure": "O teste falhou: {error}",
+    "errors": {
+      "invalidUrl": "O endereço não é válido.",
+      "httpsOnly": "Só são aceitos endereços https.",
+      "notPublic": "O endereço não é público (aponta para uma rede privada).",
+      "noAddress": "O servidor não resolveu para nenhum endereço.",
+      "timedOut": "Sem resposta após {ms} ms.",
+      "connectionClosed": "A conexão foi encerrada antes do fim da resposta.",
+      "receiverAnswered": "O destino respondeu {status}.",
+      "disabled": "O destino foi desativado antes da entrega."
+    },
     "history": "Histórico",
     "historyFor": "Histórico de entregas de {url}",
     "rotate": "Novo segredo",

@@ -433,6 +433,8 @@ describe('authentication', () => {
         newPassword: 'a brand new password',
       });
       expect(wrong.statusCode).toBe(400);
+      // names the field, so the form can mark it
+      expect(wrong.json().error.details).toEqual({ field: 'currentPassword' });
 
       const changed = await client.put('/api/v1/me/password', {
         currentPassword: STRONG_PASSWORD,
