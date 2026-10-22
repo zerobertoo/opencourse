@@ -1,0 +1,31 @@
+---
+title: OpenCourse
+description: Open source, self-hosted course platform.
+template: splash
+hero:
+  tagline: Courses with video, text and quizzes, access by grants, certificates and webhooks. Yours to host.
+  actions:
+    - text: Self-hosting guide
+      link: ./guides/self-hosting/
+      icon: right-arrow
+    - text: Architecture
+      link: ./guides/architecture/
+      variant: minimal
+---
+
+import { Card, CardGrid } from '@astrojs/starlight/components';
+
+<CardGrid>
+  <Card title="Self-hosted" icon="seti:docker">
+    One `docker compose up` brings up the API, the worker, the web app, Postgres, Redis and S3-compatible storage.
+  </Card>
+  <Card title="Access is a grant" icon="approve-check">
+    No payment inside the platform. Anything that sells a course creates a grant through the API or reacts to events.
+  </Card>
+  <Card title="Video you control" icon="seti:video">
+    Upload once, get adaptive HLS, or paste a link from YouTube, Vimeo, Bunny, Cloudflare or Panda.
+  </Card>
+  <Card title="Two languages" icon="translate">
+    The interface and each course are translatable. Portuguese (Brazil) and English ship in the box.
+  </Card>
+</CardGrid>

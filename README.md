@@ -139,6 +139,7 @@ The mocked login accepts any credentials. On the sign-in screen, the "sign in as
 - `apps/web`: frontend (React, Vite, Tailwind, react-i18next)
 - `apps/api`: backend (Fastify, Drizzle, Postgres, Redis)
 - `packages/shared`: shared types and zod schemas, the contract between web and API
+- `apps/docs`: documentation site (Starlight, English and Portuguese); `pnpm --filter @opencourse/docs dev`. The video and files guides are copied from `docs/` at build time
 - `docs`: [PRD](docs/PRD.md) (the original specification; this README describes the current state), [video](docs/video.md) and [files](docs/files.md)
 
 ## Contributing
