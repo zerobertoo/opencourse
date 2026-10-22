@@ -5,9 +5,13 @@ import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { promisify } from 'node:util';
 import { failedVideosResponseSchema, videoStatusResponseSchema } from '@opencourse/shared';
+import { Queue } from 'bullmq';
 import { eq } from 'drizzle-orm';
+import { Redis } from 'ioredis';
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import { videoAssets } from '../src/db/schema';
+import { requeueOrphanedVideos } from '../src/modules/video/service';
+import { VIDEO_QUEUE_NAME, type JobData } from '../src/worker/jobs';
 import { createCast, insertCourse, insertLesson, insertModule } from './fixtures';
 import {
   createTestApp,
@@ -133,6 +137,36 @@ describe('failed videos', () => {
     expect(asset).toMatchObject({ status: 'ready', errorMessage: null, poster: true });
     const listed = await cast.admin.client.get(FAILED_PATH);
     expect(failedVideosResponseSchema.parse(listed.json()).videos).toEqual([]);
+  }, 90_000);
+
+  it('queues the encode again for a video that lost its job, and only for that one', async () => {
+    const { assetId } = await setupFailedVideo();
+    const connection = new Redis(ctx.config.REDIS_URL, { maxRetriesPerRequest: null });
+    const queue = new Queue<JobData>(VIDEO_QUEUE_NAME, { connection, prefix: queuePrefix });
+    try {
+      const claimed = (updatedAt: Date) =>
+        ctx.app.db
+          .update(videoAssets)
+          .set({ status: 'processing', errorMessage: null, updatedAt })
+          .where(eq(videoAssets.id, assetId));
+
+      // just claimed: the API may still be about to queue it
+      await claimed(new Date());
+      expect(await requeueOrphanedVideos(ctx.app.db, queue)).toBe(0);
+
+      // claimed long ago and nothing queued, as after an API crash
+      await claimed(new Date(Date.now() - 3600_000));
+      expect(await requeueOrphanedVideos(ctx.app.db, queue)).toBe(1);
+      await worker.drain(60_000);
+      const [asset] = await ctx.app.db
+        .select()
+        .from(videoAssets)
+        .where(eq(videoAssets.id, assetId));
+      expect(asset).toMatchObject({ status: 'ready', poster: true });
+    } finally {
+      await queue.close();
+      connection.disconnect();
+    }
   }, 90_000);
 
   it('answers 409 to a retry of a video that is not in error', async () => {

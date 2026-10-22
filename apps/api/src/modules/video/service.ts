@@ -4,6 +4,7 @@ import {
   type FailedVideo,
   type LocalVideoAsset,
 } from '@opencourse/shared';
+import type { Queue } from 'bullmq';
 import { and, desc, eq, inArray, lt } from 'drizzle-orm';
 import type { Logger } from 'pino';
 import {
@@ -19,6 +20,7 @@ import {
 } from '../../db/schema';
 import type { Database } from '../../plugins/db';
 import type { Storage } from '../../storage/s3';
+import { DEFAULT_RETRY_DELAY_MS, jobOptions, type JobData } from '../../worker/jobs';
 import { videoKeys } from './playlist';
 
 /** An upload that was never completed is dropped after this long. */
@@ -149,6 +151,54 @@ export async function deleteVideoFiles(
       log.warn({ err: error, assetId }, 'could not delete the files of a removed video');
     }
   }
+}
+
+/** A video `processing` for longer than this with no job in the queue lost its job. */
+export const ORPHANED_JOB_MS = 10 * 60 * 1000;
+
+/**
+ * Queues the encode again for videos stuck in `processing` without a job, which happens when the
+ * API stops between marking the upload finished and queueing it. Ones already waiting or running
+ * are left alone, so a long encode is never doubled. Returns how many jobs it added.
+ */
+export async function requeueOrphanedVideos(
+  db: Database,
+  queue: Queue<JobData>,
+  now = new Date(),
+): Promise<number> {
+  const stuck = await db
+    .select({ id: videoAssets.id })
+    .from(videoAssets)
+    .where(
+      and(
+        eq(videoAssets.status, 'processing'),
+        lt(videoAssets.updatedAt, new Date(now.getTime() - ORPHANED_JOB_MS)),
+      ),
+    );
+  if (stuck.length === 0) return 0;
+  const queued = await queue.getJobs(['waiting', 'active', 'delayed', 'prioritized']);
+  const queuedAssetIds = new Set(
+    queued.map((job) => (job.data.payload as { assetId?: string } | null)?.assetId),
+  );
+  const orphaned = stuck.filter(({ id }) => !queuedAssetIds.has(id));
+  for (const { id } of orphaned) {
+    await queue.add(
+      'transcode-video',
+      {
+        eventId: id,
+        eventName: 'video.upload',
+        eventCreatedAt: now.toISOString(),
+        payload: { assetId: id },
+      },
+      // the first job may be finished or failed and still hold the fixed id
+      {
+        ...jobOptions(DEFAULT_RETRY_DELAY_MS),
+        attempts: 2,
+        jobId: `transcode-video-${id}-${now.getTime()}`,
+      },
+    );
+  }
+  return orphaned.length;
 }
 
 /** Drops uploads that sat unfinished for a day: aborts the multipart upload and removes the row. */
