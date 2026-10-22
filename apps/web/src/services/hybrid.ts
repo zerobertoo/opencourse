@@ -12,6 +12,7 @@ import {
   createApiProgressService,
   createApiStudioService,
 } from './api/learning';
+import { createApiSettingsService } from './api/settings';
 import { createApiUserService } from './api/users';
 import { createApiVideoService } from './api/video';
 import { createApiWebhookService } from './api/webhooks';
@@ -21,12 +22,10 @@ import type { Services } from './types';
 
 /**
  * Real API for authentication, users, invites, courses, curriculum, grants, enrollments, progress,
- * quizzes, notes, certificates, the Studio dashboard and webhooks; mock only for what has no backend yet
- * (settings).
+ * quizzes, notes, certificates, the Studio dashboard, settings and webhooks.
  *
- * The mocked services decide what a user may do from "who is signed in", so the signed-in user is
- * mirrored into the mock as it is read or changed. Nothing else is mirrored: the API owns every
- * course, grant and progress record, and the mocked services do not need them.
+ * The signed-in user is still mirrored into the mock session as it is read or changed, so the mock
+ * (and the demo shell around it) keeps agreeing with the real cookies. Nothing else is mirrored.
  */
 export function createHybridServices(
   client: ApiClient,
@@ -84,7 +83,7 @@ export function createHybridServices(
     progress: createApiProgressService(client),
     notes: createApiNoteService(client),
     certificates: createApiCertificateService(client),
-    settings: mock.settings,
+    settings: createApiSettingsService(client),
     studio: createApiStudioService(client),
     video: createApiVideoService(client),
     webhooks: createApiWebhookService(client),

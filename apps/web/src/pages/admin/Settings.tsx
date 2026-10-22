@@ -207,7 +207,7 @@ function SettingsForm({ settings }: { settings: PlatformSettings }) {
   );
 }
 
-/** Instance settings: branding, languages and transactional e-mail (mocked, nothing is sent). */
+/** Instance settings: branding, languages and transactional e-mail (the demo sends nothing). */
 export function AdminSettings() {
   const { t } = useTranslation('admin');
   const query = usePlatformSettings();

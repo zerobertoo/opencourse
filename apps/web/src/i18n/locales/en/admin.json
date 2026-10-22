@@ -146,7 +146,7 @@
     },
     "email": {
       "title": "Transactional e-mail",
-      "description": "SMTP server used for invites and password recovery. In this demo nothing is sent.",
+      "description": "SMTP server used for invites, password recovery and certificates. The password is set in the SMTP_PASSWORD environment variable. The demo sends nothing.",
       "host": "SMTP host",
       "port": "Port",
       "username": "Username",

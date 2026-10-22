@@ -99,7 +99,9 @@ export async function buildApp(
   await app.register(redisPlugin, { redisUrl: config.REDIS_URL });
   await app.register(storagePlugin, { storage: dependencies.storage ?? createS3Storage(config) });
   await app.register(backgroundPlugin);
-  await app.register(mailerPlugin, { mailer: dependencies.mailer ?? createSmtpMailer(config) });
+  await app.register(mailerPlugin, {
+    mailer: dependencies.mailer ?? createSmtpMailer(config, () => app.db),
+  });
   await app.register(authPlugin, { config });
   await app.register(rateLimitPlugin, { disabled: config.RATE_LIMIT_DISABLED });
 

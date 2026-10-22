@@ -6,7 +6,7 @@ Open source, self-hosted course platform: courses with video, text and quizzes, 
 - **Documentation**: https://zerobertoo.github.io/opencourse/docs/ (English and Portuguese)
 - **Specification**: [docs/PRD.md](docs/PRD.md), the original intent. The documentation describes the current state.
 
-Current gaps: platform settings are still mocked in the web app (not wired to the API yet), and course covers are links with no upload.
+Current gap: course covers are links with no upload.
 
 ## Quick start
 

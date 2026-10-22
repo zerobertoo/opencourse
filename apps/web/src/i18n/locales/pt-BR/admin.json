@@ -146,7 +146,7 @@
     },
     "email": {
       "title": "E-mail transacional",
-      "description": "Servidor SMTP usado em convites e recuperação de senha. Nesta demonstração nada é enviado.",
+      "description": "Servidor SMTP usado em convites, recuperação de senha e certificados. A senha fica na variável de ambiente SMTP_PASSWORD. A demonstração não envia nada.",
       "host": "Servidor SMTP",
       "port": "Porta",
       "username": "Usuário",

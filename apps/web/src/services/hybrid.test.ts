@@ -52,7 +52,6 @@ describe('hybrid services', () => {
 
     // mocked screens ask the mock who is signed in, and must now get the real user
     expect(await mock.auth.getCurrentUser()).toMatchObject({ id: realUser.id });
-    await expect(services.settings.get()).resolves.toBeDefined();
   });
 
   it('manages webhooks through the API and sends the secret only where the API does', async () => {
@@ -95,10 +94,22 @@ describe('hybrid services', () => {
     expect(fetchMock).toHaveBeenCalledOnce();
   });
 
-  it('keeps mocked services locked until someone signs in', async () => {
-    const { services } = setup({});
-    const error = await services.settings.update({}).catch((caught: unknown) => caught);
-    expect(isServiceError(error) && error.code).toBe('unauthorized');
+  it('reads and changes the platform settings through the API', async () => {
+    const settings = {
+      brand: { name: 'Acme Academy', logoUrl: null, primaryColor: '#2f6f5e' },
+      enabledLocales: ['pt-BR', 'en'],
+      defaultLocale: 'pt-BR',
+      email: { host: 'smtp.test', port: 587, username: '', fromAddress: 'a@b.c', secure: false },
+    };
+    const { services, fetchMock } = setup({
+      'GET /settings': () => json(200, settings),
+      'PATCH /admin/settings': () => json(200, { ...settings, defaultLocale: 'en' }),
+    });
+
+    expect((await services.settings.get()).brand.name).toBe('Acme Academy');
+    const updated = await services.settings.update({ defaultLocale: 'en' });
+    expect(updated.defaultLocale).toBe('en');
+    expect(JSON.parse(String(fetchMock.mock.calls[1]![1]?.body))).toEqual({ defaultLocale: 'en' });
   });
 
   it('restores the session on reload through /me', async () => {
@@ -130,7 +141,6 @@ describe('hybrid services', () => {
     // the real cookies are still valid and the UI still shows the user, so the mock must agree:
     // otherwise every mocked screen would answer "unauthorized" to a user who looks signed in
     expect(await mock.auth.getCurrentUser()).toMatchObject({ id: realUser.id });
-    await expect(services.settings.get()).resolves.toBeDefined();
   });
 
   it('signs the mock out once the API confirms the sign out', async () => {
