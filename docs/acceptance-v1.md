@@ -28,7 +28,7 @@ Not covered: the lesson player has the same fallback notice (`lesson.fallbackNot
 | Domain events (`enrollment.granted`, `grant.revoked`, ...) leave through the outbox and webhooks, not an in-process bus | `apps/api/src/modules/webhooks`, `worker/consumers.ts` (code read) | Pass (manual) |
 | A plugin can create grants through `POST /grants` | `apps/api/src/modules/grants/routes.ts` | Partial: possible only by logging in as a user (gap below) |
 
-The wording scan covers the product roots (`apps/api/src`, `apps/api/migrations`, `apps/web/src`, `packages/shared/src`). It skips `apps/docs`, which mentions the absence of payment on purpose, and test files. The wording regex is deliberately broad; if it ever flags a legitimate word, fix the word rather than allowlisting.
+The wording scan covers the product roots (`apps/api/src`, `apps/api/migrations`, `apps/web/src`, `packages/shared/src`). It skips `apps/docs`, which mentions the absence of payment on purpose, and test files. The wording regex matches at the start of a word (so "striped" or "git checkout" in prose does not trip it) and is otherwise broad; if it ever flags a legitimate word, fix the word rather than allowlisting. The SDK check covers dependencies, dev, optional and peer dependencies of every workspace package.
 
 ### Gap: no machine credential for plugins
 

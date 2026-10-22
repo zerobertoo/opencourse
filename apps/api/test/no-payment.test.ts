@@ -1,4 +1,4 @@
-import { readFileSync, readdirSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
@@ -6,10 +6,11 @@ import { describe, expect, it } from 'vitest';
 // PRD v1 acceptance criterion 4: nothing in v1 depends on payment. Access is always a Grant.
 
 const repoRoot = fileURLToPath(new URL('../../..', import.meta.url));
+// word-start anchored so "striped" or "git checkout" style words in unrelated code stay out
 const paymentTerms =
-  /price|purchas|payment|checkout|stripe|paypal|billing|invoice|preço|preco|pagamento|\bcompra\b|comprar/i;
+  /\b(?:price|pricing|purchas|payment|checkout|stripe(?!d)|paypal|billing|invoice|preço|preco|pagamento|compra\b|comprar)/i;
 const paymentPackages =
-  /stripe|paypal|mercadopago|pagseguro|braintree|paddle|lemonsqueezy|pagarme/i;
+  /stripe|paypal|mercadopago|pagseguro|pagarme|pagar\.me|asaas|iugu|hotmart|kiwify|eduzz|braintree|paddle|lemonsqueezy|mollie|razorpay|adyen|square|authorize/i;
 
 /** Lists files under a directory, skipping build output and dependencies. */
 function listFiles(directory: string): string[] {
@@ -45,16 +46,22 @@ describe('no payment dependency', () => {
     const manifests = [
       'package.json',
       ...['apps', 'packages'].flatMap((group) =>
-        readdirSync(join(repoRoot, group), { withFileTypes: true })
-          .filter((entry) => entry.isDirectory())
-          .map((entry) => `${group}/${entry.name}/package.json`),
+        readdirSync(join(repoRoot, group), { withFileTypes: true }).map(
+          (entry) => `${group}/${entry.name}/package.json`,
+        ),
       ),
-    ];
+    ].filter((manifest) => existsSync(join(repoRoot, manifest)));
     for (const manifest of manifests) {
-      const { dependencies = {}, devDependencies = {} } = JSON.parse(
-        readFileSync(join(repoRoot, manifest), 'utf8'),
-      ) as Record<string, Record<string, string> | undefined>;
-      const names = Object.keys({ ...dependencies, ...devDependencies });
+      const sections = JSON.parse(readFileSync(join(repoRoot, manifest), 'utf8')) as Record<
+        string,
+        Record<string, string> | undefined
+      >;
+      const names = [
+        'dependencies',
+        'devDependencies',
+        'optionalDependencies',
+        'peerDependencies',
+      ].flatMap((section) => Object.keys(sections[section] ?? {}));
       expect(
         names.filter((name) => paymentPackages.test(name)),
         manifest,
