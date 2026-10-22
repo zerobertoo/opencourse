@@ -1,4 +1,5 @@
 import {
+  isHttpUrl,
   platformSettingsProblem,
   platformSettingsSchema,
   type PlatformSettings,
@@ -39,7 +40,12 @@ export async function loadPlatformSettings(
 ): Promise<PlatformSettings> {
   const [row] = await db.select().from(settings).where(eq(settings.key, PLATFORM_KEY));
   const parsed = platformSettingsSchema.safeParse(row?.value);
-  return parsed.success ? parsed.data : defaultPlatformSettings(config);
+  if (!parsed.success) return defaultPlatformSettings(config);
+  const { brand } = parsed.data;
+  // a logo saved before the address was validated must not be served, nor merged into a new save
+  return brand.logoUrl && !isHttpUrl(brand.logoUrl)
+    ? { ...parsed.data, brand: { ...brand, logoUrl: null } }
+    : parsed.data;
 }
 
 /** Merges the patch into the current settings, validates the result and stores it. */

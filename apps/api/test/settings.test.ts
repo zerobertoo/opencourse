@@ -1,5 +1,6 @@
 import { apiErrorSchema, platformSettingsSchema } from '@opencourse/shared';
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
+import { settings } from '../src/db/schema';
 import { createTestApp, registerClient, resetDatabase, TestClient, type TestApp } from './helpers';
 
 describe('platform settings', () => {
@@ -69,6 +70,23 @@ describe('platform settings', () => {
     expect(changed.json().email.fromAddress).toBe(sender);
   });
 
+  it('does not serve a logo address that was saved before addresses were validated', async () => {
+    const { admin } = await createCast();
+    const current = (await admin.client.get('/api/v1/settings')).json();
+    await ctx.app.db.insert(settings).values({
+      key: 'platform',
+      value: { ...current, brand: { ...current.brand, logoUrl: 'javascript:alert(1)' } },
+    });
+
+    const reread = await admin.client.get('/api/v1/settings');
+    expect(reread.json().brand.logoUrl).toBeNull();
+    const renamed = await admin.client.patch('/api/v1/admin/settings', {
+      brand: { name: 'Acme Academy' },
+    });
+    expect(renamed.statusCode).toBe(200);
+    expect(renamed.json().brand.logoUrl).toBeNull();
+  });
+
   it('refuses invalid changes without saving anything', async () => {
     const { admin } = await createCast();
 
@@ -85,6 +103,14 @@ describe('platform settings', () => {
 
     const emptyHost = await admin.client.patch('/api/v1/admin/settings', { email: { host: ' ' } });
     expect(emptyHost.statusCode).toBe(400);
+
+    const scriptLogo = await admin.client.patch('/api/v1/admin/settings', {
+      brand: { logoUrl: 'javascript:alert(1)' },
+    });
+    expect(scriptLogo.statusCode).toBe(400);
+
+    const unknownKey = await admin.client.patch('/api/v1/admin/settings', { foo: 1 });
+    expect(unknownKey.statusCode).toBe(400);
 
     const badSender = await admin.client.patch('/api/v1/admin/settings', {
       email: { fromAddress: 'nope' },
