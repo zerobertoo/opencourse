@@ -1,6 +1,6 @@
 # Video
 
-A video lesson holds either **a file uploaded to your instance**, which the worker converts to adaptive HLS, or **a link to an external provider** (YouTube, Vimeo, Bunny Stream, Cloudflare Stream, Panda Video, Google Drive), played through the provider's own player.
+A video lesson holds either **a file uploaded to your instance**, which the worker converts to adaptive HLS, or **a link to an external provider** (YouTube, Vimeo, Bunny Stream, Cloudflare Stream, Panda Video), played through the provider's own player.
 
 ## Uploaded files
 
@@ -57,7 +57,6 @@ Pasting a link in the Studio picks the provider automatically from the address. 
 | Bunny Stream     | `iframe.mediadelivery.net/embed/` or `/play/` `LIBRARY/VIDEO`                                             |
 | Cloudflare Stream | `iframe.videodelivery.net/ID`, `watch.cloudflarestream.com/ID`, `customer-XXXX.cloudflarestream.com/ID`  |
 | Panda Video      | `player-vz-XXXX.tv.pandavideo.com.br/embed/?v=VIDEO`                                                      |
-| Google Drive     | `drive.google.com/file/d/FILE_ID/view` (the file must be shared as "anyone with the link") |
 | Video file       | Any `https` link ending in `.mp4`, `.webm`, `.mov`, `.m4v` or `.m3u8` (an HLS playlist), without a user name or password |
 
 Administration, Plugins lists the providers installed on the instance.
