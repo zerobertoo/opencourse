@@ -18,6 +18,7 @@ import {
   type ProfileValues,
 } from '@/lib/schemas';
 import { useServiceErrorMessage } from '@/lib/serviceError';
+import { isServiceError } from '@/services';
 import { useServices } from '@/services/ServicesContext';
 import { useTheme, type ThemePreference } from '@/theme/useTheme';
 
@@ -166,6 +167,7 @@ function PasswordSection() {
     register,
     handleSubmit,
     reset,
+    setError,
     formState: { errors, isSubmitting },
   } = useForm<ChangePasswordValues>({ resolver: zodResolver(changePasswordSchema) });
 
@@ -176,7 +178,12 @@ function PasswordSection() {
       reset();
       toast.success(t('settings.password.savedToast'));
     } catch (error) {
-      setFormError(describeError(error));
+      // a wrong current password belongs to its field, not to a generic banner
+      if (isServiceError(error) && error.field === 'currentPassword') {
+        setError('currentPassword', { message: 'validation.currentPasswordWrong' });
+      } else {
+        setFormError(describeError(error));
+      }
     }
   });
 

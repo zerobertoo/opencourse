@@ -13,11 +13,14 @@ export type ServiceErrorCode =
  */
 export class ServiceError extends Error {
   readonly code: ServiceErrorCode;
+  /** Name of the input a validation error is about, when the service knows it. */
+  readonly field: string | undefined;
 
-  constructor(code: ServiceErrorCode, message: string) {
+  constructor(code: ServiceErrorCode, message: string, field?: string) {
     super(message);
     this.name = 'ServiceError';
     this.code = code;
+    this.field = field;
   }
 }
 

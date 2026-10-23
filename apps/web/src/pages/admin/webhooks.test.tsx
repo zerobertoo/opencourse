@@ -134,7 +134,7 @@ describe('admin webhooks', () => {
     const dialog = await screen.findByRole('dialog', { name: 'Histórico de entregas' });
     const item = within(await within(dialog).findByRole('list', { name: 'Entregas' }));
     expect(item.getByText('Falhou')).toBeVisible();
-    expect(item.getByText(/5 tentativas · HTTP 500 · Receiver answered 500/)).toBeVisible();
+    expect(item.getByText(/5 tentativas · HTTP 500 · O destino respondeu 500\./)).toBeVisible();
 
     await user.click(item.getByRole('button', { name: 'Tentar de novo Usuário criado' }));
     await waitFor(async () =>

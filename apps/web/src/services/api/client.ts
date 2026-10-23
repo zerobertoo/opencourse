@@ -144,9 +144,12 @@ export class ApiClient {
       const body: unknown = await response.json().catch(() => null);
       const parsed = apiErrorSchema.safeParse(body);
       if (parsed.success) {
+        const { details } = parsed.data.error;
+        const field = (details as { field?: unknown } | null | undefined)?.field;
         throw new ServiceError(
           ERROR_CODE_BY_API_CODE[parsed.data.error.code],
           parsed.data.error.message,
+          typeof field === 'string' ? field : undefined,
         );
       }
       throw new ServiceError(errorCodeFromStatus(response.status), `API error ${response.status}`);
