@@ -57,8 +57,8 @@ export function VideoPlayer({
   const { t, i18n } = useTranslation('player');
   const { user } = useAuth();
   const settings = usePlatformSettings();
-  // shown until the settings say otherwise, so a slow request never leaves the video bare
-  const showWatermark = user && (settings.data?.video?.watermarkEnabled ?? true);
+  // off until the settings say otherwise (the platform default)
+  const showWatermark = user && (settings.data?.video?.watermarkEnabled ?? false);
   const lastSavedRef = useRef(0);
   const dirtyRef = useRef(false);
   const currentRef = useRef(0);

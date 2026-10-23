@@ -272,7 +272,7 @@ function buildSettings(): MockDatabase['settings'] {
       fromAddress: 'nao-responda@opencourse.example',
       secure: false,
     },
-    video: { watermarkEnabled: true },
+    video: { watermarkEnabled: false },
   };
 }
 

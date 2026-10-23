@@ -279,8 +279,8 @@ export const platformSettingsSchema = z.object({
     fromAddress: z.string(),
     secure: z.boolean(),
   }),
-  // settings saved before this group existed still parse, with the watermark on
-  video: z.object({ watermarkEnabled: z.boolean() }).default({ watermarkEnabled: true }),
+  // settings saved before this group existed still parse, with the watermark off
+  video: z.object({ watermarkEnabled: z.boolean() }).default({ watermarkEnabled: false }),
 });
 export type PlatformSettings = z.infer<typeof platformSettingsSchema>;
 

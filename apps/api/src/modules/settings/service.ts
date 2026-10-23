@@ -30,7 +30,7 @@ export function defaultPlatformSettings(config: Config): PlatformSettings {
       fromAddress: config.SMTP_FROM,
       secure: config.SMTP_PORT === SMTPS_PORT,
     },
-    video: { watermarkEnabled: true },
+    video: { watermarkEnabled: false },
   };
 }
 

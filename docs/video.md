@@ -43,7 +43,7 @@ Encoding is CPU heavy. Give the worker enough cores and temporary disk for the o
 Two features make uploaded videos harder to leak, without preventing it:
 
 - **Encrypted segments (AES-128).** The worker encrypts every segment and keeps the key in the storage next to them, so the bucket must stay private (never public-read). The player fetches the key from `GET /api/v1/videos/:assetId/key`, which checks the token and the access like the playlists do, so a revoked grant stops receiving the key. This stops simple downloaders that just copy the segments. Videos encoded before this feature stay unencrypted until an admin sends them to the encoder again (**Try again**).
-- **Watermark.** The player shows the student's name and e-mail over the video, for about 8 seconds out of every 30, each time in a different place. It discourages sharing recordings and shows who a leaked copy came from. Admins can turn it off under **Admin → Settings → Video**. It is drawn in the browser, so someone who opens the developer tools can hide it.
+- **Watermark.** The player shows the student's name and e-mail over the video, for about 8 seconds out of every 30, each time in a different place. It discourages sharing recordings and shows who a leaked copy came from. It is off by default; admins turn it on under **Admin → Settings → Video**. It is drawn in the browser, so someone who opens the developer tools can hide it.
 
 Even so, self-hosting cannot stop a determined person from saving a video. Anyone who can watch it also receives the key and can rebuild the file or record the screen. If your content needs strong protection (DRM, forensic watermarking, domain locking), use an external provider that sells it and paste its link.
 
