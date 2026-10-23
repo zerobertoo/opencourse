@@ -393,8 +393,10 @@ export const videoRoutes: FastifyPluginAsyncZod<VideoRoutesOptions> = async (
       let keyHex: string;
       try {
         keyHex = await app.storage.readText(videoKeys.encryptionKey(assetId));
-      } catch {
-        throw notFound('This video has no key');
+      } catch (error) {
+        // only a missing key means "not encrypted"; a storage failure must surface as one
+        if ((error as { name?: string }).name === 'NoSuchKey') throw notFound('This video has no key');
+        throw error;
       }
       return reply
         .header('content-type', 'application/octet-stream')

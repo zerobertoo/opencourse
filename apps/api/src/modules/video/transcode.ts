@@ -187,7 +187,7 @@ export function buildEncodeArgs(
       String(SEGMENT_SECONDS),
       '-hls_playlist_type',
       'vod',
-      // AES-128 segments; the IV follows the segment number, so the key is all a player needs
+      // AES-128 segments; ffmpeg picks one IV per playlist and declares it in the #EXT-X-KEY tag
       '-hls_key_info_file',
       keyInfoFile,
       '-hls_segment_filename',
@@ -296,6 +296,11 @@ export async function transcodeVideo(
 
   const { keyInfoFile, keyHex } = await writeEncryptionKey(workDir);
   await encodeRenditions(sourcePath, renditions, workDir, keyInfoFile);
+  // the API rewrites exactly this key tag when serving; fail here, not on every playback
+  const encodedPlaylist = await readFile(path.join(workDir, renditions[0]!.name, 'index.m3u8'), 'utf8');
+  if (!encodedPlaylist.includes(`URI="${KEY_PLACEHOLDER}"`)) {
+    throw new Error('ffmpeg did not write the expected encryption key tag');
+  }
   await storage.putText(videoKeys.encryptionKey(assetId), keyHex, 'text/plain');
   // the container may not know its length (browser-recorded WebM): the encoded playlist does
   const durationSeconds =
