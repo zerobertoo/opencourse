@@ -67,12 +67,20 @@ jobs:
           cache: pnpm
 
       # the video tests encode a small clip
-      # a stalled mirror once hung this step for 14 minutes, so retry and give up early
+      # a pinned static build instead of apt: the Ubuntu mirror once took over 14 minutes to
+      # download the 87 packages ffmpeg pulls in
       - name: Install ffmpeg
         timeout-minutes: 5
+        env:
+          FFMPEG_TAG: autobuild-2026-10-22-13-06
+          FFMPEG_ARCHIVE: ffmpeg-n8.1.3-23-g5c4f5744cd-linux64-gpl-8.1
+          FFMPEG_SHA256: 1aa0c5526768bf4db3e62cba954169e3e0be38327c9cbbb6c5675794df6c03df
         run: |
-          sudo apt-get -o Acquire::Retries=3 -o Acquire::http::Timeout=20 update
-          sudo apt-get -o Acquire::Retries=3 -o Acquire::http::Timeout=20 install -y --no-install-recommends ffmpeg
+          curl -fsSL --retry 3 -o ffmpeg.tar.xz "https://github.com/BtbN/FFmpeg-Builds/releases/download/${FFMPEG_TAG}/${FFMPEG_ARCHIVE}.tar.xz"
+          echo "${FFMPEG_SHA256}  ffmpeg.tar.xz" | sha256sum -c -
+          sudo tar -xJf ffmpeg.tar.xz --strip-components=2 -C /usr/local/bin "${FFMPEG_ARCHIVE}/bin/ffmpeg" "${FFMPEG_ARCHIVE}/bin/ffprobe"
+          rm ffmpeg.tar.xz
+          ffmpeg -version | head -1
 
       - name: Create the storage bucket
         env:
