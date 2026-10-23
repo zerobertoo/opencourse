@@ -14,7 +14,7 @@ Open source, self-hosted course platform: courses with video, text and quizzes, 
 
 ## Quick start
 
-Requirements: Docker (with Compose). To work on the code you also need Node 20 or newer (`.nvmrc` pins 24) and pnpm 9.
+Requirements: Docker (with Compose). To work on the code you also need Node 22.23.4 or newer (`.nvmrc` pins 24.22.1) and pnpm 9.
 
 ```bash
 cp .env.example .env     # then replace AUTH_SECRET, for example with: openssl rand -base64 48

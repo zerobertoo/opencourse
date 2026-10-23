@@ -12,7 +12,7 @@ By contributing you agree that your work is released under the project's [AGPL-3
 
 ## Setup
 
-Requirements: Node 20+ (`.nvmrc` pins 24), pnpm 9, Docker, and `ffmpeg` on the PATH for the video tests.
+Requirements: Node 22.23.4+ (`.nvmrc` pins 24.22.1), pnpm 9, Docker, and `ffmpeg` on the PATH for the video tests.
 
 ```sh
 pnpm install
