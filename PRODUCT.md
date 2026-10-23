@@ -29,7 +29,7 @@ Open source and self-hosted with a product experience that closed platforms usua
 - Instructors work in the Studio (dashboard, tabbed course editor: Details, Content, Students, Certificate, Settings; quiz builder; grants and invites).
 - Students use a home with "continue where you left off", course pages with an accordion curriculum, and a player (speed, fullscreen, captions, position resume, collapsible curriculum, personal notes).
 - Admins use users, grants, settings and a plugins page.
-- Video is either self-hosted HLS (uploaded files, transcoded by the worker) or an external link resolved by provider plugins (YouTube, Vimeo, Bunny Stream, Cloudflare Stream, Panda Video, direct video files); see `docs/video.md`.
+- Video is either self-hosted HLS (uploaded files, transcoded by the worker) or an external link resolved by provider plugins (YouTube, Vimeo, Bunny Stream, Cloudflare Stream, Panda Video, Google Drive, direct video files); see `docs/video.md`.
 - Self-hosting stack: Docker Compose with web, api, worker, postgres, redis, S3-compatible storage (RustFS), mailpit.
 
 ## Capabilities and Constraints

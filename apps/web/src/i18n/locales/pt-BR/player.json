@@ -23,6 +23,7 @@
   },
   "video": {
     "playerLabel": "Player de vídeo: {title}",
+    "driveQualityHint": "Vídeo embaçado? O Google Drive pode começar em qualidade baixa. Abra as configurações (engrenagem) no player e escolha a maior qualidade.",
     "play": "Reproduzir",
     "pause": "Pausar",
     "seek": "Posição do vídeo",
