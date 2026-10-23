@@ -30,6 +30,7 @@ export function defaultPlatformSettings(config: Config): PlatformSettings {
       fromAddress: config.SMTP_FROM,
       secure: config.SMTP_PORT === SMTPS_PORT,
     },
+    video: { watermarkEnabled: false },
   };
 }
 
@@ -64,6 +65,7 @@ export async function updatePlatformSettings(
       ...patch,
       brand: { ...current.brand, ...patch.brand },
       email: { ...current.email, ...patch.email },
+      video: { ...current.video, ...patch.video },
     });
     if (!merged.success) throw badRequest('Invalid settings');
     const problem = platformSettingsProblem(merged.data);

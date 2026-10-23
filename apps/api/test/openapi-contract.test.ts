@@ -30,6 +30,7 @@ const PUBLIC_OPERATIONS = new Set([
   // addressed by an unguessable id, a playback token or a presigned URL
   'GET /api/v1/courses/{id}/cover/{coverId}',
   'GET /api/v1/videos/{assetId}/{file}',
+  'GET /api/v1/videos/{assetId}/key',
 ]);
 
 describe('OpenAPI contract', () => {

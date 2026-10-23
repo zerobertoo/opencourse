@@ -1,5 +1,5 @@
 import { execFile } from 'node:child_process';
-import { randomUUID } from 'node:crypto';
+import { createDecipheriv, randomUUID } from 'node:crypto';
 import { mkdtemp, readFile, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
@@ -163,13 +163,35 @@ describe('video upload, processing and playback', () => {
     const segment = await fetch(segmentUrl);
     expect(segment.status).toBe(200);
     expect(segment.headers.get('content-type')).toBe('video/mp2t');
-    expect((await segment.arrayBuffer()).byteLength).toBeGreaterThan(1000);
+    const segmentBytes = new Uint8Array(await segment.arrayBuffer());
+    expect(segmentBytes.byteLength).toBeGreaterThan(1000);
+
+    // the playlist points at the key route, which hands out the 16 key bytes
+    const keyTag = /#EXT-X-KEY:METHOD=AES-128,URI="([^"]+)",IV=0x([0-9a-f]{32})/.exec(
+      rendition.body,
+    )!;
+    const keyUrl = keyTag[1]!;
+    expect(keyUrl).toContain(`/api/v1/videos/${upload.assetId}/key?token=`);
+    const key = await ctx.app.inject({ method: 'GET', url: keyUrl });
+    expect(key.statusCode).toBe(200);
+    expect(key.rawPayload.byteLength).toBe(16);
+
+    // the segment is real MPEG-TS (sync byte 0x47 on every packet) only once decrypted with that key
+    const decipher = createDecipheriv(
+      'aes-128-cbc',
+      key.rawPayload,
+      Buffer.from(keyTag[2]!, 'hex'),
+    );
+    decipher.setAutoPadding(false);
+    const decrypted = Buffer.concat([decipher.update(segmentBytes), decipher.final()]);
+    expect([decrypted[0], decrypted[188], decrypted[376]]).toEqual([0x47, 0x47, 0x47]);
 
     // the source file is gone once the renditions exist
     expect(await ctx.app.storage.sizeOf(`videos/${upload.assetId}/source`)).toBeNull();
 
-    // access is checked again on every playlist request
+    // access is checked again on every playlist and key request
     await ctx.app.db.update(grants).set({ revokedAt: new Date() });
+    expect((await ctx.app.inject({ method: 'GET', url: keyUrl })).statusCode).toBe(403);
     expect((await ctx.app.inject({ method: 'GET', url: variant })).statusCode).toBe(403);
     expect((await ctx.app.inject({ method: 'GET', url: playbackUrl })).statusCode).toBe(403);
   }, 90_000);

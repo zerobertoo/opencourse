@@ -154,6 +154,11 @@
       "fromAddress": "Endereço do remetente",
       "secure": "Usar conexão segura (TLS)",
       "secureHint": "Normalmente ligado na porta 465."
+    },
+    "video": {
+      "title": "Vídeo",
+      "watermark": "Mostrar nome e e-mail do aluno sobre os vídeos enviados",
+      "watermarkHint": "Desencoraja o compartilhamento de gravações e mostra de quem veio uma cópia vazada. Não vale para vídeos incorporados de provedores externos (YouTube, Vimeo etc.)."
     }
   },
   "plugins": {

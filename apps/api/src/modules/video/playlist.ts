@@ -3,6 +3,8 @@ export const videoKeys = {
   prefix: (assetId: string) => `videos/${assetId}/`,
   source: (assetId: string) => `videos/${assetId}/source`,
   poster: (assetId: string) => `videos/${assetId}/poster.jpg`,
+  /** AES-128 key of the segments, as 32 hex characters. Videos encoded before encryption have none. */
+  encryptionKey: (assetId: string) => `videos/${assetId}/hls/key.bin`,
   masterPlaylist: (assetId: string) => `videos/${assetId}/hls/master.m3u8`,
   renditionPlaylist: (assetId: string, rendition: string) =>
     `videos/${assetId}/hls/${rendition}/index.m3u8`,
@@ -36,14 +38,29 @@ export function rewriteMasterPlaylist(
   });
 }
 
-/** A rendition playlist with every segment replaced by the address `segmentUrl` returns for it. */
+/** What the encoder writes as the key address; the API swaps it for the real one when serving. */
+export const KEY_PLACEHOLDER = 'key.bin';
+
+/**
+ * A rendition playlist with every segment replaced by the address `segmentUrl` returns for it,
+ * and the encryption key address (when the playlist has one) replaced by `keyUrl()`.
+ */
 export async function rewriteRenditionPlaylist(
   playlist: string,
   segmentUrl: (file: string) => Promise<string>,
+  keyUrl?: () => string,
 ): Promise<string> {
   const lines = playlist.split(/\r?\n/);
   const out: string[] = [];
   for (const line of lines) {
+    if (line.startsWith('#EXT-X-KEY:')) {
+      // only the placeholder is ever written, so any other address came from somewhere else
+      if (!keyUrl || !line.includes(`URI="${KEY_PLACEHOLDER}"`)) {
+        throw new Error(`Unexpected key in playlist: ${line}`);
+      }
+      out.push(line.replace(`URI="${KEY_PLACEHOLDER}"`, `URI="${keyUrl()}"`));
+      continue;
+    }
     if (line.trim() === '' || line.startsWith('#')) {
       out.push(line);
       continue;
