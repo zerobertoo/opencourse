@@ -67,7 +67,12 @@ jobs:
           cache: pnpm
 
       # the video tests encode a small clip
-      - run: sudo apt-get update && sudo apt-get install -y --no-install-recommends ffmpeg
+      # a stalled mirror once hung this step for 14 minutes, so retry and give up early
+      - name: Install ffmpeg
+        timeout-minutes: 5
+        run: |
+          sudo apt-get -o Acquire::Retries=3 -o Acquire::http::Timeout=20 update
+          sudo apt-get -o Acquire::Retries=3 -o Acquire::http::Timeout=20 install -y --no-install-recommends ffmpeg
 
       - name: Create the storage bucket
         env:
