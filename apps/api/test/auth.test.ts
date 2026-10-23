@@ -170,7 +170,21 @@ describe('authentication', () => {
         csrf: false,
       });
       expect(response.statusCode).toBe(403);
+      expect(response.json().error.message).toBe('Missing x-requested-with header');
       expect((await client.get('/api/v1/me')).json().user.name).toBe('Test User');
+    });
+
+    it('tells a wrong CSRF header value from a missing one', async () => {
+      const { client } = await registerClient(ctx.app, 'maria@example.com');
+      const response = await client.request('PATCH', '/api/v1/me', {
+        body: { name: 'Hacked' },
+        csrf: false,
+        headers: { 'x-requested-with': 'fetch' },
+      });
+      expect(response.statusCode).toBe(403);
+      expect(response.json().error.message).toBe(
+        'Invalid x-requested-with header: the value must be "opencourse"',
+      );
     });
 
     it('rejects a forged or expired access token', async () => {
