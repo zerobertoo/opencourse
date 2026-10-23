@@ -154,6 +154,11 @@
       "fromAddress": "Sender address",
       "secure": "Use a secure connection (TLS)",
       "secureHint": "Usually on for port 465."
+    },
+    "video": {
+      "title": "Video",
+      "watermark": "Show the student's name and e-mail over uploaded videos",
+      "watermarkHint": "Discourages sharing recordings and shows who a leaked copy came from. It does not apply to videos from external providers."
     }
   },
   "plugins": {

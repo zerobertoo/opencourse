@@ -356,6 +356,53 @@ export const videoRoutes: FastifyPluginAsyncZod<VideoRoutesOptions> = async (
     },
   );
 
+  /**
+   * Checks a playback token and, again, that the person still has access to the video's course.
+   * Players cannot send cookies with every request, so playlists and keys share this credential.
+   */
+  async function authorizeToken(assetId: string, token: string) {
+    const claims = verifyPlaybackToken(config.AUTH_SECRET, token, new Date());
+    if (claims?.assetId !== assetId) throw unauthorized('Invalid or expired playback address');
+
+    const [user] = await app.db.select().from(users).where(eq(users.id, claims.userId));
+    if (!user?.active) throw unauthorized('Invalid or expired playback address');
+    const context = await findAssetContext(app.db, assetId);
+    if (!context) throw notFound('Video not found');
+    const access = await resolveCourseAccess(app.db, user, context.course, new Date());
+    if (!access.isVisible || !access.canViewContent) {
+      throw forbidden('Access to this course requires a grant');
+    }
+    if (context.asset.status !== 'ready') throw conflict('The video is not ready yet');
+    return context;
+  }
+
+  app.get(
+    '/videos/:assetId/key',
+    {
+      schema: {
+        tags: ['video'],
+        summary: 'AES-128 key of an encrypted video',
+        description: 'Same token and access check as the playlists; the key is 16 raw bytes.',
+        params: videoAssetParamsSchema,
+        querystring: videoPlaylistQuerySchema,
+      },
+    },
+    async (request, reply) => {
+      const { assetId } = request.params;
+      await authorizeToken(assetId, request.query.token);
+      let keyHex: string;
+      try {
+        keyHex = await app.storage.readText(videoKeys.encryptionKey(assetId));
+      } catch {
+        throw notFound('This video has no key');
+      }
+      return reply
+        .header('content-type', 'application/octet-stream')
+        .header('cache-control', 'private, no-store')
+        .send(Buffer.from(keyHex.trim(), 'hex'));
+    },
+  );
+
   app.get(
     '/videos/:assetId/:file',
     {
@@ -370,18 +417,7 @@ export const videoRoutes: FastifyPluginAsyncZod<VideoRoutesOptions> = async (
     async (request, reply) => {
       const { assetId, file } = request.params;
       const { token } = request.query;
-      const claims = verifyPlaybackToken(config.AUTH_SECRET, token, new Date());
-      if (claims?.assetId !== assetId) throw unauthorized('Invalid or expired playback address');
-
-      const [user] = await app.db.select().from(users).where(eq(users.id, claims.userId));
-      if (!user?.active) throw unauthorized('Invalid or expired playback address');
-      const context = await findAssetContext(app.db, assetId);
-      if (!context) throw notFound('Video not found');
-      const access = await resolveCourseAccess(app.db, user, context.course, new Date());
-      if (!access.isVisible || !access.canViewContent) {
-        throw forbidden('Access to this course requires a grant');
-      }
-      if (context.asset.status !== 'ready') throw conflict('The video is not ready yet');
+      const context = await authorizeToken(assetId, token);
 
       const name = file.slice(0, -'.m3u8'.length);
       let body: string;
@@ -396,8 +432,10 @@ export const videoRoutes: FastifyPluginAsyncZod<VideoRoutesOptions> = async (
         }
         const playlist = await app.storage.readText(videoKeys.renditionPlaylist(assetId, name));
         const ttl = Math.max(MIN_SEGMENT_URL_TTL_SECONDS, (context.asset.durationSeconds ?? 0) * 2);
-        body = await rewriteRenditionPlaylist(playlist, (segment) =>
-          app.storage.presignGet(videoKeys.segment(assetId, name, segment), ttl),
+        body = await rewriteRenditionPlaylist(
+          playlist,
+          (segment) => app.storage.presignGet(videoKeys.segment(assetId, name, segment), ttl),
+          () => keyPath(assetId, token),
         );
       }
       return reply
@@ -407,6 +445,11 @@ export const videoRoutes: FastifyPluginAsyncZod<VideoRoutesOptions> = async (
     },
   );
 };
+
+/** API path of the segment key, relative to the API origin. */
+function keyPath(assetId: string, token: string): string {
+  return `/api/v1/videos/${assetId}/key?token=${encodeURIComponent(token)}`;
+}
 
 /** API path of a playlist, relative to the API origin. */
 function playlistPath(assetId: string, name: string, token: string): string {

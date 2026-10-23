@@ -279,6 +279,8 @@ export const platformSettingsSchema = z.object({
     fromAddress: z.string(),
     secure: z.boolean(),
   }),
+  // settings saved before this group existed still parse, with the watermark on
+  video: z.object({ watermarkEnabled: z.boolean() }).default({ watermarkEnabled: true }),
 });
 export type PlatformSettings = z.infer<typeof platformSettingsSchema>;
 
@@ -315,6 +317,7 @@ export const updatePlatformSettingsRequestSchema = z
       .partial()
       .strict()
       .optional(),
+    video: z.object({ watermarkEnabled: z.boolean() }).partial().strict().optional(),
   })
   .strict();
 export type UpdatePlatformSettingsRequest = z.infer<typeof updatePlatformSettingsRequestSchema>;

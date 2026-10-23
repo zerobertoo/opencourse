@@ -26,6 +26,7 @@ function toFormValues(settings: PlatformSettings): PlatformSettingsFormValues {
     username: settings.email.username,
     fromAddress: settings.email.fromAddress,
     secure: settings.email.secure,
+    watermarkEnabled: settings.video.watermarkEnabled,
   };
 }
 
@@ -45,6 +46,7 @@ function toSettingsPatch(values: PlatformSettingsFormValues): PlatformSettings {
       fromAddress: values.fromAddress,
       secure: values.secure,
     },
+    video: { watermarkEnabled: values.watermarkEnabled },
   };
 }
 
@@ -186,6 +188,17 @@ function SettingsForm({ settings }: { settings: PlatformSettings }) {
           label={t('admin:settings.email.secure')}
           hint={t('admin:settings.email.secureHint')}
           {...register('secure')}
+        />
+      </Card>
+
+      <Card role="region" aria-labelledby="settings-video" className="space-y-4 p-5">
+        <h3 id="settings-video" className="text-lg font-semibold">
+          {t('admin:settings.video.title')}
+        </h3>
+        <CheckboxField
+          label={t('admin:settings.video.watermark')}
+          hint={t('admin:settings.video.watermarkHint')}
+          {...register('watermarkEnabled')}
         />
       </Card>
 

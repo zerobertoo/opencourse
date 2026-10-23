@@ -18,6 +18,7 @@ export function createMockSettingsService(context: MockContext): SettingsService
           ...patch,
           brand: { ...store.db.settings.brand, ...patch.brand },
           email: { ...store.db.settings.email, ...patch.email },
+          video: { ...store.db.settings.video, ...patch.video },
         };
 
         const parsed = platformSettingsSchema.safeParse(merged);

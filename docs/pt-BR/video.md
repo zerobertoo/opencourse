@@ -40,7 +40,12 @@ A codificação consome muita CPU. Dê ao worker núcleos suficientes e disco te
 
 ### Uma nota honesta sobre proteção contra download
 
-Auto-hospedagem não impede uma pessoa determinada de salvar um vídeo. Quem consegue assistir também consegue buscar os segmentos e remontar o arquivo, e os endereços de curta duração só limitam o compartilhamento de links, não a cópia. Se o seu conteúdo exige proteção forte (DRM, marca d'água forense, bloqueio por domínio), use um provedor externo que ofereça isso e cole o link dele.
+Dois recursos dificultam o vazamento dos vídeos enviados, sem impedi-lo:
+
+- **Segmentos criptografados (AES-128).** O worker criptografa cada segmento e guarda a chave no armazenamento privado. O player busca a chave em `GET /api/v1/videos/:assetId/key`, que confere o token e o acesso como as playlists, então uma concessão revogada deixa de receber a chave. Isso barra downloaders simples que só copiam os segmentos. Vídeos codificados antes desse recurso continuam sem criptografia até um admin enviá-los de novo ao codificador (**Try again**).
+- **Marca d'água.** O player mostra o nome e o e-mail do aluno sobre o vídeo, mudando de lugar a cada ~20 segundos. Desencoraja o compartilhamento de gravações e mostra de quem veio uma cópia vazada. Admins podem desligá-la em **Admin → Settings → Video**. Ela é desenhada no navegador, então quem abre as ferramentas do desenvolvedor consegue escondê-la.
+
+Mesmo assim, auto-hospedagem não impede uma pessoa determinada de salvar um vídeo. Quem pode assistir também recebe a chave e consegue remontar o arquivo ou gravar a tela. Se o seu conteúdo exige proteção forte (DRM, marca d'água forense, bloqueio por domínio), use um provedor externo que ofereça isso e cole o link dele.
 
 ### Migrando de vídeos só com link
 

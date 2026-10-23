@@ -5,7 +5,10 @@ import { Video, VideoPlayer as VideoJsPlayer, VideoSkin } from '@videojs/react/v
 import '@videojs/react/video/skin.css';
 import { useCallback, useEffect, useRef, type CSSProperties, type SyntheticEvent } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useAuth } from '@/auth/AuthContext';
+import { usePlatformSettings } from '@/hooks/adminQueries';
 import { useCaptionTracks } from '@/hooks/queries';
+import { Watermark } from './Watermark';
 
 /** How often (in seconds of playback) the position is reported while playing. */
 const POSITION_SAVE_INTERVAL_SECONDS = 5;
@@ -52,6 +55,10 @@ export function VideoPlayer({
   onEnded,
 }: VideoPlayerProps) {
   const { t, i18n } = useTranslation('player');
+  const { user } = useAuth();
+  const settings = usePlatformSettings();
+  // shown until the settings say otherwise, so a slow request never leaves the video bare
+  const showWatermark = user && (settings.data?.video.watermarkEnabled ?? true);
   const lastSavedRef = useRef(0);
   const dirtyRef = useRef(false);
   const currentRef = useRef(0);
@@ -134,6 +141,7 @@ export function VideoPlayer({
                 {tracks}
               </Video>
             )}
+            {showWatermark ? <Watermark text={`${user.name} · ${user.email}`} /> : null}
           </VideoSkin>
         </VideoJsPlayer>
       </I18nProvider>

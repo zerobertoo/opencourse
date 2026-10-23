@@ -19,7 +19,7 @@ Encoding runs on its own queue with a concurrency of one, so a long video never 
 
 ### Playback
 
-Students never receive a permanent address. `GET /api/v1/videos/:assetId/playback` (signed in, with access to the course) returns the path of the master playlist with a token that lasts 6 hours, plus `posterUrl`, a presigned address of the poster frame (or `null` for videos encoded before posters existed). Every playlist request checks the token **and the access again**, so a revoked or expired grant stops new playlists at once. The rendition playlists are rewritten so that each segment is a presigned address on the storage; the video bytes come directly from the storage, not from the API. Segment addresses last at least one hour, or twice the video length when that is longer.
+Students never receive a permanent address. `GET /api/v1/videos/:assetId/playback` (signed in, with access to the course) returns the path of the master playlist with a token that lasts 6 hours, plus `posterUrl`, a presigned address of the poster frame (or `null` for videos encoded before posters existed). Every playlist request checks the token **and the access again**, so a revoked or expired grant stops new playlists at once. The rendition playlists are rewritten so that each segment is a presigned address on the storage and the encryption key address points at the API; the video bytes come directly from the storage, not from the API. Segment addresses last at least one hour, or twice the video length when that is longer.
 
 The player is [Video.js 10](https://videojs.org) with hls.js. It offers quality (automatic or fixed), speed, captions, picture-in-picture and fullscreen, and resumes where the student stopped.
 
@@ -40,7 +40,12 @@ Encoding is CPU heavy. Give the worker enough cores and temporary disk for the o
 
 ### Honest note on download protection
 
-Self-hosting cannot stop a determined person from saving a video. Anyone who can watch it can also fetch its segments and rebuild the file, and the short-lived addresses only limit sharing links, not copying. If your content needs strong protection (DRM, forensic watermarking, domain locking), use an external provider that sells it and paste its link.
+Two features make uploaded videos harder to leak, without preventing it:
+
+- **Encrypted segments (AES-128).** The worker encrypts every segment and keeps the key in the private storage. The player fetches the key from `GET /api/v1/videos/:assetId/key`, which checks the token and the access like the playlists do, so a revoked grant stops receiving the key. This stops simple downloaders that just copy the segments. Videos encoded before this feature stay unencrypted until an admin sends them to the encoder again (**Try again**).
+- **Watermark.** The player shows the student's name and e-mail over the video, moving every ~20 seconds. It discourages sharing recordings and shows who a leaked copy came from. Admins can turn it off under **Admin → Settings → Video**. It is drawn in the browser, so someone who opens the developer tools can hide it.
+
+Even so, self-hosting cannot stop a determined person from saving a video. Anyone who can watch it also receives the key and can rebuild the file or record the screen. If your content needs strong protection (DRM, forensic watermarking, domain locking), use an external provider that sells it and paste its link.
 
 ### Upgrading from link-only videos
 

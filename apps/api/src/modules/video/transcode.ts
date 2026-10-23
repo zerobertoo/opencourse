@@ -1,10 +1,11 @@
 import { execFile, spawn } from 'node:child_process';
+import { randomBytes } from 'node:crypto';
 import { mkdir, readdir, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { promisify } from 'node:util';
 import type { Logger } from 'pino';
 import type { Storage } from '../../storage/s3';
-import { videoKeys } from './playlist';
+import { KEY_PLACEHOLDER, videoKeys } from './playlist';
 
 const execFileAsync = promisify(execFile);
 
@@ -138,6 +139,7 @@ export function buildEncodeArgs(
   source: string,
   renditions: Rendition[],
   workDir: string,
+  keyInfoFile: string,
 ): string[] {
   const branches = renditions.map((_, index) => `[v${index}]`).join('');
   const scales = renditions
@@ -185,6 +187,9 @@ export function buildEncodeArgs(
       String(SEGMENT_SECONDS),
       '-hls_playlist_type',
       'vod',
+      // AES-128 segments; the IV follows the segment number, so the key is all a player needs
+      '-hls_key_info_file',
+      keyInfoFile,
       '-hls_segment_filename',
       path.join(outputDir, 'segment_%05d.ts'),
       path.join(outputDir, 'index.m3u8'),
@@ -198,11 +203,25 @@ async function encodeRenditions(
   source: string,
   renditions: Rendition[],
   workDir: string,
+  keyInfoFile: string,
 ): Promise<void> {
   for (const rendition of renditions) {
     await mkdir(path.join(workDir, rendition.name), { recursive: true });
   }
-  await runFfmpeg(buildEncodeArgs(source, renditions, workDir));
+  await runFfmpeg(buildEncodeArgs(source, renditions, workDir, keyInfoFile));
+}
+
+/**
+ * Writes the key and the key info file ffmpeg reads (key address as written in the playlists,
+ * then the key's path) and returns the key info path and the key as hex.
+ */
+async function writeEncryptionKey(workDir: string): Promise<{ keyInfoFile: string; keyHex: string }> {
+  const key = randomBytes(16);
+  const keyFile = path.join(workDir, 'segments.key');
+  const keyInfoFile = path.join(workDir, 'segments.keyinfo');
+  await writeFile(keyFile, key);
+  await writeFile(keyInfoFile, `${KEY_PLACEHOLDER}\n${keyFile}\n`);
+  return { keyInfoFile, keyHex: key.toString('hex') };
 }
 
 /** Runs `task` over every item, a few at a time. */
@@ -275,7 +294,9 @@ export async function transcodeVideo(
   // start clean, so a retry never leaves segments of an earlier attempt behind
   await storage.deletePrefix(`${videoKeys.prefix(assetId)}hls/`);
 
-  await encodeRenditions(sourcePath, renditions, workDir);
+  const { keyInfoFile, keyHex } = await writeEncryptionKey(workDir);
+  await encodeRenditions(sourcePath, renditions, workDir, keyInfoFile);
+  await storage.putText(videoKeys.encryptionKey(assetId), keyHex, 'text/plain');
   // the container may not know its length (browser-recorded WebM): the encoded playlist does
   const durationSeconds =
     probe.durationSeconds ??
