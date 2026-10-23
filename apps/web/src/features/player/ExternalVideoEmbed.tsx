@@ -5,7 +5,15 @@ import { useTranslation } from 'react-i18next';
  * comes from a video provider plugin, so it only ever points at the providers we recognise.
  * These players report no position to us, so students mark such lessons complete themselves.
  */
-export function ExternalVideoEmbed({ embedUrl, title }: { embedUrl: string; title: string }) {
+export function ExternalVideoEmbed({
+  embedUrl,
+  title,
+  plugin,
+}: {
+  embedUrl: string;
+  title: string;
+  plugin: string;
+}) {
   const { t } = useTranslation('player');
   return (
     <div className="overflow-hidden rounded-xl border bg-player">
@@ -18,6 +26,12 @@ export function ExternalVideoEmbed({ embedUrl, title }: { embedUrl: string; titl
         referrerPolicy="strict-origin-when-cross-origin"
         loading="lazy"
       />
+      {/* the Drive player can't be told a quality, so point students to its settings */}
+      {plugin === 'google-drive' && (
+        <p className="border-t bg-background px-4 py-2 text-sm text-muted-foreground">
+          {t('video.driveQualityHint')}
+        </p>
+      )}
     </div>
   );
 }

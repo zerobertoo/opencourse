@@ -60,6 +60,8 @@ Pasting a link in the Studio picks the provider automatically from the address. 
 | Google Drive     | `drive.google.com/file/d/FILE_ID/view` (the file must be shared as "anyone with the link") |
 | Video file       | Any `https` link ending in `.mp4`, `.webm`, `.mov`, `.m4v` or `.m3u8` (an HLS playlist), without a user name or password |
 
+Google Drive's player takes no quality setting and often starts in low quality, so students see a hint under it to pick the highest quality in the player settings (gear).
+
 Administration, Plugins lists the providers installed on the instance.
 
 ### Writing a provider plugin

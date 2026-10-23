@@ -97,7 +97,7 @@ function VideoLessonBody({
         />
       );
     }
-    return <ExternalVideoEmbed embedUrl={video.embedUrl} title={title} />;
+    return <ExternalVideoEmbed embedUrl={video.embedUrl} title={title} plugin={video.plugin} />;
   }
   if (video?.status !== 'ready') {
     // no video yet reads as "unavailable"

@@ -60,6 +60,8 @@ Ao colar um link no Studio, o provedor é escolhido automaticamente pelo endere�
 | Google Drive      | `drive.google.com/file/d/ID_DO_ARQUIVO/view` (o arquivo precisa estar compartilhado como "qualquer pessoa com o link") |
 | Arquivo de vídeo  | Qualquer link `https` terminado em `.mp4`, `.webm`, `.mov`, `.m4v` ou `.m3u8` (uma playlist HLS), sem usuário nem senha |
 
+O player do Google Drive não aceita configuração de qualidade e costuma começar em qualidade baixa, então o aluno vê um aviso abaixo dele para escolher a maior qualidade nas configurações (engrenagem) do player.
+
 Em Administração, Plugins mostra os provedores instalados na instância.
 
 ### Escrevendo um plugin de provedor

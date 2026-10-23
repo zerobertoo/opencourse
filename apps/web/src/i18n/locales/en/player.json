@@ -23,6 +23,7 @@
   },
   "video": {
     "playerLabel": "Video player: {title}",
+    "driveQualityHint": "Video looking blurry? Google Drive may start in low quality. Open the settings (gear) in the player and pick the highest quality.",
     "play": "Play",
     "pause": "Pause",
     "seek": "Video position",
