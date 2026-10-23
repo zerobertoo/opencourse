@@ -1,6 +1,6 @@
 # Vídeo
 
-Uma aula em vídeo contém **um arquivo enviado para a sua instância**, que o worker converte para HLS adaptativo, ou **um link de um provedor externo** (YouTube, Vimeo, Bunny Stream, Cloudflare Stream, Panda Video), reproduzido no player do próprio provedor.
+Uma aula em vídeo contém **um arquivo enviado para a sua instância**, que o worker converte para HLS adaptativo, ou **um link de um provedor externo** (YouTube, Vimeo, Bunny Stream, Cloudflare Stream, Panda Video, Google Drive), reproduzido no player do próprio provedor.
 
 ## Arquivos enviados
 
@@ -62,7 +62,10 @@ Ao colar um link no Studio, o provedor é escolhido automaticamente pelo endere�
 | Bunny Stream      | `iframe.mediadelivery.net/embed/` ou `/play/` `LIBRARY/VIDEO`                                             |
 | Cloudflare Stream | `iframe.videodelivery.net/ID`, `watch.cloudflarestream.com/ID`, `customer-XXXX.cloudflarestream.com/ID`   |
 | Panda Video       | `player-vz-XXXX.tv.pandavideo.com.br/embed/?v=VIDEO`                                                      |
+| Google Drive      | `drive.google.com/file/d/ID_DO_ARQUIVO/view` (o arquivo precisa estar compartilhado como "qualquer pessoa com o link") |
 | Arquivo de vídeo  | Qualquer link `https` terminado em `.mp4`, `.webm`, `.mov`, `.m4v` ou `.m3u8` (uma playlist HLS), sem usuário nem senha |
+
+O player do Google Drive não aceita configuração de qualidade e costuma começar em qualidade baixa, então o aluno vê um aviso abaixo dele para escolher a maior qualidade nas configurações (engrenagem) do player.
 
 Em Administração, Plugins mostra os provedores instalados na instância.
 

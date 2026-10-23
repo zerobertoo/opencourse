@@ -28,6 +28,12 @@ describe('resolveVideoUrl', () => {
       'panda',
       `player-vz-ab12cd34-ef5.tv.pandavideo.com/${GUID}`,
     ],
+    ...[
+      'https://drive.google.com/file/d/AbCdEfGhIjKlMnOpQrSt_-12/view',
+      'https://drive.google.com/file/d/AbCdEfGhIjKlMnOpQrSt_-12/view?usp=sharing',
+      'https://drive.google.com/file/d/AbCdEfGhIjKlMnOpQrSt_-12/view?usp=drive_link',
+      'https://drive.google.com/file/u/0/d/AbCdEfGhIjKlMnOpQrSt_-12/view',
+    ].map((link) => [link, 'google-drive', 'AbCdEfGhIjKlMnOpQrSt_-12']),
     [
       'https://cdn.example.com/lessons/intro.mp4',
       'direct',
@@ -52,7 +58,7 @@ describe('resolveVideoUrl', () => {
     expect(direct?.embedUrl('https://cdn.example.com/intro.mp4')).toBe(
       'https://cdn.example.com/intro.mp4',
     );
-    for (const id of ['youtube', 'vimeo', 'bunny', 'cloudflare', 'panda']) {
+    for (const id of ['youtube', 'vimeo', 'bunny', 'cloudflare', 'panda', 'google-drive']) {
       expect(findVideoProvider(id)?.playback).toBe('embed');
     }
   });
@@ -64,6 +70,10 @@ describe('resolveVideoUrl', () => {
     expect(resolveVideoUrl('https://vimeo.com/76979871/abcdef0123')?.embedUrl).toBe(
       'https://player.vimeo.com/video/76979871?h=abcdef0123',
     );
+    expect(
+      resolveVideoUrl('https://drive.google.com/file/d/AbCdEfGhIjKlMnOpQrSt_-12/view?usp=sharing')
+        ?.embedUrl,
+    ).toBe('https://drive.google.com/file/d/AbCdEfGhIjKlMnOpQrSt_-12/preview');
     for (const host of [PANDA_PLAYER, 'player-vz-ab12cd34-ef5.tv.pandavideo.com']) {
       const link = `https://${host}/embed/?v=${GUID}`;
       expect(resolveVideoUrl(link)?.embedUrl).toBe(link);
@@ -86,6 +96,9 @@ describe('resolveVideoUrl', () => {
     'https://vimeo.com/album/1234567/sort:date',
     `https://player-vz-x.tv.pandavideo.com.evil.com/embed/?v=${GUID}`,
     'javascript:alert(1)',
+    'https://drive.google.com/drive/folders/AbCdEfGhIjKlMnOpQrSt_-12',
+    'https://drive.google.com/file/d/short/view',
+    'https://drive.google.com.evil.com/file/d/AbCdEfGhIjKlMnOpQrSt_-12/view',
   ])('rejects %s', (link) => {
     expect(resolveVideoUrl(link)).toBeNull();
   });
