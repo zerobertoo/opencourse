@@ -209,6 +209,16 @@
     "testFor": "Send a test to {url}",
     "testSuccess": "Test delivered: the receiver answered {status}.",
     "testFailure": "Test failed: {error}",
+    "errors": {
+      "invalidUrl": "The address is not valid.",
+      "httpsOnly": "Only https addresses are allowed.",
+      "notPublic": "The address is not public (it points to a private network).",
+      "noAddress": "The host did not resolve to any address.",
+      "timedOut": "No answer after {ms} ms.",
+      "connectionClosed": "The connection closed before the answer ended.",
+      "receiverAnswered": "The receiver answered {status}.",
+      "disabled": "The endpoint was disabled before delivery."
+    },
     "history": "History",
     "historyFor": "Delivery history of {url}",
     "rotate": "New secret",

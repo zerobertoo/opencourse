@@ -117,6 +117,7 @@
   },
   "validation": {
     "required": "Preencha este campo.",
+    "currentPasswordWrong": "A senha atual está incorreta.",
     "email": "Informe um e-mail válido.",
     "passwordLength": "A senha precisa ter pelo menos 8 caracteres.",
     "passwordTooLong": "A senha pode ter no máximo 128 caracteres.",

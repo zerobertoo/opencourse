@@ -68,7 +68,7 @@ export const meRoutes: FastifyPluginAsyncZod = async (app) => {
     async (request, reply) => {
       const { user, sessionId } = request.auth!;
       const matches = await verifyPassword(user.passwordHash, request.body.currentPassword);
-      if (!matches) throw badRequest('Current password is incorrect');
+      if (!matches) throw badRequest('Current password is incorrect', { field: 'currentPassword' });
 
       const passwordHash = await hashPassword(request.body.newPassword);
       const now = new Date();
