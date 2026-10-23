@@ -215,7 +215,9 @@ async function encodeRenditions(
  * Writes the key and the key info file ffmpeg reads (key address as written in the playlists,
  * then the key's path) and returns the key info path and the key as hex.
  */
-async function writeEncryptionKey(workDir: string): Promise<{ keyInfoFile: string; keyHex: string }> {
+async function writeEncryptionKey(
+  workDir: string,
+): Promise<{ keyInfoFile: string; keyHex: string }> {
   const key = randomBytes(16);
   const keyFile = path.join(workDir, 'segments.key');
   const keyInfoFile = path.join(workDir, 'segments.keyinfo');
@@ -297,7 +299,10 @@ export async function transcodeVideo(
   const { keyInfoFile, keyHex } = await writeEncryptionKey(workDir);
   await encodeRenditions(sourcePath, renditions, workDir, keyInfoFile);
   // the API rewrites exactly this key tag when serving; fail here, not on every playback
-  const encodedPlaylist = await readFile(path.join(workDir, renditions[0]!.name, 'index.m3u8'), 'utf8');
+  const encodedPlaylist = await readFile(
+    path.join(workDir, renditions[0]!.name, 'index.m3u8'),
+    'utf8',
+  );
   if (!encodedPlaylist.includes(`URI="${KEY_PLACEHOLDER}"`)) {
     throw new Error('ffmpeg did not write the expected encryption key tag');
   }

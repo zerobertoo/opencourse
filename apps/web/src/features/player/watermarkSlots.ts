@@ -17,5 +17,7 @@ export const WATERMARK_SLOTS: CSSProperties[] = [
 
 /** Index of a slot other than `current`. */
 export function nextWatermarkSlot(current: number, random = Math.random): number {
-  return (current + 1 + Math.floor(random() * (WATERMARK_SLOTS.length - 1))) % WATERMARK_SLOTS.length;
+  return (
+    (current + 1 + Math.floor(random() * (WATERMARK_SLOTS.length - 1))) % WATERMARK_SLOTS.length
+  );
 }

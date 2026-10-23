@@ -53,18 +53,31 @@ describe('playlist rewriting', () => {
     const playlist =
       '#EXTM3U\n#EXT-X-KEY:METHOD=AES-128,URI="key.bin"\n#EXTINF:6.0,\nsegment_00000.ts\n';
     expect(
-      await rewriteRenditionPlaylist(playlist, async (file) => file, () => '/api/key?token=t'),
-    ).toBe('#EXTM3U\n#EXT-X-KEY:METHOD=AES-128,URI="/api/key?token=t"\n#EXTINF:6.0,\nsegment_00000.ts\n');
+      await rewriteRenditionPlaylist(
+        playlist,
+        async (file) => file,
+        () => '/api/key?token=t',
+      ),
+    ).toBe(
+      '#EXTM3U\n#EXT-X-KEY:METHOD=AES-128,URI="/api/key?token=t"\n#EXTINF:6.0,\nsegment_00000.ts\n',
+    );
   });
 
   it('refuses a key that is not the one the encoder writes', async () => {
     const foreign = '#EXTM3U\n#EXT-X-KEY:METHOD=AES-128,URI="https://evil.example/key"\n';
     await expect(
-      rewriteRenditionPlaylist(foreign, async (f) => f, () => '/api/key'),
+      rewriteRenditionPlaylist(
+        foreign,
+        async (f) => f,
+        () => '/api/key',
+      ),
     ).rejects.toThrow();
     // a key with nowhere to point is refused too, instead of served as written
     await expect(
-      rewriteRenditionPlaylist('#EXTM3U\n#EXT-X-KEY:METHOD=AES-128,URI="key.bin"\n', async (f) => f),
+      rewriteRenditionPlaylist(
+        '#EXTM3U\n#EXT-X-KEY:METHOD=AES-128,URI="key.bin"\n',
+        async (f) => f,
+      ),
     ).rejects.toThrow();
   });
 
