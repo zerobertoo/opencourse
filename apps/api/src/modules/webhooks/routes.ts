@@ -29,10 +29,12 @@ import {
   QUEUE_NAME,
   type JobData,
 } from '../../worker/jobs';
-import { postWebhook } from './http';
+import { postWebhook, resolveDestination } from './http';
 import { toWebhook, toWebhookDelivery } from './mappers';
 
 const TEST_TIMEOUT_MS = 10_000;
+/** How long saving an endpoint waits for the host name to resolve. */
+const DNS_CHECK_TIMEOUT_MS = 3_000;
 
 export interface WebhookRoutesOptions {
   config: Config;
@@ -51,11 +53,17 @@ export const webhookRoutes: FastifyPluginAsyncZod<WebhookRoutesOptions> = async 
 ) => {
   const allowPrivate = config.WEBHOOKS_ALLOW_PRIVATE_NETWORKS;
 
-  // plain http is only for local receivers, which also need the private-network opt-in
-  function requireAllowedUrl(url: string): void {
-    if (new URL(url).protocol !== 'https:' && !allowPrivate) {
-      throw badRequest('Webhook URLs must use https');
-    }
+  // the rule delivery applies (https unless private networks are allowed, and a public address):
+  // a forbidden destination is refused now, not left "active" until the first send fails. A host
+  // that does not resolve yet is accepted; delivery checks again at send time.
+  async function requireAllowedUrl(url: string): Promise<void> {
+    const { failure } = await resolveDestination(
+      url,
+      allowPrivate,
+      AbortSignal.timeout(DNS_CHECK_TIMEOUT_MS),
+      DNS_CHECK_TIMEOUT_MS,
+    );
+    if (failure?.refused) throw badRequest(failure.error ?? 'Destination is not allowed');
   }
 
   // the API only adds manual retries to the worker's queue, so it connects on first use
@@ -104,7 +112,7 @@ export const webhookRoutes: FastifyPluginAsyncZod<WebhookRoutesOptions> = async 
       },
     },
     async (request, reply) => {
-      requireAllowedUrl(request.body.url);
+      await requireAllowedUrl(request.body.url);
       const secret = generateSecret();
       const row = await app.db.transaction(async (tx) => {
         const [created] = await tx
@@ -138,7 +146,14 @@ export const webhookRoutes: FastifyPluginAsyncZod<WebhookRoutesOptions> = async 
       },
     },
     async (request) => {
-      if (request.body.url) requireAllowedUrl(request.body.url);
+      if (request.body.url) {
+        // an unchanged address is not looked up again: toggling or renaming must keep working
+        const [stored] = await app.db
+          .select({ url: webhookEndpoints.url })
+          .from(webhookEndpoints)
+          .where(eq(webhookEndpoints.id, request.params.id));
+        if (stored?.url !== request.body.url) await requireAllowedUrl(request.body.url);
+      }
       const row = await app.db.transaction(async (tx) => {
         const [updated] = await tx
           .update(webhookEndpoints)
