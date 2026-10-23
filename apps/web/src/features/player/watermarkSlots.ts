@@ -1,7 +1,10 @@
 import type { CSSProperties } from 'react';
 
-/** How long the watermark stays in one place before it jumps to another. */
-export const WATERMARK_MOVE_INTERVAL_MS = 20_000;
+/** How long the watermark stays on screen each time it appears. */
+export const WATERMARK_VISIBLE_MS = 8_000;
+
+/** How long it stays hidden between appearances, so it does not weigh on the lesson. */
+export const WATERMARK_HIDDEN_MS = 22_000;
 
 /** Places the watermark can take; a fixed crop never removes it from all of them. */
 export const WATERMARK_SLOTS: CSSProperties[] = [
