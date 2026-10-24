@@ -320,7 +320,12 @@ export const updatePlatformSettingsRequestSchema = z
       .partial()
       .strict()
       .optional(),
-    video: platformSettingsSchema.shape.video.unwrap().partial().strict().optional(),
+    // plain booleans: a default inside a patch would overwrite a stored value that was left out
+    video: z
+      .object({ watermarkEnabled: z.boolean(), singleStreamEnabled: z.boolean() })
+      .partial()
+      .strict()
+      .optional(),
   })
   .strict();
 export type UpdatePlatformSettingsRequest = z.infer<typeof updatePlatformSettingsRequestSchema>;

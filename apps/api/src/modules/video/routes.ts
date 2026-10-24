@@ -20,16 +20,10 @@ import { Queue } from 'bullmq';
 import { and, eq } from 'drizzle-orm';
 import type { FastifyRequest } from 'fastify';
 import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod';
+import { findActiveSession } from '../../auth/sessions';
 import type { Config } from '../../config';
 import { lessons, users, videoAssets, type CourseRow, type VideoAssetRow } from '../../db/schema';
-import {
-  HttpError,
-  badRequest,
-  conflict,
-  forbidden,
-  notFound,
-  unauthorized,
-} from '../../errors';
+import { HttpError, badRequest, conflict, forbidden, notFound, unauthorized } from '../../errors';
 import {
   addTranscodeJob,
   DEFAULT_QUEUE_PREFIX,
@@ -59,7 +53,7 @@ import {
   videoAssetsOfLessons,
   type VideoAssetRef,
 } from './service';
-import { claimStream, isStreamHeldElsewhere, renewStream } from './stream-lease';
+import { claimStream, isStreamHeldElsewhere, releaseStream, renewStream } from './stream-lease';
 
 const PLAYLIST_CONTENT_TYPE = 'application/vnd.apple.mpegurl';
 /** Time a browser has to start uploading each part. */
@@ -375,6 +369,10 @@ export const videoRoutes: FastifyPluginAsyncZod<VideoRoutesOptions> = async (
   async function authorizeToken(assetId: string, token: string) {
     const claims = verifyPlaybackToken(config.AUTH_SECRET, token, new Date());
     if (claims?.assetId !== assetId) throw unauthorized('Invalid or expired playback address');
+    // signing a device out ends its playback too, not only its next page
+    if (!(await findActiveSession(app.db, claims.sessionId, new Date()))) {
+      throw unauthorized('Invalid or expired playback address');
+    }
 
     const [user] = await app.db.select().from(users).where(eq(users.id, claims.userId));
     if (!user?.active) throw unauthorized('Invalid or expired playback address');
@@ -429,11 +427,18 @@ export const videoRoutes: FastifyPluginAsyncZod<VideoRoutesOptions> = async (
 
       const holder = { userId: user.id, sessionId, assetId: context.asset.id, now: new Date() };
       try {
-        if (request.body.event === 'play') {
-          await claimStream(app.db, holder);
-          return { active: true };
+        switch (request.body.event) {
+          case 'play':
+            await claimStream(app.db, holder);
+            return { active: true };
+          case 'beat':
+            return { active: await renewStream(app.db, holder) };
+          case 'check':
+            return { active: !(await isStreamHeldElsewhere(app.db, holder)) };
+          case 'stop':
+            await releaseStream(app.db, holder);
+            return { active: true };
         }
-        return { active: await renewStream(app.db, holder) };
       } catch (error) {
         request.log.warn({ err: error }, 'could not record the stream, letting the video play');
         return { active: true };

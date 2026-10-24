@@ -76,7 +76,11 @@ describe('one stream per account', () => {
     return `/api/v1/videos/${assetId}/key?token=${encodeURIComponent(token)}`;
   }
 
-  async function heartbeat(client: TestClient, assetId: string, event: 'play' | 'beat') {
+  async function heartbeat(
+    client: TestClient,
+    assetId: string,
+    event: 'play' | 'beat' | 'check' | 'stop',
+  ) {
     const response = await client.post(`/api/v1/videos/${assetId}/heartbeat`, { event });
     expect(response.statusCode).toBe(200);
     return streamHeartbeatResponseSchema.parse(response.json()).active;
@@ -155,6 +159,50 @@ describe('one stream per account', () => {
     expect((await getKey(otherKey)).statusCode).toBe(200);
   });
 
+  it('frees the stream on stop, and a check only asks without taking it', async () => {
+    const { cast, assetId } = await setup();
+    const phone = await secondDevice();
+    const phoneKey = await openVideo(phone, assetId);
+
+    // nobody plays: a check answers yes and does not take the stream
+    expect(await heartbeat(phone, assetId, 'check')).toBe(true);
+    expect(await ctx.app.db.select().from(streamLeases)).toHaveLength(0);
+
+    await heartbeat(cast.student.client, assetId, 'play');
+    expect(await heartbeat(phone, assetId, 'check')).toBe(false);
+    expect((await getKey(phoneKey)).statusCode).toBe(409);
+
+    // pausing frees it at once; a stop from the device that does not hold it changes nothing
+    expect(await heartbeat(phone, assetId, 'stop')).toBe(true);
+    expect((await getKey(phoneKey)).statusCode).toBe(409);
+    expect(await heartbeat(cast.student.client, assetId, 'stop')).toBe(true);
+    expect((await getKey(phoneKey)).statusCode).toBe(200);
+  });
+
+  it('stops a device from watching once it is signed out', async () => {
+    const { cast, assetId } = await setup();
+    const phone = await secondDevice();
+    const phoneKey = await openVideo(phone, assetId);
+    expect((await getKey(phoneKey)).statusCode).toBe(200);
+
+    const listed = listSessionsResponseSchema.parse(
+      (await cast.student.client.get('/api/v1/me/sessions')).json(),
+    );
+    const phoneSession = listed.sessions.find((session) => !session.current)!;
+    expect(
+      (await cast.student.client.delete(`/api/v1/me/sessions/${phoneSession.id}`)).statusCode,
+    ).toBe(204);
+    expect((await getKey(phoneKey)).statusCode).toBe(401);
+  });
+
+  it('keeps the stored one-stream setting when a patch leaves it out', async () => {
+    const { cast } = await setup();
+    const patch = (video: object) => cast.admin.client.patch('/api/v1/admin/settings', { video });
+    expect((await patch({ singleStreamEnabled: false })).statusCode).toBe(200);
+    const saved = await patch({ watermarkEnabled: true });
+    expect(saved.json().video).toEqual({ watermarkEnabled: true, singleStreamEnabled: false });
+  });
+
   it('does nothing while the platform setting is off', async () => {
     const { cast, assetId } = await setup();
     const phone = await secondDevice();
@@ -195,17 +243,25 @@ describe('one stream per account', () => {
   it('requires a session and access to the course to report playback', async () => {
     const { cast, assetId } = await setup();
     const anonymous = new TestClient(ctx.app);
-    expect((await anonymous.post(`/api/v1/videos/${assetId}/heartbeat`, { event: 'beat' })).statusCode).toBe(401);
     expect(
-      (await cast.otherStudent.client.post(`/api/v1/videos/${assetId}/heartbeat`, { event: 'beat' }))
-        .statusCode,
+      (await anonymous.post(`/api/v1/videos/${assetId}/heartbeat`, { event: 'beat' })).statusCode,
+    ).toBe(401);
+    expect(
+      (
+        await cast.otherStudent.client.post(`/api/v1/videos/${assetId}/heartbeat`, {
+          event: 'beat',
+        })
+      ).statusCode,
     ).toBe(403);
     expect(
-      (await cast.student.client.post(`/api/v1/videos/${randomUUID()}/heartbeat`, { event: 'beat' }))
-        .statusCode,
+      (
+        await cast.student.client.post(`/api/v1/videos/${randomUUID()}/heartbeat`, {
+          event: 'beat',
+        })
+      ).statusCode,
     ).toBe(404);
     expect(
-      (await cast.student.client.post(`/api/v1/videos/${assetId}/heartbeat`, { event: 'stop' }))
+      (await cast.student.client.post(`/api/v1/videos/${assetId}/heartbeat`, { event: 'rewind' }))
         .statusCode,
     ).toBe(400);
   });
@@ -260,9 +316,9 @@ describe('my sessions', () => {
     const stranger = listSessionsResponseSchema.parse(
       (await cast.otherStudent.client.get('/api/v1/me/sessions')).json(),
     );
-    expect(
-      (await phone.delete(`/api/v1/me/sessions/${stranger.sessions[0]!.id}`)).statusCode,
-    ).toBe(404);
+    expect((await phone.delete(`/api/v1/me/sessions/${stranger.sessions[0]!.id}`)).statusCode).toBe(
+      404,
+    );
     expect((await phone.delete(`/api/v1/me/sessions/${randomUUID()}`)).statusCode).toBe(404);
 
     expect((await phone.delete(`/api/v1/me/sessions/${laptop.id}`)).statusCode).toBe(204);

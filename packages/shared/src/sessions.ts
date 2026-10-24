@@ -23,9 +23,12 @@ export const sessionIdParamsSchema = z.object({ id: idSchema });
 /**
  * What the player reports about an uploaded video. `play` is the student pressing play, which
  * takes the account's single stream; `beat` is the periodic signal while playing, which only
- * renews a stream the session already holds.
+ * renews a stream the session already holds (or that nobody holds); `check` only asks whether
+ * another session holds it, changing nothing; `stop` frees the stream on pause or leaving.
  */
-export const streamHeartbeatRequestSchema = z.object({ event: z.enum(['play', 'beat']) }).strict();
+export const streamHeartbeatRequestSchema = z
+  .object({ event: z.enum(['play', 'beat', 'check', 'stop']) })
+  .strict();
 export type StreamHeartbeatRequest = z.infer<typeof streamHeartbeatRequestSchema>;
 
 /** False when another session of the same account took over: the player must pause. */
