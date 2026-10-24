@@ -116,6 +116,30 @@ export function createMockAuthService(context: MockContext): AuthService {
         assertValidPassword(newPassword);
       }),
 
+    // the demo has one browser, so the only device is the current one
+    listSessions: () =>
+      context.run('auth.listSessions', () => {
+        context.requireUser();
+        const now = context.now().toISOString();
+        return [
+          {
+            id: 'demo-session',
+            userAgent: typeof navigator === 'undefined' ? null : navigator.userAgent,
+            ip: null,
+            createdAt: now,
+            lastUsedAt: now,
+            current: true,
+          },
+        ];
+      }),
+
+    revokeSession: (sessionId) =>
+      context.run('auth.revokeSession', () => {
+        context.requireUser();
+        if (sessionId !== 'demo-session') throw new ServiceError('not_found', 'Session not found');
+        context.setSessionUserId(null);
+      }),
+
     // never reveals whether the e-mail exists
     requestPasswordReset: (email) =>
       context.run('auth.requestPasswordReset', () => {

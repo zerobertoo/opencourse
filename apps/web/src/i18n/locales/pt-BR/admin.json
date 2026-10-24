@@ -158,7 +158,9 @@
     "video": {
       "title": "Vídeo",
       "watermark": "Mostrar nome e e-mail do aluno sobre os vídeos enviados",
-      "watermarkHint": "Desencoraja o compartilhamento de gravações e mostra de quem veio uma cópia vazada. Não vale para vídeos incorporados de provedores externos (YouTube, Vimeo etc.)."
+      "watermarkHint": "Desencoraja o compartilhamento de gravações e mostra de quem veio uma cópia vazada. Não vale para vídeos incorporados de provedores externos (YouTube, Vimeo etc.).",
+      "singleStream": "Reproduzir um vídeo enviado por vez em cada conta",
+      "singleStreamHint": "Quando um segundo dispositivo começa a reproduzir, o primeiro pausa, o que torna inviável dividir a conta com um grupo. Instrutores e admins não têm limite, e vídeos incorporados de provedores externos não são cobertos."
     }
   },
   "plugins": {

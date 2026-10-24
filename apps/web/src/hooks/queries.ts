@@ -16,6 +16,7 @@ export const queryKeys = {
   quizAttempts: (lessonId: string) => ['quiz-attempts', lessonId] as const,
   lessonNote: (lessonId: string) => ['notes', lessonId] as const,
   invite: (token: string) => ['auth', 'invite', token] as const,
+  sessions: ['sessions', 'mine'] as const,
 };
 
 export function useMyCourses() {
@@ -218,5 +219,21 @@ export function useVerifyCertificate(code: string) {
     queryKey: ['certificates', 'verify', code] as const,
     queryFn: () => certificates.verify(code),
     enabled: code.trim() !== '',
+  });
+}
+
+/** Devices signed in to the account, most recently used first. */
+export function useSessions() {
+  const { auth } = useServices();
+  return useQuery({ queryKey: queryKeys.sessions, queryFn: () => auth.listSessions() });
+}
+
+/** Signs out one of the account's other devices and refreshes the list. */
+export function useRevokeSession() {
+  const { auth } = useServices();
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (sessionId: string) => auth.revokeSession(sessionId),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: queryKeys.sessions }),
   });
 }

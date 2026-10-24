@@ -279,8 +279,11 @@ export const platformSettingsSchema = z.object({
     fromAddress: z.string(),
     secure: z.boolean(),
   }),
-  // settings saved before this group existed still parse, with the watermark off
-  video: z.object({ watermarkEnabled: z.boolean() }).default({ watermarkEnabled: false }),
+  // settings saved before this group existed still parse, with the watermark off; those saved
+  // before the single-stream option still parse too, with it on
+  video: z
+    .object({ watermarkEnabled: z.boolean(), singleStreamEnabled: z.boolean().default(true) })
+    .default({ watermarkEnabled: false, singleStreamEnabled: true }),
 });
 export type PlatformSettings = z.infer<typeof platformSettingsSchema>;
 
@@ -317,7 +320,12 @@ export const updatePlatformSettingsRequestSchema = z
       .partial()
       .strict()
       .optional(),
-    video: z.object({ watermarkEnabled: z.boolean() }).partial().strict().optional(),
+    // plain booleans: a default inside a patch would overwrite a stored value that was left out
+    video: z
+      .object({ watermarkEnabled: z.boolean(), singleStreamEnabled: z.boolean() })
+      .partial()
+      .strict()
+      .optional(),
   })
   .strict();
 export type UpdatePlatformSettingsRequest = z.infer<typeof updatePlatformSettingsRequestSchema>;

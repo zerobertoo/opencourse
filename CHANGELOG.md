@@ -6,10 +6,13 @@ All notable changes to OpenCourse. Releases are tagged `vX.Y.Z`; the PRD in [doc
 
 ### Added
 
+- An account plays one uploaded video at a time: the newest `play` wins and the other device pauses. On by default, switchable under Admin → Settings → Video; instructors and admins are exempt.
+- Settings → Signed-in devices: students see where their account is signed in and sign out the devices they do not recognise.
 - `API_DOCS_ENABLED=false` hides the API reference (`/docs`) and the OpenAPI document; both stay on by default.
 
 ### Changed
 
+- Playback addresses issued before this change stop working (they now carry the session): a lesson that was already open needs a reload.
 - The OpenAPI document now carries the real version, the cookie and API key security schemes, the CSRF header and the standard error responses.
 
 ## 0.1.1 (2026-10-22)

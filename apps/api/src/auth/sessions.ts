@@ -1,4 +1,4 @@
-import { and, eq, isNull, ne } from 'drizzle-orm';
+import { and, desc, eq, gt, isNull, ne } from 'drizzle-orm';
 import type { Database } from '../plugins/db';
 import { sessions, users, type SessionRow, type UserRow } from '../db/schema';
 import { generateToken, hashToken } from './tokens';
@@ -152,4 +152,34 @@ export async function revokeUserSessions(
         exceptSessionId ? ne(sessions.id, exceptSessionId) : undefined,
       ),
     );
+}
+
+/** The user's sessions that are still usable, most recently used first. */
+export function listUserSessions(
+  db: Pick<Database, 'select'>,
+  userId: string,
+  now: Date,
+): Promise<SessionRow[]> {
+  return db
+    .select()
+    .from(sessions)
+    .where(
+      and(eq(sessions.userId, userId), isNull(sessions.revokedAt), gt(sessions.expiresAt, now)),
+    )
+    .orderBy(desc(sessions.lastUsedAt));
+}
+
+/** Ends one of the user's own sessions. False when it is not theirs or already ended. */
+export async function revokeOwnSession(
+  db: Pick<Database, 'update'>,
+  userId: string,
+  sessionId: string,
+  now: Date,
+): Promise<boolean> {
+  const ended = await db
+    .update(sessions)
+    .set({ revokedAt: now })
+    .where(and(eq(sessions.id, sessionId), eq(sessions.userId, userId), isNull(sessions.revokedAt)))
+    .returning({ id: sessions.id });
+  return ended.length > 0;
 }

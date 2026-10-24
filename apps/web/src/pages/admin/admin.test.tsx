@@ -262,6 +262,22 @@ describe('admin settings', () => {
     });
   });
 
+  it('starts with one video per account on and saves turning it off', async () => {
+    const user = userEvent.setup();
+    const { services } = await renderApp('/admin/settings', { signInAs: 'admin' });
+
+    const option = await screen.findByLabelText(
+      'Reproduzir um vídeo enviado por vez em cada conta',
+    );
+    expect(option).toBeChecked();
+    await user.click(option);
+    await user.click(screen.getByRole('button', { name: 'Salvar configurações' }));
+
+    await waitFor(async () => {
+      expect((await services.settings.get()).video.singleStreamEnabled).toBe(false);
+    });
+  });
+
   it('accepts the sender as "Name <e-mail>" and refuses text that is not an address', async () => {
     const user = userEvent.setup();
     const { services } = await renderApp('/admin/settings', { signInAs: 'admin' });

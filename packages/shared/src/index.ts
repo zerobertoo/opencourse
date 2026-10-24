@@ -13,5 +13,6 @@ export * from './progress';
 export * from './webhooks';
 export * from './api-keys';
 export * from './video';
+export * from './sessions';
 export * from './video-providers';
 export * from './files';

@@ -1,5 +1,6 @@
 import {
   inviteResponseSchema,
+  listSessionsResponseSchema,
   sessionResponseSchema,
   type Locale,
   type User,
@@ -52,6 +53,16 @@ export function createApiAuthService(
 
     changePassword: (currentPassword, newPassword) =>
       client.request('PUT', '/me/password', { body: { currentPassword, newPassword } }),
+
+    async listSessions() {
+      const { sessions } = await client.request('GET', '/me/sessions', {
+        schema: listSessionsResponseSchema,
+      });
+      return sessions;
+    },
+
+    revokeSession: (sessionId) =>
+      client.request('DELETE', `/me/sessions/${encodeURIComponent(sessionId)}`),
 
     requestPasswordReset: (email) => client.request('POST', '/auth/forgot', { body: { email } }),
 
