@@ -163,7 +163,9 @@ export function listUserSessions(
   return db
     .select()
     .from(sessions)
-    .where(and(eq(sessions.userId, userId), isNull(sessions.revokedAt), gt(sessions.expiresAt, now)))
+    .where(
+      and(eq(sessions.userId, userId), isNull(sessions.revokedAt), gt(sessions.expiresAt, now)),
+    )
     .orderBy(desc(sessions.lastUsedAt));
 }
 

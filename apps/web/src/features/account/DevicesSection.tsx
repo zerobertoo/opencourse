@@ -33,7 +33,9 @@ function DeviceRow({
       <div className="min-w-0 space-y-1">
         <div className="flex flex-wrap items-center gap-2">
           <p className="min-w-0 break-words text-sm font-medium">{name}</p>
-          {session.current ? <Badge variant="success">{t('settings.devices.current')}</Badge> : null}
+          {session.current ? (
+            <Badge variant="success">{t('settings.devices.current')}</Badge>
+          ) : null}
         </div>
         <p className="text-xs text-muted-foreground">
           {t('settings.devices.lastUsed', { date: formatDateTime(new Date(session.lastUsedAt)) })}
