@@ -35,6 +35,11 @@
     "fullscreen": "Fullscreen",
     "exitFullscreen": "Exit fullscreen",
     "buffering": "Loading video",
+    "streamInUse": {
+      "title": "This account is playing on another device",
+      "description": "An account plays one video at a time. Watch here to pause the other device.",
+      "action": "Watch here"
+    },
     "errorTitle": "Could not play the video",
     "errorDescription": "Check your connection and try again.",
     "status": {

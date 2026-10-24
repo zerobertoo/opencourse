@@ -35,6 +35,11 @@
     "fullscreen": "Tela cheia",
     "exitFullscreen": "Sair da tela cheia",
     "buffering": "Carregando vídeo",
+    "streamInUse": {
+      "title": "Esta conta está reproduzindo em outro dispositivo",
+      "description": "Uma conta reproduz um vídeo por vez. Assista aqui para pausar o outro dispositivo.",
+      "action": "Assistir aqui"
+    },
     "errorTitle": "Não foi possível reproduzir o vídeo",
     "errorDescription": "Verifique sua conexão e tente novamente.",
     "status": {

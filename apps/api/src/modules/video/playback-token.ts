@@ -1,6 +1,6 @@
 import { createHmac, timingSafeEqual } from 'node:crypto';
 
-const TOKEN_VERSION = 'pb1';
+const TOKEN_VERSION = 'pb2';
 
 /** How long a playback address works. The player asks for a new one every time a lesson opens. */
 export const PLAYBACK_TOKEN_TTL_SECONDS = 6 * 3600;
@@ -8,6 +8,8 @@ export const PLAYBACK_TOKEN_TTL_SECONDS = 6 * 3600;
 export interface PlaybackClaims {
   assetId: string;
   userId: string;
+  /** The session that asked for the address, so the key can tell which device is playing. */
+  sessionId: string;
 }
 
 function signature(secret: string, payload: string): string {
@@ -22,7 +24,7 @@ export function signPlaybackToken(
   now: Date,
 ): string {
   const expiresAt = Math.floor(now.getTime() / 1000) + ttlSeconds;
-  const payload = `${TOKEN_VERSION}.${claims.assetId}.${claims.userId}.${expiresAt}`;
+  const payload = `${TOKEN_VERSION}.${claims.assetId}.${claims.userId}.${claims.sessionId}.${expiresAt}`;
   return `${payload}.${signature(secret, payload)}`;
 }
 
@@ -33,8 +35,9 @@ export function verifyPlaybackToken(
   now: Date,
 ): PlaybackClaims | null {
   const parts = token.split('.');
-  if (parts.length !== 5) return null;
-  const [version, assetId, userId, expiresAt, given] = parts as [
+  if (parts.length !== 6) return null;
+  const [version, assetId, userId, sessionId, expiresAt, given] = parts as [
+    string,
     string,
     string,
     string,
@@ -43,11 +46,13 @@ export function verifyPlaybackToken(
   ];
   if (version !== TOKEN_VERSION) return null;
 
-  const expected = Buffer.from(signature(secret, `${version}.${assetId}.${userId}.${expiresAt}`));
+  const expected = Buffer.from(
+    signature(secret, `${version}.${assetId}.${userId}.${sessionId}.${expiresAt}`),
+  );
   const actual = Buffer.from(given);
   if (actual.length !== expected.length || !timingSafeEqual(actual, expected)) return null;
 
   const expiry = Number(expiresAt);
   if (!Number.isFinite(expiry) || expiry * 1000 <= now.getTime()) return null;
-  return { assetId, userId };
+  return { assetId, userId, sessionId };
 }

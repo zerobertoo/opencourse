@@ -12,3 +12,4 @@ export * from './outbox';
 export * from './webhooks';
 export * from './video';
 export * from './attachments';
+export * from './stream-leases';

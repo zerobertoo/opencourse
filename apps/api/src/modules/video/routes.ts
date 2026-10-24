@@ -4,8 +4,11 @@ import {
   completeVideoUploadResponseSchema,
   createVideoUploadRequestSchema,
   createVideoUploadResponseSchema,
+  STREAM_IN_USE_REASON,
   failedVideosResponseSchema,
   lessonIdParamsSchema,
+  streamHeartbeatRequestSchema,
+  streamHeartbeatResponseSchema,
   videoAssetParamsSchema,
   videoPlaybackResponseSchema,
   videoPlaylistParamsSchema,
@@ -19,7 +22,14 @@ import type { FastifyRequest } from 'fastify';
 import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod';
 import type { Config } from '../../config';
 import { lessons, users, videoAssets, type CourseRow, type VideoAssetRow } from '../../db/schema';
-import { badRequest, conflict, forbidden, notFound, unauthorized } from '../../errors';
+import {
+  HttpError,
+  badRequest,
+  conflict,
+  forbidden,
+  notFound,
+  unauthorized,
+} from '../../errors';
 import {
   addTranscodeJob,
   DEFAULT_QUEUE_PREFIX,
@@ -29,6 +39,7 @@ import {
 import { requireManagedCourse, resolveCourseAccess } from '../courses/access';
 import { changeCurriculum, findCourseOfLesson } from '../courses/curriculum';
 import { loadCourseDetail } from '../courses/detail';
+import { loadPlatformSettings } from '../settings/service';
 import {
   PLAYBACK_TOKEN_TTL_SECONDS,
   signPlaybackToken,
@@ -48,6 +59,7 @@ import {
   videoAssetsOfLessons,
   type VideoAssetRef,
 } from './service';
+import { claimStream, isStreamHeldElsewhere, renewStream } from './stream-lease';
 
 const PLAYLIST_CONTENT_TYPE = 'application/vnd.apple.mpegurl';
 /** Time a browser has to start uploading each part. */
@@ -342,7 +354,7 @@ export const videoRoutes: FastifyPluginAsyncZod<VideoRoutesOptions> = async (
 
       const token = signPlaybackToken(
         config.AUTH_SECRET,
-        { assetId: context.asset.id, userId: user.id },
+        { assetId: context.asset.id, userId: user.id, sessionId: request.auth!.sessionId },
         PLAYBACK_TOKEN_TTL_SECONDS,
         new Date(),
       );
@@ -373,8 +385,61 @@ export const videoRoutes: FastifyPluginAsyncZod<VideoRoutesOptions> = async (
       throw forbidden('Access to this course requires a grant');
     }
     if (context.asset.status !== 'ready') throw conflict('The video is not ready yet');
-    return context;
+    return { context, claims, canManage: access.canManage };
   }
+
+  /**
+   * Whether the one-stream-per-account rule applies to this person. Staff are exempt so a
+   * teacher previewing a course never locks themselves out, and the platform setting can turn
+   * the rule off. A failure of the check itself lets the video play: it must never lock out a student.
+   */
+  async function singleStreamApplies(canManage: boolean, log: FastifyRequest['log']) {
+    if (canManage) return false;
+    try {
+      return (await loadPlatformSettings(app.db, config)).video.singleStreamEnabled;
+    } catch (error) {
+      log.warn({ err: error }, 'could not read the single stream setting, letting the video play');
+      return false;
+    }
+  }
+
+  app.post(
+    '/videos/:assetId/heartbeat',
+    {
+      preHandler: app.authenticate,
+      schema: {
+        tags: ['video'],
+        summary: 'Report playback of an uploaded video',
+        description:
+          'An account plays one uploaded video at a time, and the newest `play` wins. ' +
+          'Answers `active: false` to a session whose stream another session took over.',
+        params: videoAssetParamsSchema,
+        body: streamHeartbeatRequestSchema,
+        response: { 200: streamHeartbeatResponseSchema },
+      },
+    },
+    async (request) => {
+      const { user, sessionId } = request.auth!;
+      const context = await findAssetContext(app.db, request.params.assetId);
+      if (!context) throw notFound('Video not found');
+      const access = await resolveCourseAccess(app.db, user, context.course, new Date());
+      if (!access.isVisible) throw notFound('Video not found');
+      if (!access.canViewContent) throw forbidden('Access to this course requires a grant');
+      if (!(await singleStreamApplies(access.canManage, request.log))) return { active: true };
+
+      const holder = { userId: user.id, sessionId, assetId: context.asset.id, now: new Date() };
+      try {
+        if (request.body.event === 'play') {
+          await claimStream(app.db, holder);
+          return { active: true };
+        }
+        return { active: await renewStream(app.db, holder) };
+      } catch (error) {
+        request.log.warn({ err: error }, 'could not record the stream, letting the video play');
+        return { active: true };
+      }
+    },
+  );
 
   app.get(
     '/videos/:assetId/key',
@@ -389,7 +454,23 @@ export const videoRoutes: FastifyPluginAsyncZod<VideoRoutesOptions> = async (
     },
     async (request, reply) => {
       const { assetId } = request.params;
-      await authorizeToken(assetId, request.query.token);
+      const { claims, canManage } = await authorizeToken(assetId, request.query.token);
+      // the segments are encrypted, so refusing the key is what keeps a second device from playing
+      if (await singleStreamApplies(canManage, request.log)) {
+        const heldElsewhere = await isStreamHeldElsewhere(app.db, {
+          userId: claims.userId,
+          sessionId: claims.sessionId,
+          now: new Date(),
+        }).catch((error: unknown) => {
+          request.log.warn({ err: error }, 'could not read the stream, letting the video play');
+          return false;
+        });
+        if (heldElsewhere) {
+          throw new HttpError(409, 'This account is playing a video on another device', {
+            reason: STREAM_IN_USE_REASON,
+          });
+        }
+      }
       let keyHex: string;
       try {
         keyHex = await app.storage.readText(videoKeys.encryptionKey(assetId));
@@ -420,7 +501,7 @@ export const videoRoutes: FastifyPluginAsyncZod<VideoRoutesOptions> = async (
     async (request, reply) => {
       const { assetId, file } = request.params;
       const { token } = request.query;
-      const context = await authorizeToken(assetId, token);
+      const { context } = await authorizeToken(assetId, token);
 
       const name = file.slice(0, -'.m3u8'.length);
       let body: string;

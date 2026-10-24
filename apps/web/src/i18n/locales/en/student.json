@@ -111,6 +111,17 @@
       "confirm": "Confirm new password",
       "save": "Change password",
       "savedToast": "Password changed."
+    },
+    "devices": {
+      "title": "Signed-in devices",
+      "description": "Where your account is signed in. Sign out the ones you do not recognise.",
+      "current": "This device",
+      "unknown": "Unknown device",
+      "lastUsed": "Last used {date}",
+      "signOut": "Sign out",
+      "signOutDevice": "Sign out {name}",
+      "signedOutToast": "Device signed out.",
+      "errorTitle": "Could not load your devices"
     }
   }
 }

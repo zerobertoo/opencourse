@@ -111,6 +111,17 @@
       "confirm": "Confirmar nova senha",
       "save": "Alterar senha",
       "savedToast": "Senha alterada."
+    },
+    "devices": {
+      "title": "Dispositivos conectados",
+      "description": "Onde sua conta está conectada. Desconecte os que você não reconhece.",
+      "current": "Este dispositivo",
+      "unknown": "Dispositivo desconhecido",
+      "lastUsed": "Último uso em {date}",
+      "signOut": "Desconectar",
+      "signOutDevice": "Desconectar {name}",
+      "signedOutToast": "Dispositivo desconectado.",
+      "errorTitle": "Não foi possível carregar seus dispositivos"
     }
   }
 }

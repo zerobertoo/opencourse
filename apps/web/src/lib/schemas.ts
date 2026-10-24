@@ -275,6 +275,7 @@ export const platformSettingsFormSchema = z
     fromAddress: z.string().trim().min(1, required).refine(isSenderAddress, 'validation.email'),
     secure: z.boolean(),
     watermarkEnabled: z.boolean(),
+    singleStreamEnabled: z.boolean(),
   })
   .refine((values) => values.enabledLocales.includes(values.defaultLocale), {
     message: 'validation.defaultLocaleDisabled',

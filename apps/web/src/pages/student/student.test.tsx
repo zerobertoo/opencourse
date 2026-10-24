@@ -495,3 +495,47 @@ describe('settings', () => {
     expect(screen.queryByText('Confira os dados informados e tente de novo.')).toBeNull();
   });
 });
+
+describe('signed-in devices', () => {
+  const now = '2026-06-15T12:00:00.000Z';
+  const phone = {
+    id: 'a1b2c3d4-0000-4000-8000-0000000000aa',
+    userAgent:
+      'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 Version/18.0 Mobile/15E148 Safari/604.1',
+    ip: '203.0.113.7',
+    createdAt: now,
+    lastUsedAt: now,
+    current: false,
+  };
+  const laptop = {
+    ...phone,
+    id: 'a1b2c3d4-0000-4000-8000-0000000000bb',
+    userAgent: 'Mozilla/5.0 (Windows NT 10.0) Chrome/130.0 Safari/537.36',
+    ip: null,
+    current: true,
+  };
+
+  it('lists the devices and signs out another one, but not the one in use', async () => {
+    const user = userEvent.setup();
+    let devices = [laptop, phone];
+    const revokeSession = vi.fn((id: string) => {
+      devices = devices.filter((device) => device.id !== id);
+      return Promise.resolve();
+    });
+    await renderApp('/settings', {
+      signInAs: 'student',
+      override: ({ auth }) => ({
+        auth: { ...auth, listSessions: () => Promise.resolve(devices), revokeSession },
+      }),
+    });
+
+    expect(await screen.findByText('Chrome · Windows')).toBeVisible();
+    expect(screen.getByText('Este dispositivo')).toBeVisible();
+    expect(screen.getByText('Safari · iOS')).toBeVisible();
+    expect(screen.getAllByRole('button', { name: /^Desconectar / })).toHaveLength(1);
+
+    await user.click(screen.getByRole('button', { name: 'Desconectar Safari · iOS' }));
+    await waitFor(() => expect(revokeSession).toHaveBeenCalledWith(phone.id));
+    await waitFor(() => expect(screen.queryByText('Safari · iOS')).toBeNull());
+  });
+});

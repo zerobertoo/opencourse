@@ -1,6 +1,7 @@
 import {
   attachmentDownloadResponseSchema,
   failedVideosResponseSchema,
+  streamHeartbeatResponseSchema,
   videoPlaybackResponseSchema,
   videoStatusResponseSchema,
 } from '@opencourse/shared';
@@ -17,6 +18,19 @@ export function createApiVideoService(client: ApiClient): VideoService {
       );
       // the API answers with a path; the player needs the full address
       return { url: client.absoluteUrl(playbackUrl), posterUrl };
+    },
+    async reportPlayback(assetId, event) {
+      try {
+        const { active } = await client.request(
+          'POST',
+          `/videos/${encodeURIComponent(assetId)}/heartbeat`,
+          { body: { event }, schema: streamHeartbeatResponseSchema },
+        );
+        return active;
+      } catch {
+        // the report is a courtesy to the other devices: failing to send it must not stop the video
+        return true;
+      }
     },
     async getCaptionUrl(url) {
       if (!url.startsWith('/api/')) return url;

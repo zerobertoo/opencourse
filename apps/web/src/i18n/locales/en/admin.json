@@ -158,7 +158,9 @@
     "video": {
       "title": "Video",
       "watermark": "Show the student's name and e-mail over uploaded videos",
-      "watermarkHint": "Discourages sharing recordings and shows who a leaked copy came from. It does not apply to videos embedded from external providers (YouTube, Vimeo and so on)."
+      "watermarkHint": "Discourages sharing recordings and shows who a leaked copy came from. It does not apply to videos embedded from external providers (YouTube, Vimeo and so on).",
+      "singleStream": "Play one uploaded video at a time per account",
+      "singleStreamHint": "When a second device starts playing, the first one pauses, which makes sharing an account with a group impractical. Instructors and admins are not limited, and videos embedded from external providers are not covered."
     }
   },
   "plugins": {

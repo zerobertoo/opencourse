@@ -27,6 +27,7 @@ function toFormValues(settings: PlatformSettings): PlatformSettingsFormValues {
     fromAddress: settings.email.fromAddress,
     secure: settings.email.secure,
     watermarkEnabled: settings.video.watermarkEnabled,
+    singleStreamEnabled: settings.video.singleStreamEnabled,
   };
 }
 
@@ -46,7 +47,10 @@ function toSettingsPatch(values: PlatformSettingsFormValues): PlatformSettings {
       fromAddress: values.fromAddress,
       secure: values.secure,
     },
-    video: { watermarkEnabled: values.watermarkEnabled },
+    video: {
+      watermarkEnabled: values.watermarkEnabled,
+      singleStreamEnabled: values.singleStreamEnabled,
+    },
   };
 }
 
@@ -199,6 +203,11 @@ function SettingsForm({ settings }: { settings: PlatformSettings }) {
           label={t('admin:settings.video.watermark')}
           hint={t('admin:settings.video.watermarkHint')}
           {...register('watermarkEnabled')}
+        />
+        <CheckboxField
+          label={t('admin:settings.video.singleStream')}
+          hint={t('admin:settings.video.singleStreamHint')}
+          {...register('singleStreamEnabled')}
         />
       </Card>
 

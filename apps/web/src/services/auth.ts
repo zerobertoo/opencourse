@@ -1,4 +1,4 @@
-import type { Invite, Role, User } from '@opencourse/shared';
+import type { Invite, Role, SessionInfo, User } from '@opencourse/shared';
 
 export interface SignUpInput {
   name: string;
@@ -22,6 +22,10 @@ export interface AuthService {
   signOut(): Promise<void>;
   /** Changes the authenticated user's password. Throws `validation` if the current password is empty. */
   changePassword(currentPassword: string, newPassword: string): Promise<void>;
+  /** Devices signed in to the authenticated user's account, most recently used first. */
+  listSessions(): Promise<SessionInfo[]>;
+  /** Signs out one of the user's own devices. Ending the current one signs this browser out. */
+  revokeSession(sessionId: string): Promise<void>;
   /** Always completes without revealing whether the e-mail exists. */
   requestPasswordReset(email: string): Promise<void>;
   resetPassword(token: string, newPassword: string): Promise<void>;

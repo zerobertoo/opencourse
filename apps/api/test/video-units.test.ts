@@ -8,7 +8,7 @@ import {
 } from '../src/modules/video/transcode';
 
 const SECRET = 'a-secret-with-at-least-thirty-two-characters';
-const CLAIMS = { assetId: 'asset-1', userId: 'user-1' };
+const CLAIMS = { assetId: 'asset-1', userId: 'user-1', sessionId: 'session-1' };
 const NOW = new Date('2026-01-01T00:00:00Z');
 
 describe('playback token', () => {
@@ -25,6 +25,7 @@ describe('playback token', () => {
       verifyPlaybackToken('another-secret-with-thirty-two-characters!', token, NOW),
     ).toBeNull();
     expect(verifyPlaybackToken(SECRET, token.replace('asset-1', 'asset-2'), NOW)).toBeNull();
+    expect(verifyPlaybackToken(SECRET, token.replace('session-1', 'session-2'), NOW)).toBeNull();
     expect(verifyPlaybackToken(SECRET, 'v1.session.123.signature', NOW)).toBeNull();
     expect(verifyPlaybackToken(SECRET, '', NOW)).toBeNull();
   });

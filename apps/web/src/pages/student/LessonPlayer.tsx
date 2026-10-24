@@ -133,6 +133,7 @@ function VideoLessonBody({
     <VideoPlayer
       key={lesson.id}
       src={playback.data.url}
+      assetId={video.assetId}
       posterUrl={playback.data.posterUrl}
       title={title}
       captions={lesson.captions}

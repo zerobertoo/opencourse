@@ -11,6 +11,7 @@ import { TextField } from '@/components/TextField';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Select } from '@/components/ui/input';
+import { DevicesSection } from '@/features/account/DevicesSection';
 import {
   changePasswordSchema,
   profileSchema,
@@ -245,6 +246,7 @@ export function Settings() {
       <ProfileSection />
       <ThemeSection />
       <PasswordSection />
+      <DevicesSection />
     </div>
   );
 }

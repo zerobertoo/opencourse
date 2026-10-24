@@ -8,6 +8,8 @@ import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/auth/AuthContext';
 import { usePlatformSettings } from '@/hooks/adminQueries';
 import { useCaptionTracks } from '@/hooks/queries';
+import { Button } from '@/components/ui/button';
+import { useSingleStream } from './useSingleStream';
 import { Watermark } from './Watermark';
 
 /** How often (in seconds of playback) the position is reported while playing. */
@@ -26,6 +28,8 @@ const SKIN_STYLE = {
 interface VideoPlayerProps {
   /** An HLS playlist (`.m3u8`) or a plain video file. */
   src: string;
+  /** Set for videos uploaded to this instance: they play on one device per account at a time. */
+  assetId?: string;
   /** Frame shown before playback starts. */
   posterUrl?: string | null;
   title: string;
@@ -47,6 +51,7 @@ const isHlsSource = (src: string) => /\.m3u8(\?|#|$)/i.test(src);
  */
 export function VideoPlayer({
   src,
+  assetId,
   posterUrl,
   title,
   captions,
@@ -59,6 +64,7 @@ export function VideoPlayer({
   const settings = usePlatformSettings();
   // off until the settings say otherwise (the platform default)
   const showWatermark = user && (settings.data?.video?.watermarkEnabled ?? false);
+  const stream = useSingleStream(assetId);
   const lastSavedRef = useRef(0);
   const dirtyRef = useRef(false);
   const currentRef = useRef(0);
@@ -100,11 +106,15 @@ export function VideoPlayer({
         flushPosition();
       }
     },
+    onPlay: (event: SyntheticEvent<HTMLVideoElement>) => stream.onPlay(event.currentTarget),
+    onError: () => void stream.onError(),
     onPause: () => {
+      stream.onStop();
       dirtyRef.current = true;
       flushPosition();
     },
     onEnded: () => {
+      stream.onStop();
       // a finished video restarts from the beginning next time
       currentRef.current = 0;
       dirtyRef.current = true;
@@ -130,7 +140,7 @@ export function VideoPlayer({
       aria-label={t('video.playerLabel', { title })}
     >
       <I18nProvider locale={i18n.resolvedLanguage ?? 'en'}>
-        <VideoJsPlayer poster={posterUrl ?? undefined}>
+        <VideoJsPlayer key={stream.attempt} poster={posterUrl ?? undefined}>
           <VideoSkin style={SKIN_STYLE}>
             {isHlsSource(src) ? (
               <HlsJsVideo src={src} {...mediaProps}>
@@ -142,6 +152,20 @@ export function VideoPlayer({
               </Video>
             )}
             {showWatermark ? <Watermark text={`${user.name} · ${user.email}`} /> : null}
+            {stream.blocked ? (
+              <div
+                role="alert"
+                className="absolute inset-0 z-10 grid place-items-center gap-3 bg-black/80 p-6 text-center text-white"
+              >
+                <div className="space-y-3">
+                  <p className="text-lg font-semibold">{t('video.streamInUse.title')}</p>
+                  <p className="text-sm text-white/80">{t('video.streamInUse.description')}</p>
+                  <Button onClick={() => void stream.takeOver()}>
+                    {t('video.streamInUse.action')}
+                  </Button>
+                </div>
+              </div>
+            ) : null}
           </VideoSkin>
         </VideoJsPlayer>
       </I18nProvider>

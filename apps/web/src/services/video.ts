@@ -16,6 +16,12 @@ export interface VideoService {
    */
   getPlayback(assetId: string): Promise<VideoPlayback>;
   /**
+   * Tells the platform this device is playing an uploaded video. An account plays one at a time:
+   * `play` takes the stream, `beat` renews it and answers false once another device took it over,
+   * which is the cue to pause. A failed report counts as active, so a hiccup never stops a lesson.
+   */
+  reportPlayback(assetId: string, event: 'play' | 'beat'): Promise<boolean>;
+  /**
    * Address a `<track>` can load a caption from. A caption uploaded to this instance is behind the
    * access check, so it is fetched with the session and handed over as a local object address.
    */

@@ -9,6 +9,8 @@ export function createMockVideoService(context: MockContext): VideoService {
   return {
     getPlayback: () =>
       context.run('video.getPlayback', () => ({ url: SAMPLE_VIDEO_URL, posterUrl: null })),
+    // the demo has one browser, so nobody else can take the stream
+    reportPlayback: () => Promise.resolve(true),
     // the mock keeps captions and files as data URLs, which load as they are
     getCaptionUrl: (url) => Promise.resolve(url),
     getDownloadUrl: (path) => Promise.resolve(path),

@@ -85,6 +85,13 @@
       "when": 1792642914157,
       "tag": "0011_sleepy_cassandra_nova",
       "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1792817283551,
+      "tag": "0012_sparkling_maximus",
+      "breakpoints": true
     }
   ]
 }
