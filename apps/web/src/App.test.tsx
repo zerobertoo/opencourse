@@ -14,7 +14,7 @@ describe('language switching', () => {
     await renderApp('/showcase');
 
     expect(
-      screen.getByRole('heading', { level: 1, name: 'Guia de componentes' }),
+      await screen.findByRole('heading', { level: 1, name: 'Guia de componentes' }),
     ).toBeInTheDocument();
     expect(document.documentElement.lang).toBe('pt-BR');
 
@@ -30,7 +30,7 @@ describe('language switching', () => {
     const user = userEvent.setup();
     await renderApp('/showcase');
 
-    expect(screen.getByText('1 aula')).toBeInTheDocument();
+    expect(await screen.findByText('1 aula')).toBeInTheDocument();
     expect(screen.getByText('12 aulas')).toBeInTheDocument();
     expect(screen.getByText('1.234.567,89')).toBeInTheDocument();
 

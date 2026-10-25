@@ -115,7 +115,7 @@ export function GrantAccessDialog({
                 <input
                   type="radio"
                   value={value}
-                  className="size-4 accent-primary"
+                  className="size-5 accent-primary"
                   {...register('access')}
                 />
                 {t(`studio:students.grant.accessOption.${value}`)}

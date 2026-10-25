@@ -36,7 +36,7 @@ export function Watermark({ text }: { text: string }) {
       <span
         data-testid="video-watermark"
         data-visible={visible}
-        className="absolute select-none rounded bg-black/15 px-1.5 py-0.5 text-[11px] font-medium text-white/45 transition-opacity duration-700 data-[visible=false]:opacity-0"
+        className="absolute select-none rounded bg-black/15 px-1.5 py-0.5 text-[11px] font-medium text-white/45 transition-opacity duration-700 motion-reduce:transition-none data-[visible=false]:opacity-0"
         style={WATERMARK_SLOTS[slot]}
       >
         {text}

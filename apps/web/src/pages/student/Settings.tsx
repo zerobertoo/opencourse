@@ -147,7 +147,7 @@ function ThemeSection() {
                 value={value}
                 checked={preference === value}
                 onChange={() => setPreference(value)}
-                className="size-4 accent-primary"
+                className="size-5 accent-primary"
               />
               <Icon className="size-4 text-muted-foreground" aria-hidden="true" />
               {t(`common:theme.${value}`)}

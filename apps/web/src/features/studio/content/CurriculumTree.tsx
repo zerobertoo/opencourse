@@ -26,7 +26,6 @@ import {
   AlertTriangle,
   ArrowDown,
   ArrowUp,
-  GripVertical,
   MoreVertical,
   Pencil,
   Plus,
@@ -34,6 +33,7 @@ import {
 } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { DragHandle } from '@/components/DragHandle';
 import { LessonTypeIcon } from '@/components/LessonTypeIcon';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -83,31 +83,6 @@ function isMissingTitle(courseModule: CourseModuleWithLessons, locales: Locale[]
   return locales.some(
     (locale) =>
       !courseModule.translations.some((item) => item.locale === locale && item.title.trim() !== ''),
-  );
-}
-
-function DragHandle({
-  label,
-  setActivatorNodeRef,
-  attributes,
-  listeners,
-}: {
-  label: string;
-  setActivatorNodeRef: (element: HTMLElement | null) => void;
-  attributes: React.HTMLAttributes<HTMLElement>;
-  listeners: React.HTMLAttributes<HTMLElement> | undefined;
-}) {
-  return (
-    <button
-      type="button"
-      ref={setActivatorNodeRef}
-      {...attributes}
-      {...listeners}
-      aria-label={label}
-      className="grid size-9 shrink-0 cursor-grab touch-none place-items-center rounded-md text-muted-foreground hover:bg-muted active:cursor-grabbing"
-    >
-      <GripVertical className="size-4" aria-hidden="true" />
-    </button>
   );
 }
 

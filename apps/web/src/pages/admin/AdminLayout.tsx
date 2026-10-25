@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next';
-import { NavLink, Outlet } from 'react-router-dom';
+import { NavLink } from 'react-router-dom';
+import { RouteSuspense } from '@/components/RouteSuspense';
 import { cn } from '@/lib/utils';
 
 const SECTIONS = [
@@ -42,7 +43,7 @@ export function AdminLayout() {
           </NavLink>
         ))}
       </nav>
-      <Outlet />
+      <RouteSuspense />
     </div>
   );
 }

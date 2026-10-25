@@ -137,7 +137,7 @@ export function QuizLesson({
                           onChange={() =>
                             setAnswers((current) => ({ ...current, [question.id]: option.id }))
                           }
-                          className="mt-0.5 size-4 accent-primary"
+                          className="mt-0.5 size-5 accent-primary"
                         />
                         <span className="flex-1">
                           {localizeOption(option, locale, defaultLocale)}

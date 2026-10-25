@@ -1,3 +1,4 @@
+import { lazy } from 'react';
 import { Navigate, Route, Routes } from 'react-router-dom';
 import { RequireAuth } from '@/auth/RequireAuth';
 import { RequireRole } from '@/auth/RequireRole';
@@ -12,24 +13,26 @@ import { Login } from '@/pages/auth/Login';
 import { ResetPassword } from '@/pages/auth/ResetPassword';
 import { SignUp } from '@/pages/auth/SignUp';
 import { NotFound } from '@/pages/NotFound';
-import { AdminLayout } from '@/pages/admin/AdminLayout';
-import { AdminGrants } from '@/pages/admin/Grants';
-import { AdminPlugins } from '@/pages/admin/Plugins';
-import { AdminSettings } from '@/pages/admin/Settings';
-import { AdminUsers } from '@/pages/admin/Users';
-import { AdminVideos } from '@/pages/admin/Videos';
-import { AdminApiKeys } from '@/pages/admin/ApiKeys';
-import { AdminWebhooks } from '@/pages/admin/Webhooks';
-import { Showcase } from '@/pages/Showcase';
 import { VerifyCertificate } from '@/pages/VerifyCertificate';
-import { CourseEditor } from '@/pages/studio/CourseEditor';
-import { StudioCourses } from '@/pages/studio/Courses';
-import { StudioDashboard } from '@/pages/studio/Dashboard';
-import { Certificates } from '@/pages/student/Certificates';
-import { CoursePage } from '@/pages/student/CoursePage';
-import { Home } from '@/pages/student/Home';
-import { LessonPlayer } from '@/pages/student/LessonPlayer';
-import { Settings } from '@/pages/student/Settings';
+
+// route areas load on demand (layouts show a skeleton meanwhile) so sign-in does not ship the player, studio and admin
+const AdminLayout = lazy(() => import('@/pages/admin/AdminLayout').then((m) => ({ default: m.AdminLayout })));
+const AdminGrants = lazy(() => import('@/pages/admin/Grants').then((m) => ({ default: m.AdminGrants })));
+const AdminPlugins = lazy(() => import('@/pages/admin/Plugins').then((m) => ({ default: m.AdminPlugins })));
+const AdminSettings = lazy(() => import('@/pages/admin/Settings').then((m) => ({ default: m.AdminSettings })));
+const AdminUsers = lazy(() => import('@/pages/admin/Users').then((m) => ({ default: m.AdminUsers })));
+const AdminVideos = lazy(() => import('@/pages/admin/Videos').then((m) => ({ default: m.AdminVideos })));
+const AdminApiKeys = lazy(() => import('@/pages/admin/ApiKeys').then((m) => ({ default: m.AdminApiKeys })));
+const AdminWebhooks = lazy(() => import('@/pages/admin/Webhooks').then((m) => ({ default: m.AdminWebhooks })));
+const Showcase = lazy(() => import('@/pages/Showcase').then((m) => ({ default: m.Showcase })));
+const CourseEditor = lazy(() => import('@/pages/studio/CourseEditor').then((m) => ({ default: m.CourseEditor })));
+const StudioCourses = lazy(() => import('@/pages/studio/Courses').then((m) => ({ default: m.StudioCourses })));
+const StudioDashboard = lazy(() => import('@/pages/studio/Dashboard').then((m) => ({ default: m.StudioDashboard })));
+const Certificates = lazy(() => import('@/pages/student/Certificates').then((m) => ({ default: m.Certificates })));
+const CoursePage = lazy(() => import('@/pages/student/CoursePage').then((m) => ({ default: m.CoursePage })));
+const Home = lazy(() => import('@/pages/student/Home').then((m) => ({ default: m.Home })));
+const LessonPlayer = lazy(() => import('@/pages/student/LessonPlayer').then((m) => ({ default: m.LessonPlayer })));
+const Settings = lazy(() => import('@/pages/student/Settings').then((m) => ({ default: m.Settings })));
 
 export function App() {
   return (
