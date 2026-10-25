@@ -1,4 +1,4 @@
-import { lazy } from 'react';
+import { lazy, type ComponentType } from 'react';
 import { Navigate, Route, Routes } from 'react-router-dom';
 import { RequireAuth } from '@/auth/RequireAuth';
 import { RequireRole } from '@/auth/RequireRole';
@@ -15,24 +15,33 @@ import { SignUp } from '@/pages/auth/SignUp';
 import { NotFound } from '@/pages/NotFound';
 import { VerifyCertificate } from '@/pages/VerifyCertificate';
 
-// route areas load on demand (layouts show a skeleton meanwhile) so sign-in does not ship the player, studio and admin
-const AdminLayout = lazy(() => import('@/pages/admin/AdminLayout').then((m) => ({ default: m.AdminLayout })));
-const AdminGrants = lazy(() => import('@/pages/admin/Grants').then((m) => ({ default: m.AdminGrants })));
-const AdminPlugins = lazy(() => import('@/pages/admin/Plugins').then((m) => ({ default: m.AdminPlugins })));
-const AdminSettings = lazy(() => import('@/pages/admin/Settings').then((m) => ({ default: m.AdminSettings })));
-const AdminUsers = lazy(() => import('@/pages/admin/Users').then((m) => ({ default: m.AdminUsers })));
-const AdminVideos = lazy(() => import('@/pages/admin/Videos').then((m) => ({ default: m.AdminVideos })));
-const AdminApiKeys = lazy(() => import('@/pages/admin/ApiKeys').then((m) => ({ default: m.AdminApiKeys })));
-const AdminWebhooks = lazy(() => import('@/pages/admin/Webhooks').then((m) => ({ default: m.AdminWebhooks })));
-const Showcase = lazy(() => import('@/pages/Showcase').then((m) => ({ default: m.Showcase })));
-const CourseEditor = lazy(() => import('@/pages/studio/CourseEditor').then((m) => ({ default: m.CourseEditor })));
-const StudioCourses = lazy(() => import('@/pages/studio/Courses').then((m) => ({ default: m.StudioCourses })));
-const StudioDashboard = lazy(() => import('@/pages/studio/Dashboard').then((m) => ({ default: m.StudioDashboard })));
-const Certificates = lazy(() => import('@/pages/student/Certificates').then((m) => ({ default: m.Certificates })));
-const CoursePage = lazy(() => import('@/pages/student/CoursePage').then((m) => ({ default: m.CoursePage })));
-const Home = lazy(() => import('@/pages/student/Home').then((m) => ({ default: m.Home })));
-const LessonPlayer = lazy(() => import('@/pages/student/LessonPlayer').then((m) => ({ default: m.LessonPlayer })));
-const Settings = lazy(() => import('@/pages/student/Settings').then((m) => ({ default: m.Settings })));
+/** Lazy route component from a module with a named export. */
+function lazyPage<Name extends string>(
+  load: () => Promise<Record<Name, ComponentType>>,
+  name: Name,
+) {
+  return lazy(async () => ({ default: (await load())[name] }));
+}
+
+// Route areas load on demand (layouts show a skeleton meanwhile), so sign-in does not
+// ship the studio and admin.
+const AdminLayout = lazyPage(() => import('@/pages/admin/AdminLayout'), 'AdminLayout');
+const AdminGrants = lazyPage(() => import('@/pages/admin/Grants'), 'AdminGrants');
+const AdminPlugins = lazyPage(() => import('@/pages/admin/Plugins'), 'AdminPlugins');
+const AdminSettings = lazyPage(() => import('@/pages/admin/Settings'), 'AdminSettings');
+const AdminUsers = lazyPage(() => import('@/pages/admin/Users'), 'AdminUsers');
+const AdminVideos = lazyPage(() => import('@/pages/admin/Videos'), 'AdminVideos');
+const AdminApiKeys = lazyPage(() => import('@/pages/admin/ApiKeys'), 'AdminApiKeys');
+const AdminWebhooks = lazyPage(() => import('@/pages/admin/Webhooks'), 'AdminWebhooks');
+const Showcase = lazyPage(() => import('@/pages/Showcase'), 'Showcase');
+const CourseEditor = lazyPage(() => import('@/pages/studio/CourseEditor'), 'CourseEditor');
+const StudioCourses = lazyPage(() => import('@/pages/studio/Courses'), 'StudioCourses');
+const StudioDashboard = lazyPage(() => import('@/pages/studio/Dashboard'), 'StudioDashboard');
+const Certificates = lazyPage(() => import('@/pages/student/Certificates'), 'Certificates');
+const CoursePage = lazyPage(() => import('@/pages/student/CoursePage'), 'CoursePage');
+const Home = lazyPage(() => import('@/pages/student/Home'), 'Home');
+const LessonPlayer = lazyPage(() => import('@/pages/student/LessonPlayer'), 'LessonPlayer');
+const Settings = lazyPage(() => import('@/pages/student/Settings'), 'Settings');
 
 export function App() {
   return (

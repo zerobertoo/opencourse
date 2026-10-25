@@ -5,10 +5,10 @@ import { useAuth } from '@/auth/AuthContext';
 import { LanguageSwitcher } from '@/components/LanguageSwitcher';
 import { Logo } from '@/components/Logo';
 import { RepositoryLink } from '@/components/RepositoryLink';
+import { RouteSuspense } from '@/components/RouteSuspense';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { UserMenu } from '@/components/UserMenu';
 import { Input } from '@/components/ui/input';
-import { RouteSuspense } from '@/components/RouteSuspense';
 import { cn } from '@/lib/utils';
 import { isApiMode } from '@/services';
 

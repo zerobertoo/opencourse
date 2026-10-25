@@ -15,10 +15,10 @@ import type { Role } from '@opencourse/shared';
 import { useAuth } from '@/auth/AuthContext';
 import { LanguageSwitcher } from '@/components/LanguageSwitcher';
 import { Logo } from '@/components/Logo';
+import { RouteSuspense } from '@/components/RouteSuspense';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { UserMenu } from '@/components/UserMenu';
 import { Button } from '@/components/ui/button';
-import { RouteSuspense } from '@/components/RouteSuspense';
 import { cn } from '@/lib/utils';
 
 const NAV_ITEMS = [
