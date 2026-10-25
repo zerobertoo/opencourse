@@ -5,6 +5,9 @@ updates:
     schedule:
       interval: weekly
     open-pull-requests-limit: 5
+    # a release younger than three days may still be yanked or found broken
+    cooldown:
+      default-days: 3
     # @types/node must follow the Node version in .nvmrc, not the latest major
     ignore:
       - dependency-name: "@types/node"
@@ -16,6 +19,11 @@ updates:
     directory: /
     schedule:
       interval: weekly
+    cooldown:
+      default-days: 3
+    groups:
+      actions-minor-and-patch:
+        update-types: [minor, patch]
   - package-ecosystem: docker
     directory: /apps/api
     schedule:
@@ -24,6 +32,9 @@ updates:
     ignore:
       - dependency-name: node
         update-types: [version-update:semver-major]
+    groups:
+      docker-minor-and-patch:
+        update-types: [minor, patch]
   - package-ecosystem: docker
     directory: /apps/web
     schedule:
@@ -31,3 +42,14 @@ updates:
     ignore:
       - dependency-name: node
         update-types: [version-update:semver-major]
+    groups:
+      docker-minor-and-patch:
+        update-types: [minor, patch]
+  # the stack images (postgres, redis, storage, mailpit) live in the compose files
+  - package-ecosystem: docker-compose
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      compose-minor-and-patch:
+        update-types: [minor, patch]
