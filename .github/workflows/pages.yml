@@ -3,16 +3,25 @@ name: Demo (GitHub Pages)
 on:
   push:
     branches: [main]
+    # the demo only changes with the web app, the docs site or what they build from
+    paths:
+      - apps/web/**
+      - apps/docs/**
+      - packages/shared/**
+      - docs/**
+      - pnpm-lock.yaml
+      - package.json
+      - .nvmrc
+      - .github/workflows/pages.yml
   workflow_dispatch:
 
 permissions:
   contents: read
-  pages: write
-  id-token: write
 
+# a deploy that is already publishing must finish, the next one waits its turn
 concurrency:
   group: pages
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 jobs:
   build:
@@ -49,6 +58,11 @@ jobs:
   deploy:
     needs: build
     runs-on: ubuntu-latest
+    timeout-minutes: 10
+    # only the publishing job may write to Pages or mint the OIDC token
+    permissions:
+      pages: write
+      id-token: write
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
