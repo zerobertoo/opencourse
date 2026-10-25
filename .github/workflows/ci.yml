@@ -5,17 +5,45 @@ on:
   push:
     branches: [main]
 
-# a newer push to the same ref makes the older run pointless
+# a newer push to the same PR makes the older run pointless; runs on main always finish
 concurrency:
   group: ci-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 permissions:
   contents: read
 
 jobs:
-  verify:
-    name: Lint, typecheck, test and build
+  # no services needed: runs next to `test`, and a formatting slip fails in seconds
+  static:
+    name: Static checks and build
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+
+      # the pnpm version comes from "packageManager" in package.json
+      - uses: pnpm/action-setup@v6
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm format:check
+
+      # both setups must keep rendering; the app-only file reuses services from compose.yaml
+      - run: docker compose config -q && docker compose --env-file .env.external.example -f compose.app.yaml config -q
+
+      - run: pnpm lint
+      - run: pnpm typecheck
+      - run: pnpm build
+      # the docs site is not part of `pnpm build`, so check it here and keep it from blocking the demo deploy
+      - run: pnpm --filter @opencourse/docs docs:build
+
+  test:
+    name: Tests
     runs-on: ubuntu-latest
     timeout-minutes: 15
     # real services for the API integration tests (same defaults as compose.yaml)
@@ -95,17 +123,23 @@ jobs:
           done
           aws --endpoint-url http://localhost:9000 s3api create-bucket --bucket opencourse
 
-      # both setups must keep rendering; the app-only file reuses services from compose.yaml
-      - run: docker compose config -q && docker compose --env-file .env.external.example -f compose.app.yaml config -q
-
       - run: pnpm install --frozen-lockfile
-      - run: pnpm format:check
-      - run: pnpm lint
-      - run: pnpm typecheck
       - run: pnpm test
-      - run: pnpm build
-      # the docs site is not part of `pnpm build`, so check it here and keep it from blocking the demo deploy
-      - run: pnpm --filter @opencourse/docs docs:build
+
+  # the required status check keeps its name; it passes only when both jobs above passed
+  verify:
+    name: Lint, typecheck, test and build
+    needs: [static, test]
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Require every job to have succeeded
+        env:
+          RESULTS: ${{ needs.static.result }} ${{ needs.test.result }}
+        run: |
+          echo "static and test: ${RESULTS}"
+          [ "${RESULTS}" = "success success" ]
 
   e2e:
     name: End-to-end (Docker Compose stack)
@@ -138,7 +172,6 @@ jobs:
     name: Docker image build
     # PRD section 13: the image build only runs on main
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    needs: verify
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
