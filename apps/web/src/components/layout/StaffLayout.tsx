@@ -10,11 +10,12 @@ import {
 } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { NavLink, Outlet } from 'react-router-dom';
+import { NavLink } from 'react-router-dom';
 import type { Role } from '@opencourse/shared';
 import { useAuth } from '@/auth/AuthContext';
 import { LanguageSwitcher } from '@/components/LanguageSwitcher';
 import { Logo } from '@/components/Logo';
+import { RouteSuspense } from '@/components/RouteSuspense';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { UserMenu } from '@/components/UserMenu';
 import { Button } from '@/components/ui/button';
@@ -76,7 +77,7 @@ export function StaffLayout() {
 
       <aside
         className={cn(
-          'fixed inset-y-0 start-0 z-40 flex w-64 flex-col border-e bg-surface text-surface-foreground transition-transform md:sticky md:top-0 md:h-dvh md:translate-x-0 md:transition-[width]',
+          'fixed inset-y-0 start-0 z-40 flex w-64 flex-col border-e bg-surface text-surface-foreground transition-transform motion-reduce:transition-none md:sticky md:top-0 md:h-dvh md:translate-x-0 md:transition-[width]',
           mobileOpen ? 'translate-x-0' : '-translate-x-full rtl:translate-x-full',
           collapsed && 'md:w-16',
         )}
@@ -148,7 +149,7 @@ export function StaffLayout() {
           </div>
         </header>
         <main id="main-content" className="flex-1 px-4 py-8 md:px-8">
-          <Outlet />
+          <RouteSuspense />
         </main>
       </div>
     </div>

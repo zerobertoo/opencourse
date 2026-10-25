@@ -24,7 +24,7 @@ export function DialogContent({
         {children}
         <DialogPrimitive.Close
           aria-label={t('actions.close')}
-          className="absolute end-3 top-3 grid size-9 place-items-center rounded-md text-muted-foreground hover:bg-muted"
+          className="absolute end-3 top-3 grid size-11 place-items-center rounded-md text-muted-foreground hover:bg-muted sm:size-9"
         >
           <X className="size-4" aria-hidden="true" />
         </DialogPrimitive.Close>

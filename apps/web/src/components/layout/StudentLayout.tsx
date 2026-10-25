@@ -1,12 +1,14 @@
 import { Search } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { Link, NavLink, Outlet, useNavigate, useSearchParams } from 'react-router-dom';
+import { Link, NavLink, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '@/auth/AuthContext';
 import { LanguageSwitcher } from '@/components/LanguageSwitcher';
 import { Logo } from '@/components/Logo';
 import { RepositoryLink } from '@/components/RepositoryLink';
+import { RouteSuspense } from '@/components/RouteSuspense';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { UserMenu } from '@/components/UserMenu';
+import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
 import { isApiMode } from '@/services';
 
@@ -14,6 +16,25 @@ const NAV_ITEMS = [
   { to: '/', labelKey: 'nav.home', end: true },
   { to: '/certificates', labelKey: 'nav.certificates', end: false },
 ] as const;
+
+/** Topbar navigation link; the active route takes the accent tint. */
+function NavItem({ to, labelKey, end }: (typeof NAV_ITEMS)[number]) {
+  const { t } = useTranslation();
+  return (
+    <NavLink
+      to={to}
+      end={end}
+      className={({ isActive }) =>
+        cn(
+          'inline-flex min-h-11 shrink-0 items-center rounded-md px-3 text-sm font-medium text-muted-foreground hover:bg-muted md:min-h-10',
+          isActive && 'bg-accent text-accent-foreground',
+        )
+      }
+    >
+      {t(labelKey)}
+    </NavLink>
+  );
+}
 
 /** Search box that filters "my courses" on the home page through the `q` query param. */
 function SearchForm({ className }: { className?: string }) {
@@ -35,7 +56,7 @@ function SearchForm({ className }: { className?: string }) {
         className="pointer-events-none absolute start-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
         aria-hidden="true"
       />
-      <input
+      <Input
         // remount when the URL query changes so the field mirrors it
         key={params.get('q') ?? ''}
         type="search"
@@ -43,7 +64,7 @@ function SearchForm({ className }: { className?: string }) {
         defaultValue={params.get('q') ?? ''}
         aria-label={t('search.label')}
         placeholder={t('search.placeholder')}
-        className="h-10 w-full rounded-md border border-input bg-surface ps-9 pe-3 text-sm placeholder:text-muted-foreground"
+        className="ps-9"
       />
     </form>
   );
@@ -77,20 +98,8 @@ export function StudentLayout() {
               aria-label={t('nav.mainNavigation')}
               className="ms-2 hidden items-center gap-1 md:flex"
             >
-              {NAV_ITEMS.map(({ to, labelKey, end }) => (
-                <NavLink
-                  key={to}
-                  to={to}
-                  end={end}
-                  className={({ isActive }) =>
-                    cn(
-                      'rounded-md px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-muted',
-                      isActive && 'bg-accent text-accent-foreground',
-                    )
-                  }
-                >
-                  {t(labelKey)}
-                </NavLink>
+              {NAV_ITEMS.map((item) => (
+                <NavItem key={item.to} {...item} />
               ))}
             </nav>
           ) : null}
@@ -112,25 +121,13 @@ export function StudentLayout() {
           aria-label={t('nav.mainNavigation')}
           className="mx-auto flex max-w-7xl gap-1 overflow-x-auto px-4 pt-3 md:hidden"
         >
-          {NAV_ITEMS.map(({ to, labelKey, end }) => (
-            <NavLink
-              key={to}
-              to={to}
-              end={end}
-              className={({ isActive }) =>
-                cn(
-                  'rounded-md px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-muted',
-                  isActive && 'bg-accent text-accent-foreground',
-                )
-              }
-            >
-              {t(labelKey)}
-            </NavLink>
+          {NAV_ITEMS.map((item) => (
+            <NavItem key={item.to} {...item} />
           ))}
         </nav>
       ) : null}
       <main id="main-content" className="mx-auto max-w-7xl px-4 py-6 sm:py-8">
-        <Outlet />
+        <RouteSuspense />
       </main>
       {isApiMode ? null : (
         <footer className="mx-auto max-w-7xl px-4 pb-8 text-center">

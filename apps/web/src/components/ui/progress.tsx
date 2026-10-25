@@ -20,7 +20,7 @@ export function ProgressBar({
     >
       {/* slides the fill instead of animating width, which would force layout; flips for RTL */}
       <ProgressPrimitive.Indicator
-        className="size-full translate-x-[calc(-1*var(--progress-gap))] rounded-full bg-primary transition-transform rtl:translate-x-(--progress-gap)"
+        className="size-full translate-x-[calc(-1*var(--progress-gap))] rounded-full bg-primary transition-transform motion-reduce:transition-none rtl:translate-x-(--progress-gap)"
         style={{ '--progress-gap': `${100 - percent}%` } as React.CSSProperties}
       />
     </ProgressPrimitive.Root>

@@ -1,3 +1,4 @@
+import { lazy, type ComponentType } from 'react';
 import { Navigate, Route, Routes } from 'react-router-dom';
 import { RequireAuth } from '@/auth/RequireAuth';
 import { RequireRole } from '@/auth/RequireRole';
@@ -12,24 +13,35 @@ import { Login } from '@/pages/auth/Login';
 import { ResetPassword } from '@/pages/auth/ResetPassword';
 import { SignUp } from '@/pages/auth/SignUp';
 import { NotFound } from '@/pages/NotFound';
-import { AdminLayout } from '@/pages/admin/AdminLayout';
-import { AdminGrants } from '@/pages/admin/Grants';
-import { AdminPlugins } from '@/pages/admin/Plugins';
-import { AdminSettings } from '@/pages/admin/Settings';
-import { AdminUsers } from '@/pages/admin/Users';
-import { AdminVideos } from '@/pages/admin/Videos';
-import { AdminApiKeys } from '@/pages/admin/ApiKeys';
-import { AdminWebhooks } from '@/pages/admin/Webhooks';
-import { Showcase } from '@/pages/Showcase';
 import { VerifyCertificate } from '@/pages/VerifyCertificate';
-import { CourseEditor } from '@/pages/studio/CourseEditor';
-import { StudioCourses } from '@/pages/studio/Courses';
-import { StudioDashboard } from '@/pages/studio/Dashboard';
-import { Certificates } from '@/pages/student/Certificates';
-import { CoursePage } from '@/pages/student/CoursePage';
-import { Home } from '@/pages/student/Home';
-import { LessonPlayer } from '@/pages/student/LessonPlayer';
-import { Settings } from '@/pages/student/Settings';
+
+/** Lazy route component from a module with a named export. */
+function lazyPage<Name extends string>(
+  load: () => Promise<Record<Name, ComponentType>>,
+  name: Name,
+) {
+  return lazy(async () => ({ default: (await load())[name] }));
+}
+
+// Route areas load on demand (layouts show a skeleton meanwhile), so sign-in does not
+// ship the studio and admin.
+const AdminLayout = lazyPage(() => import('@/pages/admin/AdminLayout'), 'AdminLayout');
+const AdminGrants = lazyPage(() => import('@/pages/admin/Grants'), 'AdminGrants');
+const AdminPlugins = lazyPage(() => import('@/pages/admin/Plugins'), 'AdminPlugins');
+const AdminSettings = lazyPage(() => import('@/pages/admin/Settings'), 'AdminSettings');
+const AdminUsers = lazyPage(() => import('@/pages/admin/Users'), 'AdminUsers');
+const AdminVideos = lazyPage(() => import('@/pages/admin/Videos'), 'AdminVideos');
+const AdminApiKeys = lazyPage(() => import('@/pages/admin/ApiKeys'), 'AdminApiKeys');
+const AdminWebhooks = lazyPage(() => import('@/pages/admin/Webhooks'), 'AdminWebhooks');
+const Showcase = lazyPage(() => import('@/pages/Showcase'), 'Showcase');
+const CourseEditor = lazyPage(() => import('@/pages/studio/CourseEditor'), 'CourseEditor');
+const StudioCourses = lazyPage(() => import('@/pages/studio/Courses'), 'StudioCourses');
+const StudioDashboard = lazyPage(() => import('@/pages/studio/Dashboard'), 'StudioDashboard');
+const Certificates = lazyPage(() => import('@/pages/student/Certificates'), 'Certificates');
+const CoursePage = lazyPage(() => import('@/pages/student/CoursePage'), 'CoursePage');
+const Home = lazyPage(() => import('@/pages/student/Home'), 'Home');
+const LessonPlayer = lazyPage(() => import('@/pages/student/LessonPlayer'), 'LessonPlayer');
+const Settings = lazyPage(() => import('@/pages/student/Settings'), 'Settings');
 
 export function App() {
   return (

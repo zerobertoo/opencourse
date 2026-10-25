@@ -24,10 +24,11 @@ import {
   type QuizIssue,
   type QuizQuestion,
 } from '@opencourse/shared';
-import { AlertTriangle, ArrowDown, ArrowUp, GripVertical, Plus, Trash2 } from 'lucide-react';
+import { AlertTriangle, ArrowDown, ArrowUp, Plus, Trash2 } from 'lucide-react';
 import { useEffect, useId, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
+import { DragHandle } from '@/components/DragHandle';
 import { Spinner } from '@/components/Spinner';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -99,16 +100,12 @@ function QuestionEditor({
     >
       <Card className={cn('space-y-4 p-3 sm:p-4', hasIssues && 'border-destructive/50')}>
         <div className="flex items-center gap-1">
-          <button
-            type="button"
-            ref={setActivatorNodeRef}
-            {...attributes}
-            {...listeners}
-            aria-label={t('quiz.dragQuestion', { number })}
-            className="grid size-9 shrink-0 cursor-grab touch-none place-items-center rounded-md text-muted-foreground hover:bg-muted active:cursor-grabbing"
-          >
-            <GripVertical className="size-4" aria-hidden="true" />
-          </button>
+          <DragHandle
+            label={t('quiz.dragQuestion', { number })}
+            setActivatorNodeRef={setActivatorNodeRef}
+            attributes={attributes}
+            listeners={listeners}
+          />
           <h4 className="flex-1 font-medium">{t('quiz.questionNumber', { number })}</h4>
           <Button
             variant="ghost"
@@ -167,7 +164,7 @@ function QuestionEditor({
                     type="radio"
                     name={`${baseId}-correct`}
                     checked={option.isCorrect}
-                    className="size-4 shrink-0 accent-primary"
+                    className="size-5 shrink-0 accent-primary"
                     aria-label={t('quiz.markCorrect', { number: optionNumber })}
                     onChange={() =>
                       onChange((quiz) => setCorrectOption(quiz, question.id, option.id))

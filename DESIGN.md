@@ -127,7 +127,7 @@ The system is an Operate surface: scanability and consistency outrank expression
 - Logical properties throughout (`ms`, `me`, `ps`, `pe`, `start`) for future RTL.
 
 **Known drift and open items.** The directional drift recorded earlier (light default, green-tinted dark, serif headings, grid home) is resolved. What remains:
-- Touch targets at 375px are mostly 36 to 40px (icon buttons 40px, curriculum actions 36px, native checkboxes 16px), under the 44px guideline.
+- Touch targets: below `sm` buttons, icon buttons, drag handles and the dialog close are 40 to 44px (`size-11`, `h-10`), back to 36 to 40px from `sm`; native checkboxes and radios are 20px; inline text links stay at text height.
 - Short count phrases ("4 of 10 lessons", "40%") are set in mono as a whole span, not digit by digit, because the number is embedded in a translated phrase.
 - `PRODUCT.md`, `CLAUDE.md` and `docs/PRD.md` still list `#f4f6f2` as the brand background; the light page background is now `#f6f7f8`.
 

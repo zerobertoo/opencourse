@@ -109,7 +109,7 @@ export const CheckboxField = forwardRef<HTMLInputElement, CheckboxFieldProps>(
           id={fieldId}
           type="checkbox"
           aria-describedby={hint ? `${fieldId}-hint` : undefined}
-          className="mt-1 size-4 shrink-0 accent-primary"
+          className="mt-0.5 size-5 shrink-0 accent-primary"
           {...props}
         />
         <div className="space-y-0.5">
