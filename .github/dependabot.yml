@@ -5,7 +5,6 @@ updates:
     schedule:
       interval: weekly
     open-pull-requests-limit: 5
-    # a release younger than three days may still be yanked or found broken
     cooldown:
       default-days: 3
     # @types/node must follow the Node version in .nvmrc, not the latest major
@@ -45,7 +44,6 @@ updates:
     groups:
       docker-minor-and-patch:
         update-types: [minor, patch]
-  # the stack images (postgres, redis, storage, mailpit) live in the compose files
   - package-ecosystem: docker-compose
     directory: /
     schedule:

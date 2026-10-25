@@ -8,7 +8,6 @@
 .github
 .superpowers
 docs
-# only its manifest is needed, so the workspace resolves the lockfile
 apps/docs/**
 !apps/docs/package.json
 **/.env

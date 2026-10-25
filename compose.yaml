@@ -79,7 +79,6 @@ services:
 
   # one-shot job: applies pending migrations before the API starts
   migrate:
-    # migrate, api and worker run the same image: one name, built once
     image: opencourse-api
     build:
       context: .
