@@ -15,7 +15,7 @@ import {
   PanelRightClose,
   PanelRightOpen,
 } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { lazy, Suspense, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useParams } from 'react-router-dom';
 import { toast } from 'sonner';
@@ -32,7 +32,6 @@ import { CurriculumSidebar } from '@/features/player/CurriculumSidebar';
 import { NotesTab } from '@/features/player/NotesTab';
 import { QuizLesson } from '@/features/player/QuizLesson';
 import { ExternalVideoEmbed } from '@/features/player/ExternalVideoEmbed';
-import { VideoPlayer } from '@/features/player/VideoPlayer';
 import {
   useCourseAccess,
   useCourseBySlug,
@@ -44,6 +43,20 @@ import {
 import { localizeCourse, localizeLesson, toLocale } from '@/lib/content';
 import { useServiceErrorMessage } from '@/lib/serviceError';
 import { isServiceError } from '@/services';
+
+// Video.js and hls.js are heavy, so text and quiz lessons never download them
+const LazyVideoPlayer = lazy(() =>
+  import('@/features/player/VideoPlayer').then((m) => ({ default: m.VideoPlayer })),
+);
+
+/** Video player that shows a 16:9 skeleton while its chunk loads. */
+function VideoPlayer(props: React.ComponentProps<typeof LazyVideoPlayer>) {
+  return (
+    <Suspense fallback={<Skeleton className="aspect-video w-full" />}>
+      <LazyVideoPlayer {...props} />
+    </Suspense>
+  );
+}
 
 function PlayerSkeleton() {
   const { t } = useTranslation();

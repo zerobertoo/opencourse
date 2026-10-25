@@ -46,7 +46,7 @@ export function AttachmentList({ attachments }: { attachments: FileAttachment[] 
             type="button"
             onClick={() => void download(attachment)}
             aria-label={t('materials.downloadFile', { name: attachment.name })}
-            className="inline-flex h-9 shrink-0 items-center gap-2 rounded-md border bg-surface px-3 text-sm font-medium hover:bg-muted"
+            className="inline-flex h-11 shrink-0 sm:h-9 items-center gap-2 rounded-md border bg-surface px-3 text-sm font-medium hover:bg-muted"
           >
             <Download className="size-4" aria-hidden="true" />
             <span className="hidden sm:inline">{t('materials.download')}</span>
