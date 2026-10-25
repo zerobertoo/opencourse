@@ -8,7 +8,8 @@ COPY apps/api/package.json apps/api/
 COPY apps/docs/package.json apps/docs/
 COPY apps/web/package.json apps/web/
 COPY packages/shared/package.json packages/shared/
-RUN pnpm install --frozen-lockfile --filter @opencourse/web...
+RUN --mount=type=cache,id=pnpm-store,target=/root/.local/share/pnpm/store \
+  pnpm install --frozen-lockfile --filter @opencourse/web...
 
 COPY tsconfig.base.json ./
 COPY packages/shared packages/shared

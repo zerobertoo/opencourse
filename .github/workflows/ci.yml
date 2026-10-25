@@ -5,17 +5,44 @@ on:
   push:
     branches: [main]
 
-# a newer push to the same ref makes the older run pointless
+# only PRs cancel superseded runs
 concurrency:
   group: ci-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 permissions:
   contents: read
 
 jobs:
-  verify:
-    name: Lint, typecheck, test and build
+  static:
+    name: Static checks and build
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+
+      # the pnpm version comes from "packageManager" in package.json
+      - uses: pnpm/action-setup@v6
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm format:check
+
+      # both setups must keep rendering; the app-only file reuses services from compose.yaml
+      - run: docker compose config -q && docker compose --env-file .env.external.example -f compose.app.yaml config -q
+
+      - run: pnpm lint
+      - run: pnpm typecheck
+      - run: pnpm build
+      # the docs site is not part of `pnpm build`, so check it here and keep it from blocking the demo deploy
+      - run: pnpm --filter @opencourse/docs docs:build
+
+  test:
+    name: Tests
     runs-on: ubuntu-latest
     timeout-minutes: 15
     # real services for the API integration tests (same defaults as compose.yaml)
@@ -95,17 +122,23 @@ jobs:
           done
           aws --endpoint-url http://localhost:9000 s3api create-bucket --bucket opencourse
 
-      # both setups must keep rendering; the app-only file reuses services from compose.yaml
-      - run: docker compose config -q && docker compose --env-file .env.external.example -f compose.app.yaml config -q
-
       - run: pnpm install --frozen-lockfile
-      - run: pnpm format:check
-      - run: pnpm lint
-      - run: pnpm typecheck
       - run: pnpm test
-      - run: pnpm build
-      # the docs site is not part of `pnpm build`, so check it here and keep it from blocking the demo deploy
-      - run: pnpm --filter @opencourse/docs docs:build
+
+  # keeps the required check name
+  verify:
+    name: Lint, typecheck, test and build
+    needs: [static, test]
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Require every job to have succeeded
+        env:
+          RESULTS: ${{ needs.static.result }} ${{ needs.test.result }}
+        run: |
+          echo "static and test: ${RESULTS}"
+          [ "${RESULTS}" = "success success" ]
 
   e2e:
     name: End-to-end (Docker Compose stack)
@@ -119,13 +152,25 @@ jobs:
           node-version-file: .nvmrc
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+
+      # only main writes the layer cache
+      - uses: docker/setup-buildx-action@v4
+      - name: Build the images
+        uses: docker/bake-action@v7
+        with:
+          files: compose.yaml
+          load: true
+          set: |
+            *.cache-from=type=gha,scope=compose
+            ${{ github.event_name == 'push' && '*.cache-to=type=gha,mode=max,scope=compose' || '' }}
+
       - name: Start the stack
         run: |
           # the API refuses to start without a private secret, so each run makes its own
           export AUTH_SECRET="$(openssl rand -base64 48)"
           # the tests sign up many accounts from one IP, which the production limits would block
           export RATE_LIMIT_DISABLED=true
-          docker compose up -d --build --wait
+          docker compose up -d --wait
       - run: pnpm --filter @opencourse/api test:e2e
       - name: Show service logs on failure
         if: failure()
@@ -138,7 +183,6 @@ jobs:
     name: Docker image build
     # PRD section 13: the image build only runs on main
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    needs: verify
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -150,5 +194,4 @@ jobs:
           context: .
           file: apps/api/Dockerfile
           push: false
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          cache-from: type=gha,scope=compose

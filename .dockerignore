@@ -5,7 +5,11 @@
 .claude
 .impeccable
 .rtk
+.github
+.superpowers
 docs
+apps/docs/**
+!apps/docs/package.json
 **/.env
 **/.env.*
 !**/.env.example

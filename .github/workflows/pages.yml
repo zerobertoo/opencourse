@@ -3,16 +3,26 @@ name: Demo (GitHub Pages)
 on:
   push:
     branches: [main]
+    paths:
+      - apps/web/**
+      - apps/docs/**
+      - packages/shared/**
+      - docs/**
+      - pnpm-lock.yaml
+      - package.json
+      - pnpm-workspace.yaml
+      - tsconfig.base.json
+      - .npmrc
+      - .nvmrc
+      - .github/workflows/pages.yml
   workflow_dispatch:
 
 permissions:
   contents: read
-  pages: write
-  id-token: write
 
 concurrency:
   group: pages
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 jobs:
   build:
@@ -49,6 +59,10 @@ jobs:
   deploy:
     needs: build
     runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      pages: write
+      id-token: write
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
