@@ -19,8 +19,8 @@
     "test:e2e": "vitest run --config vitest.e2e.config.ts"
   },
   "dependencies": {
-    "@aws-sdk/client-s3": "^3.1152.0",
-    "@aws-sdk/s3-request-presigner": "^3.1152.0",
+    "@aws-sdk/client-s3": "^3.1155.0",
+    "@aws-sdk/s3-request-presigner": "^3.1155.0",
     "@fastify/cookie": "^11.1.3",
     "@fastify/cors": "^11.3.1",
     "@fastify/helmet": "^13.2.0",
@@ -28,14 +28,14 @@
     "@fastify/swagger": "^9.9.2",
     "@node-rs/argon2": "^2.2.2",
     "@opencourse/shared": "workspace:^",
-    "@scalar/fastify-api-reference": "^1.74.0",
-    "bullmq": "^6.3.15",
+    "@scalar/fastify-api-reference": "^1.75.1",
+    "bullmq": "^6.4.0",
     "drizzle-orm": "^0.45.4",
     "fastify": "^5.12.7",
     "fastify-plugin": "^6.0.1",
     "fastify-type-provider-zod": "^7.0.0",
     "ioredis": "^6.0.0",
-    "nodemailer": "^10.1.4",
+    "nodemailer": "^10.2.1",
     "pino": "^10.4.0",
     "postgres": "^3.4.9",
     "zod": "^4.6.7"
