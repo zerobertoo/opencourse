@@ -122,8 +122,8 @@ export function StudentLayout() {
           className="mx-auto flex max-w-7xl gap-1 overflow-x-auto px-4 pt-3 md:hidden"
         >
           {NAV_ITEMS.map((item) => (
-                <NavItem key={item.to} {...item} />
-              ))}
+            <NavItem key={item.to} {...item} />
+          ))}
         </nav>
       ) : null}
       <main id="main-content" className="mx-auto max-w-7xl px-4 py-6 sm:py-8">
