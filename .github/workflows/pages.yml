@@ -10,6 +10,9 @@ on:
       - docs/**
       - pnpm-lock.yaml
       - package.json
+      - pnpm-workspace.yaml
+      - tsconfig.base.json
+      - .npmrc
       - .nvmrc
       - .github/workflows/pages.yml
   workflow_dispatch:
