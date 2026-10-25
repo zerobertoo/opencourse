@@ -79,6 +79,8 @@ services:
 
   # one-shot job: applies pending migrations before the API starts
   migrate:
+    # migrate, api and worker run the same image: one name, built once
+    image: opencourse-api
     build:
       context: .
       dockerfile: apps/api/Dockerfile
@@ -91,6 +93,7 @@ services:
     restart: 'no'
 
   api:
+    image: opencourse-api
     build:
       context: .
       dockerfile: apps/api/Dockerfile
@@ -148,6 +151,7 @@ services:
       start_period: 10s
 
   web:
+    image: opencourse-web
     build:
       context: .
       dockerfile: apps/web/Dockerfile
@@ -160,6 +164,7 @@ services:
 
   # long-running background worker: delivers outbox events and runs queue jobs (certificates, e-mail, video encoding)
   worker:
+    image: opencourse-api
     build:
       context: .
       dockerfile: apps/api/Dockerfile
