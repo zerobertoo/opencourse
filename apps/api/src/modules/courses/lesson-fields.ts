@@ -19,7 +19,11 @@ export const DEFAULT_QUIZ: Quiz = { passingScore: 70, questions: [] };
  * Column values for a lesson update. A field that does not belong to the lesson type is
  * refused, so a text lesson never carries a quiz or a video. Translations are merged by the caller.
  */
-export function toLessonColumns(type: LessonType, body: UpdateLessonRequest): LessonColumns {
+export function toLessonColumns(
+  type: LessonType,
+  body: UpdateLessonRequest,
+  enabledProviders: readonly string[],
+): LessonColumns {
   if ((body.video !== undefined || body.captions !== undefined) && type !== 'video') {
     throw badRequest('Only video lessons have a video and captions');
   }
@@ -32,14 +36,23 @@ export function toLessonColumns(type: LessonType, body: UpdateLessonRequest): Le
   if (body.captions !== undefined) columns.captions = body.captions;
   if (body.quiz !== undefined) columns.quiz = body.quiz;
   if (body.video !== undefined) {
-    columns.video = body.video === null ? null : toExternalVideo(body.video.url);
+    columns.video = body.video === null ? null : toExternalVideo(body.video.url, enabledProviders);
   }
   return columns;
 }
 
-/** The stored form of a pasted link; a link no provider plugin recognises is refused. */
-export function toExternalVideo(url: string): ExternalVideoAsset {
+/**
+ * The stored form of a pasted link; a link no provider plugin recognises is refused, and so is
+ * one from a provider the admin turned off (lessons already saved with it are not touched).
+ */
+export function toExternalVideo(
+  url: string,
+  enabledProviders: readonly string[],
+): ExternalVideoAsset {
   const resolved = resolveVideoUrl(url);
   if (!resolved) throw badRequest('Not a link from a supported video provider');
+  if (!enabledProviders.includes(resolved.plugin)) {
+    throw badRequest('This video provider is turned off in the platform settings');
+  }
   return { provider: 'external', status: 'ready', ...resolved };
 }

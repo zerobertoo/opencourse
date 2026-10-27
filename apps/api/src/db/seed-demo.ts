@@ -1,7 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import type { Locale, Quiz, Role } from '@opencourse/shared';
+import { videoProviders, type Locale, type Quiz, type Role } from '@opencourse/shared';
 import { and, eq, inArray } from 'drizzle-orm';
 import { drizzle } from 'drizzle-orm/postgres-js';
 import postgres from 'postgres';
@@ -19,6 +19,9 @@ import {
   modules,
   users,
 } from './schema';
+
+// the demo content may use any provider, whatever the settings enable
+const allVideoProviderIds = videoProviders.map((provider) => provider.id);
 
 /** Development password shared by every demo account. Never used outside development. */
 export const DEMO_PASSWORD = 'demo-password-123';
@@ -288,7 +291,9 @@ export async function seedDemoData(db: Database): Promise<void> {
               position: lessonIndex,
               type: lessonSpec.type,
               durationSeconds: lessonSpec.durationSeconds,
-              video: lessonSpec.videoUrl ? toExternalVideo(lessonSpec.videoUrl) : null,
+              video: lessonSpec.videoUrl
+                ? toExternalVideo(lessonSpec.videoUrl, allVideoProviderIds)
+                : null,
               quiz: lessonSpec.quiz ? buildQuiz(lessonSpec.quiz) : null,
             })
             .returning({ id: lessons.id });

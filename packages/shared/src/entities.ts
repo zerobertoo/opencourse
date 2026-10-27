@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { idSchema, isoDateSchema, localeSchema, roleSchema } from './base';
+import { defaultEnabledVideoProviders, findVideoProvider } from './video-providers';
 
 // ---------- Users ----------
 
@@ -280,10 +281,20 @@ export const platformSettingsSchema = z.object({
     secure: z.boolean(),
   }),
   // settings saved before this group existed still parse, with the watermark off; those saved
-  // before the single-stream option still parse too, with it on
+  // before the single-stream option still parse too, with it on, and before the provider list
+  // with the default providers
   video: z
-    .object({ watermarkEnabled: z.boolean(), singleStreamEnabled: z.boolean().default(true) })
-    .default({ watermarkEnabled: false, singleStreamEnabled: true }),
+    .object({
+      watermarkEnabled: z.boolean(),
+      singleStreamEnabled: z.boolean().default(true),
+      // ids of the providers that accept new links; lessons that already use another one keep playing
+      enabledVideoProviders: z.array(z.string()).default([...defaultEnabledVideoProviders]),
+    })
+    .default({
+      watermarkEnabled: false,
+      singleStreamEnabled: true,
+      enabledVideoProviders: [...defaultEnabledVideoProviders],
+    }),
 });
 export type PlatformSettings = z.infer<typeof platformSettingsSchema>;
 
@@ -322,7 +333,13 @@ export const updatePlatformSettingsRequestSchema = z
       .optional(),
     // plain booleans: a default inside a patch would overwrite a stored value that was left out
     video: z
-      .object({ watermarkEnabled: z.boolean(), singleStreamEnabled: z.boolean() })
+      .object({
+        watermarkEnabled: z.boolean(),
+        singleStreamEnabled: z.boolean(),
+        enabledVideoProviders: z.array(
+          z.string().refine((id) => findVideoProvider(id) !== undefined, 'Unknown video provider'),
+        ),
+      })
       .partial()
       .strict()
       .optional(),

@@ -219,7 +219,7 @@ describe('admin plugins', () => {
     expect(within(items[2]!).getByText('Em breve')).toBeVisible();
   });
 
-  it('lists the installed video provider plugins', async () => {
+  it('lists the video provider plugins, with only YouTube and Vimeo on by default', async () => {
     await renderApp('/admin/plugins', { signInAs: 'admin' });
     const providers = await listItems('Provedores de vídeo');
     expect(providers.map((item) => item.textContent)).toEqual(
@@ -228,7 +228,24 @@ describe('admin plugins', () => {
         expect.stringContaining('Panda Video'),
       ]),
     );
-    for (const item of providers) expect(within(item).getByText('Instalado')).toBeVisible();
+    const isOn = (item: HTMLElement) => within(item).queryByText('Ligado') !== null;
+    // the badges appear once the settings have loaded
+    await waitFor(() => expect(providers.filter(isOn)).toHaveLength(2));
+    const on = providers.filter(isOn).map((item) => item.textContent);
+    expect(on[0]).toContain('YouTube');
+    expect(on[1]).toContain('Vimeo');
+  });
+
+  it('turns a video provider on and off', async () => {
+    const user = userEvent.setup();
+    await renderApp('/admin/plugins', { signInAs: 'admin' });
+    await listItems('Provedores de vídeo');
+
+    await user.click(await screen.findByRole('button', { name: 'Ligar Panda Video' }));
+    expect(await screen.findByRole('button', { name: 'Desligar Panda Video' })).toBeVisible();
+
+    await user.click(screen.getByRole('button', { name: 'Desligar YouTube' }));
+    expect(await screen.findByRole('button', { name: 'Ligar YouTube' })).toBeVisible();
   });
 });
 

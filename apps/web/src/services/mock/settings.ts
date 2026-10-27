@@ -1,4 +1,8 @@
-import { platformSettingsProblem, platformSettingsSchema } from '@opencourse/shared';
+import {
+  platformSettingsProblem,
+  platformSettingsSchema,
+  updatePlatformSettingsRequestSchema,
+} from '@opencourse/shared';
 import { ServiceError } from '../errors';
 import type { SettingsService } from '../settings';
 import type { MockContext } from './context';
@@ -13,6 +17,10 @@ export function createMockSettingsService(context: MockContext): SettingsService
     update: (patch) =>
       context.run('settings.update', () => {
         context.requireRole('admin');
+        // the same check the API runs on the request, so the demo refuses what the server would
+        if (!updatePlatformSettingsRequestSchema.safeParse(patch).success) {
+          throw new ServiceError('validation', 'Invalid settings');
+        }
         const merged = {
           ...store.db.settings,
           ...patch,

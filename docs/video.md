@@ -69,7 +69,7 @@ Pasting a link in the Studio picks the provider automatically from the address. 
 
 Google Drive's player takes no quality setting and often starts in low quality, so students see a hint under it to pick the highest quality in the player settings (gear).
 
-Administration, Plugins lists the providers installed on the instance.
+Administration, Plugins lists the providers installed on the instance and turns each one on or off. Instructors can paste links only from the providers that are on; a fresh instance starts with YouTube and Vimeo on and the rest off (the others need your own account with the provider, or accept any host). Turning a provider off does not touch lessons that already use it, they keep playing; it only refuses new links, in the Studio and in `PATCH /lessons/:id`. The list is the `video.enabledVideoProviders` platform setting.
 
 ### Writing a provider plugin
 

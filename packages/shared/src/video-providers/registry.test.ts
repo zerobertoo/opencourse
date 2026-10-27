@@ -1,9 +1,15 @@
 import { describe, expect, it } from 'vitest';
-import { findVideoProvider, resolveVideoUrl } from './registry';
+import { defaultEnabledVideoProviders, findVideoProvider, resolveVideoUrl } from './registry';
 
 const GUID = '0a1b2c3d-1111-2222-3333-444455556666';
 const CLOUDFLARE_ID = '5d5bc37ffcf54c9b82e996823bffbb81';
 const PANDA_PLAYER = 'player-vz-ab12cd34-ef5.tv.pandavideo.com.br';
+
+describe('defaultEnabledVideoProviders', () => {
+  it('only names providers the registry has', () => {
+    for (const id of defaultEnabledVideoProviders) expect(findVideoProvider(id)).toBeDefined();
+  });
+});
 
 describe('resolveVideoUrl', () => {
   it.each([

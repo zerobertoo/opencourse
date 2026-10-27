@@ -49,7 +49,7 @@ export const v1Routes: FastifyPluginAsyncZod<{
   await app.register(certificateRoutes);
   await app.register(courseRoutes);
   await app.register(coverRoutes);
-  await app.register(curriculumRoutes);
+  await app.register(curriculumRoutes, { config });
   await app.register(grantRoutes);
   await app.register(progressRoutes);
   await app.register(enrollmentRoutes);

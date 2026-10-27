@@ -207,6 +207,8 @@
     "readyNote": "Duração: {duration}.",
     "errorNote": "O processamento falhou: {message}",
     "supportedProviders": "Provedores compatíveis: {providers}.",
+    "noProviders": "Nenhum provedor de vídeo está ligado. Peça a um admin para ligar um em Administração → Plugins.",
+    "providerOff": "Links de {provider} estão desligados. Peça a um admin para ligar em Administração → Plugins.",
     "uploadHint": "MP4, WebM, MOV ou MKV. O arquivo é convertido para streaming (360p, 720p e 1080p, conforme o original).",
     "upload": "Enviar vídeo",
     "remove": "Remover vídeo",

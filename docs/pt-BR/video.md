@@ -69,7 +69,7 @@ Ao colar um link no Studio, o provedor é escolhido automaticamente pelo endere�
 
 O player do Google Drive não aceita configuração de qualidade e costuma começar em qualidade baixa, então o aluno vê um aviso abaixo dele para escolher a maior qualidade nas configurações (engrenagem) do player.
 
-Em Administração, Plugins mostra os provedores instalados na instância.
+Em Administração, Plugins mostra os provedores instalados na instância e liga ou desliga cada um. Os instrutores só podem colar links dos provedores ligados; uma instância nova começa com YouTube e Vimeo ligados e o resto desligado (os outros exigem conta própria no provedor, ou aceitam qualquer host). Desligar um provedor não mexe nas aulas que já o usam, elas continuam tocando; só passa a recusar links novos, no Studio e em `PATCH /lessons/:id`. A lista é a configuração `video.enabledVideoProviders` da plataforma.
 
 ### Escrevendo um plugin de provedor
 

@@ -1,5 +1,9 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { SUPPORTED_LOCALES, type PlatformSettings } from '@opencourse/shared';
+import {
+  SUPPORTED_LOCALES,
+  type PlatformSettings,
+  type UpdatePlatformSettingsRequest,
+} from '@opencourse/shared';
 import { useState } from 'react';
 import { useForm, useWatch } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
@@ -31,7 +35,8 @@ function toFormValues(settings: PlatformSettings): PlatformSettingsFormValues {
   };
 }
 
-function toSettingsPatch(values: PlatformSettingsFormValues): PlatformSettings {
+// the provider list is edited on the Plugins page and left out here, so a save keeps what is stored
+function toSettingsPatch(values: PlatformSettingsFormValues): UpdatePlatformSettingsRequest {
   return {
     brand: {
       name: values.brandName,

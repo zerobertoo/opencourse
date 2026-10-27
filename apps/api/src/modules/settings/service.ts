@@ -1,4 +1,5 @@
 import {
+  defaultEnabledVideoProviders,
   isHttpUrl,
   platformSettingsProblem,
   platformSettingsSchema,
@@ -30,7 +31,11 @@ export function defaultPlatformSettings(config: Config): PlatformSettings {
       fromAddress: config.SMTP_FROM,
       secure: config.SMTP_PORT === SMTPS_PORT,
     },
-    video: { watermarkEnabled: false, singleStreamEnabled: true },
+    video: {
+      watermarkEnabled: false,
+      singleStreamEnabled: true,
+      enabledVideoProviders: [...defaultEnabledVideoProviders],
+    },
   };
 }
 
