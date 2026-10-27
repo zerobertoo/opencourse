@@ -170,7 +170,10 @@ export function VideoSection({
   const useLink = handleSubmit(async ({ url }) => {
     setFormError(null);
     const plugin = resolveVideoUrl(url)?.plugin;
-    if (plugin && enabledProviders && !enabledProviders.includes(plugin)) {
+    // asked again here: an admin may have changed the list since this page loaded it
+    const currentProviders =
+      (await settings.refetch()).data?.video.enabledVideoProviders ?? enabledProviders;
+    if (plugin && currentProviders && !currentProviders.includes(plugin)) {
       setFormError(
         t('studio:video.providerOff', { provider: findVideoProvider(plugin)?.label ?? plugin }),
       );
@@ -303,7 +306,9 @@ export function VideoSection({
                 </Button>
               </form>
               <p className="text-xs text-muted-foreground">
-                {t('studio:video.supportedProviders', { providers: providerLabels })}
+                {providerLabels
+                  ? t('studio:video.supportedProviders', { providers: providerLabels })
+                  : t('studio:video.noProviders')}
               </p>
             </TabsContent>
           </Tabs>

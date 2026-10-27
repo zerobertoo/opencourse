@@ -21,7 +21,7 @@ export const videoProviders: readonly VideoProviderPlugin[] = [
 
 /**
  * Providers a fresh instance takes new links from. The others need the owner's own account or
- * accept arbitrary hosts, so an admin turns them on in Settings → Video.
+ * accept arbitrary hosts, so an admin turns them on in Administration → Plugins.
  */
 export const defaultEnabledVideoProviders: readonly string[] = ['youtube', 'vimeo'];
 

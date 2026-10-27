@@ -8,8 +8,8 @@ import {
 import type {
   CreateApiKeyRequest,
   CreateWebhookRequest,
-  PlatformSettings,
   Role,
+  UpdatePlatformSettingsRequest,
   UpdateWebhookRequest,
   WebhookDelivery,
 } from '@opencourse/shared';
@@ -117,7 +117,7 @@ export function useUpdateSettings() {
   const { settings } = useServices();
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (patch: Partial<PlatformSettings>) => settings.update(patch),
+    mutationFn: (patch: UpdatePlatformSettingsRequest) => settings.update(patch),
     onSuccess: (saved) => queryClient.setQueryData(studioKeys.settings, saved),
   });
 }

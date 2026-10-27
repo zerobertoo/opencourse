@@ -1,4 +1,4 @@
-import { videoProviders } from '@opencourse/shared';
+import { findVideoProvider, videoProviders } from '@opencourse/shared';
 import { KeyRound, PlugZap, Video, Webhook } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
@@ -26,12 +26,12 @@ export function AdminPlugins() {
 
   /** Saves the list at once; lessons that already use a provider keep playing either way. */
   const toggle = async (providerId: string, turnOn: boolean) => {
-    if (!settings.data) return;
-    const next = turnOn
-      ? [...settings.data.video.enabledVideoProviders, providerId]
-      : settings.data.video.enabledVideoProviders.filter((id) => id !== providerId);
+    if (!enabledProviders) return;
+    // an id the registry no longer knows would make the API refuse the whole list, so it is dropped
+    const kept = enabledProviders.filter((id) => id !== providerId && findVideoProvider(id));
+    const next = turnOn ? [...kept, providerId] : kept;
     try {
-      await update.mutateAsync({ video: { ...settings.data.video, enabledVideoProviders: next } });
+      await update.mutateAsync({ video: { enabledVideoProviders: next } });
       toast.success(t('plugins.videoProviders.saved'));
     } catch (error) {
       toast.error(describeError(error));
@@ -92,6 +92,7 @@ export function AdminPlugins() {
         >
           {videoProviders.map((provider) => {
             const enabled = enabledProviders?.includes(provider.id) ?? false;
+            // nothing is claimed about a provider until the settings have loaded
             return (
               <li key={provider.id} className="flex min-w-0">
                 <Card className="flex w-full items-center gap-3 p-3">
@@ -101,24 +102,32 @@ export function AdminPlugins() {
                   <span className="min-w-0 flex-1 truncate text-sm font-medium">
                     {provider.label}
                   </span>
-                  <Badge variant={enabled ? 'success' : undefined}>
-                    {t(enabled ? 'plugins.videoProviders.on' : 'plugins.videoProviders.off')}
-                  </Badge>
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant="outline"
-                    disabled={!settings.data || update.isPending}
-                    aria-label={t(
-                      enabled ? 'plugins.videoProviders.turnOff' : 'plugins.videoProviders.turnOn',
-                      { provider: provider.label },
-                    )}
-                    onClick={() => toggle(provider.id, !enabled)}
-                  >
-                    {t(
-                      enabled ? 'plugins.videoProviders.disable' : 'plugins.videoProviders.enable',
-                    )}
-                  </Button>
+                  {enabledProviders ? (
+                    <>
+                      <Badge variant={enabled ? 'success' : undefined}>
+                        {t(enabled ? 'plugins.videoProviders.on' : 'plugins.videoProviders.off')}
+                      </Badge>
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="outline"
+                        disabled={update.isPending}
+                        aria-label={t(
+                          enabled
+                            ? 'plugins.videoProviders.turnOff'
+                            : 'plugins.videoProviders.turnOn',
+                          { provider: provider.label },
+                        )}
+                        onClick={() => toggle(provider.id, !enabled)}
+                      >
+                        {t(
+                          enabled
+                            ? 'plugins.videoProviders.disable'
+                            : 'plugins.videoProviders.enable',
+                        )}
+                      </Button>
+                    </>
+                  ) : null}
                 </Card>
               </li>
             );

@@ -9,9 +9,6 @@ import { hashPassword } from '../auth/passwords';
 import { toExternalVideo } from '../modules/courses/lesson-fields';
 import type { Database } from '../plugins/db';
 import * as schema from './schema';
-
-// the demo content may use any provider, whatever the settings enable
-const allVideoProviderIds = videoProviders.map((provider) => provider.id);
 import {
   courses,
   courseTranslations,
@@ -22,6 +19,9 @@ import {
   modules,
   users,
 } from './schema';
+
+// the demo content may use any provider, whatever the settings enable
+const allVideoProviderIds = videoProviders.map((provider) => provider.id);
 
 /** Development password shared by every demo account. Never used outside development. */
 export const DEMO_PASSWORD = 'demo-password-123';

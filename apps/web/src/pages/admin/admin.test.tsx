@@ -229,8 +229,9 @@ describe('admin plugins', () => {
       ]),
     );
     const isOn = (item: HTMLElement) => within(item).queryByText('Ligado') !== null;
+    // the badges appear once the settings have loaded
+    await waitFor(() => expect(providers.filter(isOn)).toHaveLength(2));
     const on = providers.filter(isOn).map((item) => item.textContent);
-    expect(on).toHaveLength(2);
     expect(on[0]).toContain('YouTube');
     expect(on[1]).toContain('Vimeo');
   });

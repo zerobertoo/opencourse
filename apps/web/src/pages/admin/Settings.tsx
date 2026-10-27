@@ -1,5 +1,9 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { SUPPORTED_LOCALES, type PlatformSettings } from '@opencourse/shared';
+import {
+  SUPPORTED_LOCALES,
+  type PlatformSettings,
+  type UpdatePlatformSettingsRequest,
+} from '@opencourse/shared';
 import { useState } from 'react';
 import { useForm, useWatch } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
@@ -31,11 +35,8 @@ function toFormValues(settings: PlatformSettings): PlatformSettingsFormValues {
   };
 }
 
-// the provider list is edited on the Plugins page, so a save here keeps what is stored
-function toSettingsPatch(
-  values: PlatformSettingsFormValues,
-  current: PlatformSettings,
-): PlatformSettings {
+// the provider list is edited on the Plugins page and left out here, so a save keeps what is stored
+function toSettingsPatch(values: PlatformSettingsFormValues): UpdatePlatformSettingsRequest {
   return {
     brand: {
       name: values.brandName,
@@ -54,7 +55,6 @@ function toSettingsPatch(
     video: {
       watermarkEnabled: values.watermarkEnabled,
       singleStreamEnabled: values.singleStreamEnabled,
-      enabledVideoProviders: current.video.enabledVideoProviders,
     },
   };
 }
@@ -79,7 +79,7 @@ function SettingsForm({ settings }: { settings: PlatformSettings }) {
   const onSubmit = handleSubmit(async (values) => {
     setFormError(null);
     try {
-      const saved = await update.mutateAsync(toSettingsPatch(values, settings));
+      const saved = await update.mutateAsync(toSettingsPatch(values));
       reset(toFormValues(saved));
       toast.success(t('admin:settings.savedToast'));
     } catch (error) {

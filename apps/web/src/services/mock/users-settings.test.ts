@@ -172,6 +172,24 @@ describe('mock settings service', () => {
     ).rejects.toMatchObject({ code: 'validation' });
   });
 
+  it('keeps the video provider list when a patch leaves it out, and refuses unknown providers', async () => {
+    const { services } = await createServicesSignedInAs('marina');
+    const turnedOn = await services.settings.update({
+      video: { enabledVideoProviders: ['panda'] },
+    });
+    expect(turnedOn.video.enabledVideoProviders).toEqual(['panda']);
+
+    const otherChange = await services.settings.update({ video: { watermarkEnabled: true } });
+    expect(otherChange.video).toMatchObject({
+      watermarkEnabled: true,
+      enabledVideoProviders: ['panda'],
+    });
+
+    await expect(
+      services.settings.update({ video: { enabledVideoProviders: ['nope'] } }),
+    ).rejects.toMatchObject({ code: 'validation' });
+  });
+
   it('validates the data', async () => {
     const { services } = await createServicesSignedInAs('marina');
     await expect(
