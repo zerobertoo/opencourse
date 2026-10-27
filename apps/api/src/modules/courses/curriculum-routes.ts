@@ -24,7 +24,9 @@ import {
   modules,
   videoAssets,
 } from '../../db/schema';
+import type { Config } from '../../config';
 import { badRequest, conflict } from '../../errors';
+import { loadPlatformSettings } from '../settings/service';
 import { deleteLessonFiles, deleteUnreferencedCaptionFiles } from '../files/service';
 import { deleteVideoFiles, videoAssetsOfLessons } from '../video/service';
 import { requireManagedCourse } from './access';
@@ -38,7 +40,10 @@ import {
 } from './curriculum';
 import { DEFAULT_QUIZ, toLessonColumns } from './lesson-fields';
 
-export const curriculumRoutes: FastifyPluginAsyncZod = async (app) => {
+export const curriculumRoutes: FastifyPluginAsyncZod<{ config: Config }> = async (
+  app,
+  { config },
+) => {
   /** Course owning the module, under the course rules: unknown and invisible look the same. */
   async function managedCourseOfModule(request: FastifyRequest, moduleId: string) {
     const course = await findCourseOfModule(app.db, moduleId);
@@ -228,7 +233,10 @@ export const curriculumRoutes: FastifyPluginAsyncZod = async (app) => {
       const { course, lesson } = await managedLesson(request, request.params.id);
       const { translations, ...fields } = request.body;
       // validate before opening the transaction
-      const columns = toLessonColumns(lesson.type, fields);
+      const enabledProviders = fields.video
+        ? (await loadPlatformSettings(app.db, config)).video.enabledVideoProviders
+        : [];
+      const columns = toLessonColumns(lesson.type, fields, enabledProviders);
       const removedCaptions = uploadedCaptionsToRemove(lesson, fields.captions);
       // a pasted link (or removing the video) replaces an uploaded file, so its files go too
       const replacedVideoIds =

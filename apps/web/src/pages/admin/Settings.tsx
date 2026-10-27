@@ -31,7 +31,11 @@ function toFormValues(settings: PlatformSettings): PlatformSettingsFormValues {
   };
 }
 
-function toSettingsPatch(values: PlatformSettingsFormValues): PlatformSettings {
+// the provider list is edited on the Plugins page, so a save here keeps what is stored
+function toSettingsPatch(
+  values: PlatformSettingsFormValues,
+  current: PlatformSettings,
+): PlatformSettings {
   return {
     brand: {
       name: values.brandName,
@@ -50,6 +54,7 @@ function toSettingsPatch(values: PlatformSettingsFormValues): PlatformSettings {
     video: {
       watermarkEnabled: values.watermarkEnabled,
       singleStreamEnabled: values.singleStreamEnabled,
+      enabledVideoProviders: current.video.enabledVideoProviders,
     },
   };
 }
@@ -74,7 +79,7 @@ function SettingsForm({ settings }: { settings: PlatformSettings }) {
   const onSubmit = handleSubmit(async (values) => {
     setFormError(null);
     try {
-      const saved = await update.mutateAsync(toSettingsPatch(values));
+      const saved = await update.mutateAsync(toSettingsPatch(values, settings));
       reset(toFormValues(saved));
       toast.success(t('admin:settings.savedToast'));
     } catch (error) {

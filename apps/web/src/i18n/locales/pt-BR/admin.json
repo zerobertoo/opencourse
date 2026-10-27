@@ -171,9 +171,15 @@
     "comingSoon": "Em breve",
     "videoProviders": {
       "title": "Provedores de vídeo",
-      "description": "Links desses provedores podem ser incorporados nas aulas em vídeo. Cada um é um pequeno plugin no código, então adicionar outro não exige mudanças em mais nada.",
+      "description": "Os instrutores só podem colar links dos provedores que estão ligados. Desligar um não afeta as aulas que já o usam: elas continuam tocando. Cada provedor é um pequeno plugin no código, então adicionar outro não exige mudanças em mais nada.",
       "listLabel": "Provedores de vídeo",
-      "installed": "Instalado"
+      "on": "Ligado",
+      "off": "Desligado",
+      "enable": "Ligar",
+      "disable": "Desligar",
+      "turnOn": "Ligar {provider}",
+      "turnOff": "Desligar {provider}",
+      "saved": "Provedores de vídeo salvos."
     },
     "items": {
       "webhooks": {

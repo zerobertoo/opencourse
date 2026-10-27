@@ -267,6 +267,12 @@ export function createMockCurriculumService(context: MockContext): CurriculumSer
           if (!resolved) {
             throw new ServiceError('validation', 'Not a link from a supported video provider');
           }
+          if (!store.db.settings.video.enabledVideoProviders.includes(resolved.plugin)) {
+            throw new ServiceError(
+              'validation',
+              'This video provider is turned off in the platform settings',
+            );
+          }
           uploadTokens.delete(lessonId);
           return changeCourse(course, () => {
             lesson.video = { provider: 'external', status: 'ready', ...resolved };

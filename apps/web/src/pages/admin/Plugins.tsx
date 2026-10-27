@@ -2,8 +2,12 @@ import { videoProviders } from '@opencourse/shared';
 import { KeyRound, PlugZap, Video, Webhook } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
+import { toast } from 'sonner';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
+import { usePlatformSettings, useUpdateSettings } from '@/hooks/adminQueries';
+import { useServiceErrorMessage } from '@/lib/serviceError';
 
 /** Extension points of the platform; the ones with a `to` already have an admin screen. */
 const EXTENSIONS = [
@@ -15,6 +19,24 @@ const EXTENSIONS = [
 /** Lists the extension points, linking to the ones that are available and marking the rest. */
 export function AdminPlugins() {
   const { t } = useTranslation('admin');
+  const settings = usePlatformSettings();
+  const update = useUpdateSettings();
+  const describeError = useServiceErrorMessage();
+  const enabledProviders = settings.data?.video.enabledVideoProviders;
+
+  /** Saves the list at once; lessons that already use a provider keep playing either way. */
+  const toggle = async (providerId: string, turnOn: boolean) => {
+    if (!settings.data) return;
+    const next = turnOn
+      ? [...settings.data.video.enabledVideoProviders, providerId]
+      : settings.data.video.enabledVideoProviders.filter((id) => id !== providerId);
+    try {
+      await update.mutateAsync({ video: { ...settings.data.video, enabledVideoProviders: next } });
+      toast.success(t('plugins.videoProviders.saved'));
+    } catch (error) {
+      toast.error(describeError(error));
+    }
+  };
 
   return (
     <section aria-labelledby="admin-plugins-heading" className="space-y-4">
@@ -68,19 +90,39 @@ export function AdminPlugins() {
           className="grid grid-cols-1 gap-3 sm:grid-cols-2"
           aria-label={t('plugins.videoProviders.listLabel')}
         >
-          {videoProviders.map((provider) => (
-            <li key={provider.id} className="flex min-w-0">
-              <Card className="flex w-full items-center gap-3 p-3">
-                <span className="grid size-9 shrink-0 place-items-center rounded-md bg-muted text-muted-foreground">
-                  <Video className="size-4" aria-hidden="true" />
-                </span>
-                <span className="min-w-0 flex-1 truncate text-sm font-medium">
-                  {provider.label}
-                </span>
-                <Badge variant="success">{t('plugins.videoProviders.installed')}</Badge>
-              </Card>
-            </li>
-          ))}
+          {videoProviders.map((provider) => {
+            const enabled = enabledProviders?.includes(provider.id) ?? false;
+            return (
+              <li key={provider.id} className="flex min-w-0">
+                <Card className="flex w-full items-center gap-3 p-3">
+                  <span className="grid size-9 shrink-0 place-items-center rounded-md bg-muted text-muted-foreground">
+                    <Video className="size-4" aria-hidden="true" />
+                  </span>
+                  <span className="min-w-0 flex-1 truncate text-sm font-medium">
+                    {provider.label}
+                  </span>
+                  <Badge variant={enabled ? 'success' : undefined}>
+                    {t(enabled ? 'plugins.videoProviders.on' : 'plugins.videoProviders.off')}
+                  </Badge>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    disabled={!settings.data || update.isPending}
+                    aria-label={t(
+                      enabled ? 'plugins.videoProviders.turnOff' : 'plugins.videoProviders.turnOn',
+                      { provider: provider.label },
+                    )}
+                    onClick={() => toggle(provider.id, !enabled)}
+                  >
+                    {t(
+                      enabled ? 'plugins.videoProviders.disable' : 'plugins.videoProviders.enable',
+                    )}
+                  </Button>
+                </Card>
+              </li>
+            );
+          })}
         </ul>
       </section>
     </section>

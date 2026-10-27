@@ -1,4 +1,11 @@
-import type { Certificate, Grant, Progress, QuizAttempt, User } from '@opencourse/shared';
+import {
+  defaultEnabledVideoProviders,
+  type Certificate,
+  type Grant,
+  type Progress,
+  type QuizAttempt,
+  type User,
+} from '@opencourse/shared';
 import type { MockDatabase, StoredInvite } from '../store';
 import { buildDesignCourse } from './course-design';
 import { buildJavascriptCourse } from './course-javascript';
@@ -272,7 +279,11 @@ function buildSettings(): MockDatabase['settings'] {
       fromAddress: 'nao-responda@opencourse.example',
       secure: false,
     },
-    video: { watermarkEnabled: false, singleStreamEnabled: true },
+    video: {
+      watermarkEnabled: false,
+      singleStreamEnabled: true,
+      enabledVideoProviders: [...defaultEnabledVideoProviders],
+    },
   };
 }
 

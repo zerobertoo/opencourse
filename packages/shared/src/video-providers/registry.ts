@@ -19,6 +19,12 @@ export const videoProviders: readonly VideoProviderPlugin[] = [
   directPlugin,
 ];
 
+/**
+ * Providers a fresh instance takes new links from. The others need the owner's own account or
+ * accept arbitrary hosts, so an admin turns them on in Settings → Video.
+ */
+export const defaultEnabledVideoProviders: readonly string[] = ['youtube', 'vimeo'];
+
 export interface ResolvedVideoLink {
   plugin: string;
   externalId: string;

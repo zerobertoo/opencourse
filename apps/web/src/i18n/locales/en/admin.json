@@ -171,9 +171,15 @@
     "comingSoon": "Coming soon",
     "videoProviders": {
       "title": "Video providers",
-      "description": "Links from these providers can be embedded in video lessons. Each one is a small plugin in the code, so adding another needs no changes elsewhere.",
+      "description": "Instructors can paste links only from the providers that are on. Turning one off does not affect lessons that already use it: they keep playing. Each provider is a small plugin in the code, so adding another needs no changes elsewhere.",
       "listLabel": "Video providers",
-      "installed": "Installed"
+      "on": "On",
+      "off": "Off",
+      "enable": "Turn on",
+      "disable": "Turn off",
+      "turnOn": "Turn on {provider}",
+      "turnOff": "Turn off {provider}",
+      "saved": "Video providers saved."
     },
     "items": {
       "webhooks": {

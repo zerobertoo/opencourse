@@ -4,6 +4,14 @@ All notable changes to OpenCourse. Releases are tagged `vX.Y.Z`; the PRD in [doc
 
 ## Unreleased
 
+### Added
+
+- Video providers can be turned on and off under Administration → Plugins. Instructors can paste links only from the providers that are on; lessons that already use a provider that is later turned off keep playing. A fresh instance has YouTube and Vimeo on and the other providers (Bunny, Cloudflare, Panda, Google Drive, direct file links) off.
+
+### Changed
+
+- On upgrade, an instance that never saved the setting gets that default, so an admin who already pastes links from one of the other providers has to turn it on under Plugins before adding new ones.
+
 ## 1.0.0 (2026-10-27)
 
 First stable release. The PRD v1 success criteria are verified in [docs/acceptance-v1.md](docs/acceptance-v1.md). Changes since [v0.1.1](https://github.com/zerobertoo/opencourse/compare/v0.1.1...v1.0.0).

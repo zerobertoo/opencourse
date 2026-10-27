@@ -144,6 +144,35 @@ describe('lesson routes', () => {
     expect(insecure.statusCode).toBe(400);
   });
 
+  it('takes links only from the video providers the admin turned on', async () => {
+    const { cast, lesson } = await draftWithLesson();
+    const video = await insertLesson(ctx.app, lesson.moduleId, 2, { title: 'V', type: 'video' });
+    const url = `/api/v1/lessons/${video.id}`;
+    const pandaLink = {
+      video: {
+        url: 'https://player-vz-1.tv.pandavideo.com.br/embed/?v=11111111-1111-4111-8111-111111111111',
+      },
+    };
+
+    // Panda Video is off on a fresh instance, a default provider is on
+    expect((await cast.instructorA.client.patch(url, pandaLink)).statusCode).toBe(400);
+    const youtube = { video: { url: 'https://youtu.be/dQw4w9WgXcQ' } };
+    expect((await cast.instructorA.client.patch(url, youtube)).statusCode).toBe(200);
+
+    const turnedOn = await cast.admin.client.patch('/api/v1/admin/settings', {
+      video: { enabledVideoProviders: ['panda'] },
+    });
+    expect(turnedOn.statusCode).toBe(200);
+    expect((await cast.instructorA.client.patch(url, pandaLink)).statusCode).toBe(200);
+    // YouTube is off now: a new YouTube link is refused
+    expect((await cast.instructorA.client.patch(url, youtube)).statusCode).toBe(400);
+
+    const unknown = await cast.admin.client.patch('/api/v1/admin/settings', {
+      video: { enabledVideoProviders: ['nope'] },
+    });
+    expect(unknown.statusCode).toBe(400);
+  });
+
   it('deletes a lesson and renumbers the rest of its module', async () => {
     const { cast, courseModule, lesson } = await draftWithLesson();
     const middle = await insertLesson(ctx.app, courseModule.id, 1, { title: 'Middle' });

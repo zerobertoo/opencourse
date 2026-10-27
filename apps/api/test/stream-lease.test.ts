@@ -200,7 +200,10 @@ describe('one stream per account', () => {
     const patch = (video: object) => cast.admin.client.patch('/api/v1/admin/settings', { video });
     expect((await patch({ singleStreamEnabled: false })).statusCode).toBe(200);
     const saved = await patch({ watermarkEnabled: true });
-    expect(saved.json().video).toEqual({ watermarkEnabled: true, singleStreamEnabled: false });
+    expect(saved.json().video).toMatchObject({
+      watermarkEnabled: true,
+      singleStreamEnabled: false,
+    });
   });
 
   it('does nothing while the platform setting is off', async () => {
@@ -217,6 +220,7 @@ describe('one stream per account', () => {
     expect(saved.json().video).toEqual({
       watermarkEnabled: false,
       singleStreamEnabled: false,
+      enabledVideoProviders: ['youtube', 'vimeo'],
     });
     expect((await getKey(phoneKey)).statusCode).toBe(200);
     expect(await heartbeat(phone, assetId, 'beat')).toBe(true);
@@ -278,7 +282,12 @@ describe('one stream per account', () => {
       },
     });
     const loaded = await loadPlatformSettings(ctx.app.db, ctx.config);
-    expect(loaded.video).toEqual({ watermarkEnabled: true, singleStreamEnabled: true });
+    // an upgrade keeps the platform usable: the default providers are on until an admin changes them
+    expect(loaded.video).toEqual({
+      watermarkEnabled: true,
+      singleStreamEnabled: true,
+      enabledVideoProviders: ['youtube', 'vimeo'],
+    });
   });
 });
 

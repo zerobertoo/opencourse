@@ -1,5 +1,11 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { findVideoProvider, videoProviders, type Lesson, type Locale } from '@opencourse/shared';
+import {
+  findVideoProvider,
+  resolveVideoUrl,
+  videoProviders,
+  type Lesson,
+  type Locale,
+} from '@opencourse/shared';
 import { FileText, Trash2, Upload, Video } from 'lucide-react';
 import { useId, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
@@ -11,6 +17,7 @@ import { TextField } from '@/components/TextField';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { usePlatformSettings } from '@/hooks/adminQueries';
 import { useCurriculumMutations } from '@/hooks/studioQueries';
 import { formatClock } from '@/lib/duration';
 import { FileTooLargeError, MOCK_UPLOAD_LIMIT_BYTES, readFileAsDataUrl } from '@/lib/files';
@@ -133,7 +140,13 @@ export function VideoSection({
   const isBusy = status === 'processing' || status === 'uploading';
   const [uploadProgress, setUploadProgress] = useState<number | null>(null);
   const isUploading = uploadProgress !== null;
-  const providerLabels = videoProviders.map((provider) => provider.label).join(', ');
+  const settings = usePlatformSettings();
+  // the settings load fast; until then every provider is listed and the server has the last word
+  const enabledProviders = settings.data?.video.enabledVideoProviders;
+  const providerLabels = videoProviders
+    .filter((provider) => !enabledProviders || enabledProviders.includes(provider.id))
+    .map((provider) => provider.label)
+    .join(', ');
 
   const upload = async (files: File[]) => {
     const file = files[0];
@@ -156,6 +169,13 @@ export function VideoSection({
 
   const useLink = handleSubmit(async ({ url }) => {
     setFormError(null);
+    const plugin = resolveVideoUrl(url)?.plugin;
+    if (plugin && enabledProviders && !enabledProviders.includes(plugin)) {
+      setFormError(
+        t('studio:video.providerOff', { provider: findVideoProvider(plugin)?.label ?? plugin }),
+      );
+      return;
+    }
     try {
       await setVideo.mutateAsync({ lessonId: lesson.id, source: { provider: 'external', url } });
       reset();
