@@ -82,7 +82,6 @@ export function VideoPlayer({
     callbacksRef.current.onPositionChange(Math.floor(currentRef.current));
   }, []);
 
-  // save the position when leaving the lesson
   useEffect(() => flushPosition, [flushPosition]);
 
   const mediaProps = {

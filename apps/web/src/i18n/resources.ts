@@ -13,7 +13,6 @@ import enPlayer from './locales/en/player.json';
 import enStudent from './locales/en/student.json';
 import enStudio from './locales/en/studio.json';
 
-/** Namespaces by application area. */
 export const NAMESPACES = [
   'common',
   'auth',

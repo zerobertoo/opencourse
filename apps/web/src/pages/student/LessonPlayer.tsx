@@ -227,7 +227,6 @@ export function LessonPlayer() {
   const setCompleted = useSetLessonCompleted(course?.id ?? '');
   const saveVideoPosition = useSaveVideoPosition(course?.id ?? '');
 
-  // every lesson opens at the top of the page
   useEffect(() => {
     window.scrollTo(0, 0);
   }, [lessonId]);

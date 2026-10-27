@@ -33,7 +33,6 @@ function StateFrame({
   );
 }
 
-/** Empty state with a call to action. */
 export function EmptyState(props: StateProps) {
   return <StateFrame icon={<Inbox className="size-6" aria-hidden="true" />} {...props} />;
 }
@@ -63,7 +62,6 @@ export function ErrorState({
   );
 }
 
-/** Full-page loading skeleton. */
 export function PageSkeleton() {
   const { t } = useTranslation();
   return (

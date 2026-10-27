@@ -38,7 +38,6 @@ function EditorSkeleton() {
   );
 }
 
-/** Tabbed course editor of the Studio. */
 export function CourseEditor() {
   const { t, i18n } = useTranslation(['studio', 'common']);
   const { courseId = '', tab } = useParams();
