@@ -1,6 +1,37 @@
-# PRD v1 acceptance: criteria 3 and 4
+# PRD v1 acceptance
 
-Verified on 2026-10-22 against `main` at `7da8f67` plus the tests added with this document.
+Criteria 1, 2 and 5 were verified on 2026-10-27 against `main` at `d6e71a3` on a clean checkout. Criteria 3 and 4 were verified on 2026-10-22 and are guarded by automated tests that still run in CI.
+
+## Criterion 1: one command brings up the platform
+
+> `docker compose up` brings up the complete, working platform.
+
+| Check | Result |
+| --- | --- |
+| `docker compose down -v`, then `docker compose --env-file .env.example up -d --build --wait` with `AUTH_SECRET` set: postgres, redis, storage, mailpit, migrate, storage-init, api, worker and web all end healthy or exited 0 | Pass |
+
+## Criterion 2: instructor to certificate
+
+> An instructor creates a course with video, text and quiz, grants access, and the student completes it and downloads the certificate.
+
+| Check | Result |
+| --- | --- |
+| End-to-end suite against that stack (`pnpm --filter @opencourse/api test:e2e`, rate limit disabled): 18 passed, 1 skipped, including the full journey with a provider video lesson | Pass |
+
+The certificate PDF is rendered on the client, so the download itself is not covered by the API suite.
+
+## Criterion 5: outside contributor
+
+> An outside contributor can run, test and open a PR following only CONTRIBUTING.
+
+| Check | Result |
+| --- | --- |
+| Fresh clone, `pnpm install --frozen-lockfile`, `pnpm lint`, `tsc --noEmit` in api, web and shared: clean | Pass |
+| Fresh clone tests with the data stack up: shared 140, api 384, web 522 passed | Pass |
+
+Three web tests (the demo video player) timed out once when turbo ran every package in parallel and passed when the web suite ran alone; they are load-sensitive, not failing.
+
+# Criteria 3 and 4
 
 ## Criterion 3: language switching
 
