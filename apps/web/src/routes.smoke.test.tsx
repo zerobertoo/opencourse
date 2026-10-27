@@ -63,7 +63,6 @@ describe.each(Object.entries(ROLES))('%s navigation', (role, routes) => {
   it.each(routes)('opens %s without errors', async (route) => {
     await renderApp(route, { signInAs: role as keyof typeof ROLES });
 
-    // The page has a heading and the loading skeleton is gone.
     expect(await screen.findAllByRole('heading')).not.toHaveLength(0);
     await waitFor(() => expect(screen.queryByRole('status', { busy: true })).toBeNull());
 
