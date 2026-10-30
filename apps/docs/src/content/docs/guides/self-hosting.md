@@ -15,16 +15,18 @@ git clone https://github.com/zerobertoo/opencourse.git
 cd opencourse
 cp .env.example .env
 # replace AUTH_SECRET, for example with the output of: openssl rand -base64 48
-docker compose up -d --build
+docker compose --profile dev up -d --build   # the dev profile adds Mailpit
 curl localhost:3000/health
 ```
+
+For a real deployment, drop `--profile dev` and set `SMTP_*`: Mailpit only captures e-mails, it never delivers them, and its inbox has no login.
 
 The compose file applies the migrations, then starts the API and the worker. The first account created on an instance becomes its admin; everyone after that starts as a student.
 
 | Service  | URL                                   | Notes                                    |
 | -------- | ------------------------------------- | ---------------------------------------- |
 | API      | http://localhost:3000                 | OpenAPI reference at `/docs`             |
-| Mailpit  | http://localhost:8025                 | catches every e-mail sent in development |
+| Mailpit  | http://localhost:8025                 | `--profile dev` only: catches every e-mail |
 | Storage  | http://localhost:9001/rustfs/console/ | S3 API on port 9000, bucket `opencourse` |
 | Postgres | localhost:5432                        | user, password and database `opencourse` |
 | Redis    | localhost:6379                        |                                          |

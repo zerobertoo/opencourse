@@ -18,11 +18,11 @@ Requirements: Docker (with Compose). To work on the code you also need Node 22.2
 
 ```bash
 cp .env.example .env     # then replace AUTH_SECRET, for example with: openssl rand -base64 48
-docker compose up -d --build
+docker compose --profile dev up -d --build   # the dev profile adds Mailpit
 curl localhost:3000/health
 ```
 
-The compose file applies the migrations and starts the API (http://localhost:3000, OpenAPI reference at `/docs`), the worker, the web app, Postgres, Redis, S3-compatible storage and Mailpit (http://localhost:8025, catches every e-mail sent in development). The first account created on an instance becomes its admin. Every credential in `.env.example` is a development default: change them all before a real deployment.
+The compose file applies the migrations and starts the API (http://localhost:3000, OpenAPI reference at `/docs`), the worker, the web app, Postgres, Redis and S3-compatible storage. The `dev` profile also starts Mailpit (http://localhost:8025), which catches every e-mail instead of delivering it; leave it out of a real deployment and set `SMTP_*`. The first account created on an instance becomes its admin. Every credential in `.env.example` is a development default: change them all before a real deployment.
 
 Already running Postgres, Redis and S3-compatible storage? Use the app-only setup (`compose.app.yaml`). Both setups are described in the [self-hosting guide](https://zerobertoo.github.io/opencourse/docs/guides/self-hosting/).
 
