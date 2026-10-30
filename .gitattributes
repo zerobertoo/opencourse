@@ -1,4 +1,4 @@
-* text=auto
+* text=auto eol=lf
 # scripts and container files must keep LF, or they break inside Linux containers
 *.sh text eol=lf
 Dockerfile text eol=lf
