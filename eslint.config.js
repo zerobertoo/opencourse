@@ -52,6 +52,20 @@ export default tseslint.config(
     },
   },
   {
+    // form controls go through components/ui so they look and behave the same in every browser
+    files: ['apps/web/src/**/*.tsx'],
+    ignores: ['apps/web/src/components/ui/**', '**/*.test.tsx'],
+    rules: {
+      'no-restricted-syntax': [
+        'error',
+        {
+          selector: 'JSXOpeningElement[name.name=/^(select|textarea|input)$/]',
+          message: 'Use the form controls from components/ui instead of native elements.',
+        },
+      ],
+    },
+  },
+  {
     // components only know the `@/services` interfaces, never the mock implementation
     files: ['apps/web/src/**/*.{ts,tsx}'],
     ignores: ['apps/web/src/services/**', 'apps/web/src/test/**', '**/*.test.{ts,tsx}'],
