@@ -200,17 +200,14 @@ export function LessonPanel({
             label={t('studio:lesson.module')}
             value={moduleId ?? ''}
             disabled={mutations.reorder.isPending}
-            onChange={(event) =>
-              void reorder(moveLessonToModule(layout, lesson.id, event.target.value))
-            }
-          >
-            {course.modules.map((courseModule) => (
-              <option key={courseModule.id} value={courseModule.id}>
-                {localizeModuleTitle(courseModule, uiLocale, course.defaultLocale) ||
-                  t('studio:content.untitled')}
-              </option>
-            ))}
-          </SelectField>
+            onValueChange={(next) => void reorder(moveLessonToModule(layout, lesson.id, next))}
+            options={course.modules.map((courseModule) => ({
+              value: courseModule.id,
+              label:
+                localizeModuleTitle(courseModule, uiLocale, course.defaultLocale) ||
+                t('studio:content.untitled'),
+            }))}
+          />
           <div className="flex flex-wrap gap-2">
             <Button
               variant="outline"

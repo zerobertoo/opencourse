@@ -8,6 +8,7 @@ import type { MockServices } from '@/services/mock';
 import { findLesson } from '@/services/mock/helpers';
 import { renderApp } from '@/test/render';
 import { demoId } from '@/services/mock/seed/ids';
+import { chooseOption } from '@/test/select';
 
 beforeEach(async () => {
   await i18n.changeLanguage('pt-BR');
@@ -452,7 +453,7 @@ describe('settings', () => {
     const name = await screen.findByLabelText('Nome');
     await user.clear(name);
     await user.type(name, 'Lucas F. Silva');
-    await user.selectOptions(within(screen.getByRole('main')).getByLabelText('Idioma'), 'en');
+    await chooseOption(user, within(screen.getByRole('main')).getByLabelText('Idioma'), 'English');
     await user.click(screen.getByRole('button', { name: 'Salvar perfil' }));
 
     expect(await screen.findByRole('heading', { level: 1, name: 'Settings' })).toBeVisible();

@@ -4,7 +4,12 @@ import { useState } from 'react';
 import { useForm, useWatch } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
-import { FormError, SelectField } from '@/components/FormFields';
+import {
+  FormDateField,
+  FormError,
+  FormRadioGroupField,
+  FormSelectField,
+} from '@/components/FormFields';
 import { Spinner } from '@/components/Spinner';
 import { TextField } from '@/components/TextField';
 import { Button } from '@/components/ui/button';
@@ -42,13 +47,7 @@ export function GrantAccessDialog({
   const { createGrant } = useGrantMutations(courseId);
   const describeError = useServiceErrorMessage();
   const [formError, setFormError] = useState<string | null>(null);
-  const {
-    register,
-    handleSubmit,
-    reset,
-    control,
-    formState: { errors },
-  } = useForm<GrantAccessValues>({
+  const { handleSubmit, reset, control } = useForm<GrantAccessValues>({
     resolver: zodResolver(grantAccessSchema),
     defaultValues: { userId: '', access: 'lifetime', expiresOn: '' },
   });
@@ -89,46 +88,40 @@ export function GrantAccessDialog({
         <DialogDescription>{t('studio:students.grant.description')}</DialogDescription>
         <form onSubmit={onSubmit} noValidate className="mt-4 space-y-4">
           <FormError message={formError} />
-          <SelectField
+          <FormSelectField
+            control={control}
+            name="userId"
             label={t('studio:students.grant.student')}
-            error={errors.userId}
             disabled={candidates.isPending}
-            {...register('userId')}
-          >
-            <option value="">{t('studio:students.grant.studentPlaceholder')}</option>
-            {available.map((user) => (
-              <option key={user.id} value={user.id}>
-                {user.name} ({user.email})
-              </option>
-            ))}
-          </SelectField>
+            options={[
+              { value: '', label: t('studio:students.grant.studentPlaceholder') },
+              ...available.map((user) => ({
+                value: user.id,
+                label: `${user.name} (${user.email})`,
+              })),
+            ]}
+          />
           {candidates.isError ? (
             <p role="alert" className="text-sm text-destructive">
               {t('studio:students.grant.loadError')}
             </p>
           ) : null}
 
-          <fieldset className="space-y-2">
-            <legend className="text-sm font-medium">{t('studio:students.grant.access')}</legend>
-            {(['lifetime', 'until'] as const).map((value) => (
-              <label key={value} className="flex items-center gap-2 text-sm">
-                <input
-                  type="radio"
-                  value={value}
-                  className="size-5 accent-primary"
-                  {...register('access')}
-                />
-                {t(`studio:students.grant.accessOption.${value}`)}
-              </label>
-            ))}
-          </fieldset>
+          <FormRadioGroupField
+            control={control}
+            name="access"
+            legend={t('studio:students.grant.access')}
+            options={(['lifetime', 'until'] as const).map((value) => ({
+              value,
+              label: t(`studio:students.grant.accessOption.${value}`),
+            }))}
+          />
           {access === 'until' ? (
-            <TextField
-              type="date"
+            <FormDateField
+              control={control}
+              name="expiresOn"
               label={t('studio:students.grant.expiresOn')}
               min={tomorrowInputValue()}
-              error={errors.expiresOn}
-              {...register('expiresOn')}
             />
           ) : null}
 
@@ -165,6 +158,7 @@ export function InviteDialog({
   const [copied, setCopied] = useState(false);
   const {
     register,
+    control,
     handleSubmit,
     reset,
     formState: { errors },
@@ -244,17 +238,15 @@ export function InviteDialog({
               error={errors.email}
               {...register('email')}
             />
-            <SelectField
+            <FormSelectField
+              control={control}
+              name="validityDays"
               label={t('studio:students.invite.validity')}
-              error={errors.validityDays}
-              {...register('validityDays')}
-            >
-              {INVITE_VALIDITY_DAYS.map((days) => (
-                <option key={days} value={days}>
-                  {t('studio:students.invite.validityOption', { count: Number(days) })}
-                </option>
-              ))}
-            </SelectField>
+              options={INVITE_VALIDITY_DAYS.map((days) => ({
+                value: days,
+                label: t('studio:students.invite.validityOption', { count: Number(days) }),
+              }))}
+            />
             <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
               <Button type="button" variant="outline" onClick={() => close(false)}>
                 {t('common:actions.cancel')}

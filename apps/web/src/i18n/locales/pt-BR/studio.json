@@ -81,7 +81,6 @@
     "cover": {
       "title": "Imagem de capa",
       "hint": "PNG, JPEG ou WebP, até {max} MB. Sem imagem, o curso recebe uma capa gerada.",
-      "fileLabel": "Arquivo da imagem de capa",
       "upload": "Enviar imagem",
       "replace": "Trocar imagem",
       "remove": "Remover imagem",

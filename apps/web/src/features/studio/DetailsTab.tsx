@@ -11,7 +11,7 @@ import { useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { toast } from 'sonner';
-import { FormError, SelectField, TextAreaField } from '@/components/FormFields';
+import { FormError, FormSelectField, TextAreaField } from '@/components/FormFields';
 import { Spinner } from '@/components/Spinner';
 import { TextField } from '@/components/TextField';
 import { Button } from '@/components/ui/button';
@@ -57,6 +57,7 @@ export function DetailsTab({ course }: { course: CourseDetail }) {
   const [formError, setFormError] = useState<string | null>(null);
   const {
     register,
+    control,
     handleSubmit,
     reset,
     formState: { errors, isDirty },
@@ -109,19 +110,17 @@ export function DetailsTab({ course }: { course: CourseDetail }) {
     <form onSubmit={onSubmit} noValidate className="max-w-3xl space-y-5">
       <FormError message={formError} />
 
-      <SelectField
+      <FormSelectField
+        control={control}
+        name="defaultLocale"
         label={t('studio:details.defaultLanguage')}
         hint={t('studio:details.defaultLanguageHint')}
-        error={errors.defaultLocale}
         className="max-w-xs"
-        {...register('defaultLocale')}
-      >
-        {locales.map((locale) => (
-          <option key={locale} value={locale}>
-            {t(`common:language.${locale}`)}
-          </option>
-        ))}
-      </SelectField>
+        options={locales.map((locale) => ({
+          value: locale,
+          label: t(`common:language.${locale}`),
+        }))}
+      />
 
       <Card className="p-4 sm:p-5">
         <LocaleTabs

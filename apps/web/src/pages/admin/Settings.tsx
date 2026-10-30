@@ -8,7 +8,7 @@ import { useState } from 'react';
 import { useForm, useWatch } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
-import { CheckboxField, FormError, SelectField } from '@/components/FormFields';
+import { FormCheckboxField, FormError, FormSelectField } from '@/components/FormFields';
 import { Spinner } from '@/components/Spinner';
 import { ErrorState, PageSkeleton } from '@/components/StateViews';
 import { TextField } from '@/components/TextField';
@@ -131,11 +131,12 @@ function SettingsForm({ settings }: { settings: PlatformSettings }) {
         <fieldset className="space-y-3">
           <legend className="text-sm font-medium">{t('admin:settings.languages.enabled')}</legend>
           {SUPPORTED_LOCALES.map((locale) => (
-            <CheckboxField
+            <FormCheckboxField
               key={locale}
+              control={control}
+              name="enabledLocales"
               label={t(`common:language.${locale}`)}
               value={locale}
-              {...register('enabledLocales')}
             />
           ))}
           {errors.enabledLocales?.message ? (
@@ -145,18 +146,16 @@ function SettingsForm({ settings }: { settings: PlatformSettings }) {
           ) : null}
         </fieldset>
         <div className="max-w-sm">
-          <SelectField
+          <FormSelectField
+            control={control}
+            name="defaultLocale"
             label={t('admin:settings.languages.default')}
             hint={t('admin:settings.languages.defaultHint')}
-            error={errors.defaultLocale}
-            {...register('defaultLocale')}
-          >
-            {SUPPORTED_LOCALES.map((locale) => (
-              <option key={locale} value={locale}>
-                {t(`common:language.${locale}`)}
-              </option>
-            ))}
-          </SelectField>
+            options={SUPPORTED_LOCALES.map((locale) => ({
+              value: locale,
+              label: t(`common:language.${locale}`),
+            }))}
+          />
         </div>
       </Card>
 
@@ -193,10 +192,11 @@ function SettingsForm({ settings }: { settings: PlatformSettings }) {
             {...register('fromAddress')}
           />
         </div>
-        <CheckboxField
+        <FormCheckboxField
+          control={control}
+          name="secure"
           label={t('admin:settings.email.secure')}
           hint={t('admin:settings.email.secureHint')}
-          {...register('secure')}
         />
       </Card>
 
@@ -204,15 +204,17 @@ function SettingsForm({ settings }: { settings: PlatformSettings }) {
         <h3 id="settings-video" className="text-lg font-semibold">
           {t('admin:settings.video.title')}
         </h3>
-        <CheckboxField
+        <FormCheckboxField
+          control={control}
+          name="watermarkEnabled"
           label={t('admin:settings.video.watermark')}
           hint={t('admin:settings.video.watermarkHint')}
-          {...register('watermarkEnabled')}
         />
-        <CheckboxField
+        <FormCheckboxField
+          control={control}
+          name="singleStreamEnabled"
           label={t('admin:settings.video.singleStream')}
           hint={t('admin:settings.video.singleStreamHint')}
-          {...register('singleStreamEnabled')}
         />
       </Card>
 

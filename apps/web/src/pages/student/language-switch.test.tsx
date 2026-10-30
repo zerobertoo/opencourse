@@ -4,6 +4,7 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import i18n from '@/i18n';
 import { buildSqlCourse } from '@/services/mock/seed/course-others';
 import { renderApp } from '@/test/render';
+import { chooseOption } from '@/test/select';
 
 // PRD v1 acceptance criterion 3: switching the language changes interface and content without
 // reloading, with a fallback to the course default language when a translation is missing.
@@ -23,7 +24,7 @@ describe('language switching on the course page', () => {
     });
     expect(screen.queryByText(/ainda não foi traduzido/)).not.toBeInTheDocument();
 
-    await user.selectOptions(screen.getByRole('combobox', { name: 'Idioma' }), 'en');
+    await chooseOption(user, screen.getByRole('combobox', { name: 'Idioma' }), 'English');
 
     await waitFor(() => expect(heading).toHaveTextContent('Modern JavaScript Fundamentals'));
     // the heading node captured before the switch is still the one on screen (no remount)
@@ -44,7 +45,7 @@ describe('language switching on the course page', () => {
     await screen.findByRole('heading', { level: 1, name: originalTitle });
     expect(screen.queryByText(/ainda não foi traduzido/)).not.toBeInTheDocument();
 
-    await user.selectOptions(screen.getByRole('combobox', { name: 'Idioma' }), 'en');
+    await chooseOption(user, screen.getByRole('combobox', { name: 'Idioma' }), 'English');
 
     // interface switches, content stays in the default language (queried again after the switch)
     expect(await screen.findByText(/has not been translated yet and is shown in/)).toBeVisible();

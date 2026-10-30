@@ -4,6 +4,7 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import i18n from '@/i18n';
 import { renderApp } from '@/test/render';
 import { demoId } from '@/services/mock/seed/ids';
+import { chooseOption } from '@/test/select';
 
 beforeEach(async () => {
   await i18n.changeLanguage('pt-BR');
@@ -80,7 +81,7 @@ describe('studio course list', () => {
     );
     expect(screen.getByRole('link', { name: /Análise de Dados com SQL/ })).toBeVisible();
 
-    await user.selectOptions(screen.getByLabelText('Filtrar por status'), 'archived');
+    await chooseOption(user, screen.getByLabelText('Filtrar por status'), 'Arquivado');
     expect(await screen.findByText('Nenhum curso encontrado')).toBeVisible();
     await user.click(screen.getByRole('button', { name: 'Limpar filtros' }));
     expect(await screen.findByRole('link', { name: JS_TITLE })).toBeVisible();
@@ -234,7 +235,7 @@ describe('course editor: content', () => {
     const { services } = await renderApp(`${SQL_EDITOR}/content`, { signInAs: 'instructor' });
 
     await user.click(await lessonButton('Seu primeiro SELECT'));
-    await user.selectOptions(await screen.findByLabelText('Módulo'), demoId('mod-sql-2'));
+    await chooseOption(user, await screen.findByLabelText('Módulo'), 'Junções e agregações');
     await waitFor(async () => {
       const course = await services.courses.getById(demoId('course-sql'));
       expect(course.modules[1]?.lessons.some((lesson) => lesson.id === demoId('les-sql-1-1'))).toBe(
@@ -304,7 +305,7 @@ describe('course editor: quiz builder', () => {
 
     await user.click(await lessonButton('Quiz: consultas básicas'));
     const passing = await screen.findByLabelText('Nota mínima para passar (%)');
-    expect(passing).toHaveValue(60);
+    expect(passing).toHaveValue('60');
     await user.clear(passing);
     await user.type(passing, '80');
 
@@ -359,15 +360,19 @@ describe('course editor: students', () => {
     expect(await within(dialog).findByText('Preencha este campo.')).toBeVisible();
 
     const select = within(dialog).getByLabelText('Aluno');
-    await waitFor(() => expect(within(select).getAllByRole('option').length).toBeGreaterThan(1));
+    await waitFor(() => expect(select).toBeEnabled());
+    await user.click(select);
+    const listbox = await screen.findByRole('listbox');
     // students who already have active access are not offered
-    expect(within(select).queryByRole('option', { name: /Lucas/ })).not.toBeInTheDocument();
-    await user.selectOptions(select, demoId('user-thiago'));
+    expect(within(listbox).queryByRole('option', { name: /Lucas/ })).not.toBeInTheDocument();
+    await user.click(within(listbox).getByRole('option', { name: /Thiago Moreira/ }));
     await user.click(within(dialog).getByLabelText('Até uma data'));
     await user.click(within(dialog).getByRole('button', { name: 'Conceder acesso' }));
     expect(await within(dialog).findByText('Escolha uma data.')).toBeVisible();
 
-    await user.type(within(dialog).getByLabelText('O acesso termina em'), '2099-12-31');
+    await user.click(within(dialog).getByLabelText('O acesso termina em'));
+    await user.click(screen.getByRole('button', { name: 'Próximo mês' }));
+    await user.click(within(screen.getByRole('gridcell', { name: '15' })).getByRole('button'));
     await user.click(within(dialog).getByRole('button', { name: 'Conceder acesso' }));
 
     expect(await screen.findByText('Acesso concedido.')).toBeVisible();
@@ -375,7 +380,10 @@ describe('course editor: students', () => {
       courseId: demoId('course-sql'),
       userId: demoId('user-thiago'),
     });
-    expect(grants[0]?.expiresAt).toMatch(/^2099-12-31|^2100-01-01/);
+    const expected = new Date();
+    expected.setMonth(expected.getMonth() + 1, 15);
+    expect(new Date(grants[0]!.expiresAt!).getDate()).toBe(15);
+    expect(new Date(grants[0]!.expiresAt!).getMonth()).toBe(expected.getMonth());
   });
 
   it('creates an invite and shows its link', async () => {

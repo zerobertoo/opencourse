@@ -4,6 +4,7 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import i18n from '@/i18n';
 import { renderApp } from '@/test/render';
 import { demoId } from '@/services/mock/seed/ids';
+import { chooseOption } from '@/test/select';
 
 beforeEach(async () => {
   await i18n.changeLanguage('pt-BR');
@@ -46,11 +47,11 @@ describe('admin users', () => {
     expect(screen.getByText('Daniel Whitaker')).toBeVisible();
 
     await user.clear(screen.getByLabelText('Buscar usuários'));
-    await user.selectOptions(screen.getByLabelText('Filtrar por papel'), 'instructor');
+    await chooseOption(user, screen.getByLabelText('Filtrar por papel'), 'Instrutor');
     await waitFor(async () => expect(await listItems('Usuários')).toHaveLength(2));
 
-    await user.selectOptions(screen.getByLabelText('Filtrar por papel'), '');
-    await user.selectOptions(screen.getByLabelText('Filtrar por situação'), 'inactive');
+    await chooseOption(user, screen.getByLabelText('Filtrar por papel'), 'Todos os papéis');
+    await chooseOption(user, screen.getByLabelText('Filtrar por situação'), 'Desativado');
     await waitFor(async () => expect(await listItems('Usuários')).toHaveLength(1));
     expect(screen.getByText('Diego Rocha')).toBeVisible();
   });
@@ -83,7 +84,7 @@ describe('admin users', () => {
 
     await user.click(await screen.findByRole('button', { name: 'Editar Lucas Ferreira' }));
     const dialog = await screen.findByRole('dialog', { name: 'Editar usuário' });
-    await user.selectOptions(within(dialog).getByLabelText('Papel'), 'instructor');
+    await chooseOption(user, within(dialog).getByLabelText('Papel'), 'Instrutor');
     await user.click(within(dialog).getByRole('button', { name: 'Salvar' }));
 
     await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
@@ -147,17 +148,17 @@ describe('admin grants', () => {
     expect(rows.length).toBeGreaterThan(10);
     expect(within(rows[0]!).getByText(/@opencourse\.example/)).toBeVisible();
 
-    await user.selectOptions(screen.getByLabelText('Filtrar por situação'), 'revoked');
+    await chooseOption(user, screen.getByLabelText('Filtrar por situação'), 'Revogado');
     await waitFor(async () => expect(await listItems('Concessões de acesso')).toHaveLength(1));
     expect(screen.getByText('Juliana Prado')).toBeVisible();
 
-    await user.selectOptions(screen.getByLabelText('Filtrar por situação'), 'expired');
+    await chooseOption(user, screen.getByLabelText('Filtrar por situação'), 'Expirado');
     await waitFor(async () => {
       const expired = await listItems('Concessões de acesso');
       expect(expired.every((row) => within(row).queryByText('Expirado'))).toBe(true);
     });
 
-    await user.selectOptions(screen.getByLabelText('Filtrar por situação'), '');
+    await chooseOption(user, screen.getByLabelText('Filtrar por situação'), 'Todas as situações');
     await user.type(screen.getByLabelText('Buscar por aluno'), 'thiago');
     await waitFor(async () => expect(await listItems('Concessões de acesso')).toHaveLength(2));
   });

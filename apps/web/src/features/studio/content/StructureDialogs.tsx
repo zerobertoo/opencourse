@@ -7,7 +7,7 @@ import {
   type Locale,
 } from '@opencourse/shared';
 import { useState } from 'react';
-import { useForm } from 'react-hook-form';
+import { Controller, useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { FormError } from '@/components/FormFields';
 import { LessonTypeIcon } from '@/components/LessonTypeIcon';
@@ -15,6 +15,7 @@ import { Spinner } from '@/components/Spinner';
 import { TextField } from '@/components/TextField';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@/components/ui/dialog';
+import { RadioGroup, RadioOption } from '@/components/ui/radio-group';
 import {
   moduleTitlesSchema,
   newLessonSchema,
@@ -227,6 +228,7 @@ export function NewLessonDialog({
   const [formError, setFormError] = useState<string | null>(null);
   const {
     register,
+    control,
     handleSubmit,
     reset,
     formState: { errors, isSubmitting },
@@ -266,23 +268,34 @@ export function NewLessonDialog({
         <FormError message={formError} />
         <fieldset className="space-y-2">
           <legend className="text-sm font-medium">{t('studio:content.newLesson.type')}</legend>
-          <div className="grid gap-2 sm:grid-cols-2">
-            {lessonTypeSchema.options.map((type) => (
-              <label
-                key={type}
-                className="flex cursor-pointer items-start gap-3 rounded-lg border bg-surface p-3 text-sm has-[:checked]:border-primary has-[:checked]:bg-accent has-[:focus-visible]:outline has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-ring"
+          <Controller
+            control={control}
+            name="type"
+            render={({ field }) => (
+              <RadioGroup
+                value={field.value}
+                onValueChange={field.onChange}
+                onBlur={field.onBlur}
+                className="sm:grid-cols-2"
               >
-                <input type="radio" value={type} className="sr-only" {...register('type')} />
-                <LessonTypeIcon type={type} className="mt-0.5 size-4 shrink-0" />
-                <span className="space-y-0.5">
-                  <span className="block font-medium">{t(`common:lessonTypes.${type}`)}</span>
-                  <span className="block text-xs text-muted-foreground">
-                    {t(`studio:content.newLesson.typeHint.${type}`)}
-                  </span>
-                </span>
-              </label>
-            ))}
-          </div>
+                {lessonTypeSchema.options.map((type) => (
+                  <RadioOption
+                    key={type}
+                    value={type}
+                    className="items-start rounded-lg border bg-surface p-3 has-[[data-state=checked]]:border-primary has-[[data-state=checked]]:bg-accent"
+                  >
+                    <LessonTypeIcon type={type} className="mt-0.5 size-4 shrink-0" />
+                    <span className="space-y-0.5">
+                      <span className="block font-medium">{t(`common:lessonTypes.${type}`)}</span>
+                      <span className="block text-xs text-muted-foreground">
+                        {t(`studio:content.newLesson.typeHint.${type}`)}
+                      </span>
+                    </span>
+                  </RadioOption>
+                ))}
+              </RadioGroup>
+            )}
+          />
         </fieldset>
         <TextField
           label={t('studio:content.newLesson.name')}

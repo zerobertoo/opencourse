@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
-import { FormError, SelectField } from '@/components/FormFields';
+import { FormError, FormSelectField } from '@/components/FormFields';
 import { Spinner } from '@/components/Spinner';
 import { TextField } from '@/components/TextField';
 import { Button } from '@/components/ui/button';
@@ -35,6 +35,7 @@ export function InviteUserDialog({
   const [copied, setCopied] = useState(false);
   const {
     register,
+    control,
     handleSubmit,
     reset,
     formState: { errors },
@@ -113,17 +114,15 @@ export function InviteUserDialog({
               error={errors.email}
               {...register('email')}
             />
-            <SelectField
+            <FormSelectField
+              control={control}
+              name="validityDays"
               label={t('admin:users.invite.validity')}
-              error={errors.validityDays}
-              {...register('validityDays')}
-            >
-              {INVITE_VALIDITY_DAYS.map((days) => (
-                <option key={days} value={days}>
-                  {t('admin:users.invite.validityOption', { count: Number(days) })}
-                </option>
-              ))}
-            </SelectField>
+              options={INVITE_VALIDITY_DAYS.map((days) => ({
+                value: days,
+                label: t('admin:users.invite.validityOption', { count: Number(days) }),
+              }))}
+            />
             <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
               <Button type="button" variant="outline" onClick={() => close(false)}>
                 {t('common:actions.cancel')}

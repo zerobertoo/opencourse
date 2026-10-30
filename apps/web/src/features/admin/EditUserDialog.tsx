@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
-import { FormError, SelectField } from '@/components/FormFields';
+import { FormError, FormSelectField } from '@/components/FormFields';
 import { Spinner } from '@/components/Spinner';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@/components/ui/dialog';
@@ -18,11 +18,7 @@ export function EditUserDialog({ user, onClose }: { user: User; onClose: () => v
   const { updateRole } = useUserMutations();
   const describeError = useServiceErrorMessage();
   const [formError, setFormError] = useState<string | null>(null);
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-  } = useForm<EditUserValues>({
+  const { control, handleSubmit } = useForm<EditUserValues>({
     resolver: zodResolver(editUserSchema),
     defaultValues: { role: user.role },
   });
@@ -47,18 +43,16 @@ export function EditUserDialog({ user, onClose }: { user: User; onClose: () => v
         </DialogDescription>
         <form onSubmit={onSubmit} noValidate className="mt-4 space-y-4">
           <FormError message={formError} />
-          <SelectField
+          <FormSelectField
+            control={control}
+            name="role"
             label={t('admin:users.edit.role')}
             hint={t('admin:users.edit.roleHint')}
-            error={errors.role}
-            {...register('role')}
-          >
-            {roleSchema.options.map((role) => (
-              <option key={role} value={role}>
-                {t(`admin:roles.${role}`)}
-              </option>
-            ))}
-          </SelectField>
+            options={roleSchema.options.map((role) => ({
+              value: role,
+              label: t(`admin:roles.${role}`),
+            }))}
+          />
           <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
             <Button type="button" variant="outline" onClick={onClose}>
               {t('common:actions.cancel')}

@@ -10,7 +10,8 @@ import { EmptyState, ErrorState } from '@/components/StateViews';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { Input, Select } from '@/components/ui/input';
+import { Input } from '@/components/ui/input';
+import { Select } from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
 import { CourseStatusBadge } from '@/features/studio/CourseStatusBadge';
 import { NewCourseDialog } from '@/features/studio/NewCourseDialog';
@@ -184,15 +185,15 @@ export function StudioCourses() {
           <Select
             id="studio-status"
             value={status ?? ''}
-            onChange={(event) => updateParam('status', event.target.value)}
-          >
-            <option value="">{t('studio:courses.allStatuses')}</option>
-            {courseStatusSchema.options.map((option) => (
-              <option key={option} value={option}>
-                {t(`common:courseStatus.${option}`)}
-              </option>
-            ))}
-          </Select>
+            onValueChange={(next) => updateParam('status', next)}
+            options={[
+              { value: '', label: t('studio:courses.allStatuses') },
+              ...courseStatusSchema.options.map((option) => ({
+                value: option,
+                label: t(`common:courseStatus.${option}`),
+              })),
+            ]}
+          />
         </div>
       </div>
 

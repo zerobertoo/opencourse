@@ -8,7 +8,7 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
-import { CheckboxField, FormError } from '@/components/FormFields';
+import { FormCheckboxField, FormError } from '@/components/FormFields';
 import { Spinner } from '@/components/Spinner';
 import { TextField } from '@/components/TextField';
 import { Button } from '@/components/ui/button';
@@ -34,6 +34,7 @@ export function WebhookFormDialog({
   const [formError, setFormError] = useState<string | null>(null);
   const {
     register,
+    control,
     handleSubmit,
     formState: { errors },
   } = useForm<WebhookFormValues>({
@@ -94,12 +95,13 @@ export function WebhookFormDialog({
             <legend className="text-sm font-medium">{t('admin:webhooks.form.events')}</legend>
             <p className="text-sm text-muted-foreground">{t('admin:webhooks.form.eventsHint')}</p>
             {domainEventNameSchema.options.map((name) => (
-              <CheckboxField
+              <FormCheckboxField
                 key={name}
+                control={control}
+                name="events"
                 label={t(`admin:webhooks.events.${webhookEventKey(name)}`)}
                 hint={name}
                 value={name}
-                {...register('events')}
               />
             ))}
             {errors.events?.message ? (

@@ -3,6 +3,7 @@ import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it } from 'vitest';
 import i18n from './i18n';
 import { renderApp } from './test/render';
+import { chooseOption } from '@/test/select';
 
 beforeEach(async () => {
   await i18n.changeLanguage('pt-BR');
@@ -18,10 +19,10 @@ describe('language switching', () => {
     ).toBeInTheDocument();
     expect(document.documentElement.lang).toBe('pt-BR');
 
-    await user.selectOptions(screen.getByRole('combobox', { name: 'Idioma' }), 'en');
+    await chooseOption(user, screen.getByRole('combobox', { name: 'Idioma' }), 'English');
 
     expect(screen.getByRole('heading', { level: 1, name: 'Component guide' })).toBeInTheDocument();
-    expect(screen.getByRole('combobox', { name: 'Language' })).toHaveValue('en');
+    expect(screen.getByRole('combobox', { name: 'Language' })).toHaveTextContent('English');
     expect(document.documentElement.lang).toBe('en');
     expect(localStorage.getItem('opencourse.language')).toBe('en');
   });
@@ -34,7 +35,7 @@ describe('language switching', () => {
     expect(screen.getByText('12 aulas')).toBeInTheDocument();
     expect(screen.getByText('1.234.567,89')).toBeInTheDocument();
 
-    await user.selectOptions(screen.getByRole('combobox', { name: 'Idioma' }), 'en');
+    await chooseOption(user, screen.getByRole('combobox', { name: 'Idioma' }), 'English');
 
     expect(screen.getByText('12 lessons')).toBeInTheDocument();
     expect(screen.getByText('1,234,567.89')).toBeInTheDocument();

@@ -9,7 +9,8 @@ import { ConfirmDialog } from '@/components/ConfirmDialog';
 import { EmptyState, ErrorState } from '@/components/StateViews';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Input, Select } from '@/components/ui/input';
+import { Input } from '@/components/ui/input';
+import { Select } from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
 import { EditUserDialog } from '@/features/admin/EditUserDialog';
 import { InviteUserDialog } from '@/features/admin/InviteUserDialog';
@@ -212,15 +213,15 @@ export function AdminUsers() {
           <Select
             id="admin-users-role"
             value={role ?? ''}
-            onChange={(event) => updateParam('role', event.target.value)}
-          >
-            <option value="">{t('admin:users.allRoles')}</option>
-            {roleSchema.options.map((option) => (
-              <option key={option} value={option}>
-                {t(`admin:roles.${option}`)}
-              </option>
-            ))}
-          </Select>
+            onValueChange={(next) => updateParam('role', next)}
+            options={[
+              { value: '', label: t('admin:users.allRoles') },
+              ...roleSchema.options.map((option) => ({
+                value: option,
+                label: t(`admin:roles.${option}`),
+              })),
+            ]}
+          />
         </div>
         <div>
           <label htmlFor="admin-users-status" className="sr-only">
@@ -229,12 +230,13 @@ export function AdminUsers() {
           <Select
             id="admin-users-status"
             value={status ?? ''}
-            onChange={(event) => updateParam('status', event.target.value)}
-          >
-            <option value="">{t('admin:users.allStatuses')}</option>
-            <option value="active">{t('admin:users.status.active')}</option>
-            <option value="inactive">{t('admin:users.status.inactive')}</option>
-          </Select>
+            onValueChange={(next) => updateParam('status', next)}
+            options={[
+              { value: '', label: t('admin:users.allStatuses') },
+              { value: 'active', label: t('admin:users.status.active') },
+              { value: 'inactive', label: t('admin:users.status.inactive') },
+            ]}
+          />
         </div>
       </div>
 

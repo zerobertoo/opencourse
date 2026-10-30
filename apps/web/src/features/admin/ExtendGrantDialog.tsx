@@ -4,9 +4,8 @@ import { useState } from 'react';
 import { useForm, useWatch } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
-import { FormError } from '@/components/FormFields';
+import { FormDateField, FormError, FormRadioGroupField } from '@/components/FormFields';
 import { Spinner } from '@/components/Spinner';
-import { TextField } from '@/components/TextField';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@/components/ui/dialog';
 import { useAdminGrantMutations } from '@/hooks/adminQueries';
@@ -32,12 +31,7 @@ export function ExtendGrantDialog({
   const { extend } = useAdminGrantMutations();
   const describeError = useServiceErrorMessage();
   const [formError, setFormError] = useState<string | null>(null);
-  const {
-    register,
-    handleSubmit,
-    control,
-    formState: { errors },
-  } = useForm<ExtendGrantValues>({
+  const { handleSubmit, control } = useForm<ExtendGrantValues>({
     resolver: zodResolver(extendGrantSchema),
     defaultValues: { access: 'lifetime', expiresOn: '' },
   });
@@ -63,27 +57,21 @@ export function ExtendGrantDialog({
         </DialogDescription>
         <form onSubmit={onSubmit} noValidate className="mt-4 space-y-4">
           <FormError message={formError} />
-          <fieldset className="space-y-2">
-            <legend className="text-sm font-medium">{t('admin:grants.extend.access')}</legend>
-            {(['lifetime', 'until'] as const).map((value) => (
-              <label key={value} className="flex items-center gap-2 text-sm">
-                <input
-                  type="radio"
-                  value={value}
-                  className="size-5 accent-primary"
-                  {...register('access')}
-                />
-                {t(`admin:grants.extend.accessOption.${value}`)}
-              </label>
-            ))}
-          </fieldset>
+          <FormRadioGroupField
+            control={control}
+            name="access"
+            legend={t('admin:grants.extend.access')}
+            options={(['lifetime', 'until'] as const).map((value) => ({
+              value,
+              label: t(`admin:grants.extend.accessOption.${value}`),
+            }))}
+          />
           {access === 'until' ? (
-            <TextField
-              type="date"
+            <FormDateField
+              control={control}
+              name="expiresOn"
               label={t('admin:grants.extend.expiresOn')}
               min={tomorrowInputValue()}
-              error={errors.expiresOn}
-              {...register('expiresOn')}
             />
           ) : null}
           <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">

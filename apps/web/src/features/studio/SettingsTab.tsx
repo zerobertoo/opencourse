@@ -97,11 +97,8 @@ export function SettingsTab({ course }: { course: CourseDetail }) {
           hint={t('studio:settings.order.sequentialHint')}
           checked={course.sequentialOrder}
           disabled={updateCourse.isPending}
-          onChange={(event) =>
-            void apply(
-              { sequentialOrder: event.target.checked },
-              t('studio:settings.order.savedToast'),
-            )
+          onCheckedChange={(checked) =>
+            void apply({ sequentialOrder: checked }, t('studio:settings.order.savedToast'))
           }
         />
       </Card>

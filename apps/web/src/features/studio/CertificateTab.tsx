@@ -6,7 +6,7 @@ import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import { useAuth } from '@/auth/AuthContext';
 import { CertificatePreview } from '@/components/CertificatePreview';
-import { CheckboxField, FormError, TextAreaField } from '@/components/FormFields';
+import { FormCheckboxField, FormError, TextAreaField } from '@/components/FormFields';
 import { Spinner } from '@/components/Spinner';
 import { TextField } from '@/components/TextField';
 import { Button } from '@/components/ui/button';
@@ -61,10 +61,11 @@ export function CertificateTab({ course }: { course: CourseDetail }) {
     <div className="grid gap-6 lg:grid-cols-2 lg:items-start">
       <form onSubmit={onSubmit} noValidate className="space-y-4">
         <FormError message={formError} />
-        <CheckboxField
+        <FormCheckboxField
+          control={control}
+          name="enabled"
           label={t('studio:certificate.enabled')}
           hint={t('studio:certificate.enabledHint')}
-          {...register('enabled')}
         />
         <TextField
           label={t('studio:certificate.signatoryName')}
