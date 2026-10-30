@@ -162,7 +162,8 @@ export function FormRadioGroupField<T extends FieldValues>({
   legend,
   options,
 }: FormBinding<T> & { legend: string; options: Array<{ value: string; label: string }> }) {
-  const { field } = useController({ control, name });
+  const { field, fieldState } = useController({ control, name });
+  const { t } = useTranslation();
   return (
     <fieldset>
       <legend className="text-sm font-medium">{legend}</legend>
@@ -179,6 +180,11 @@ export function FormRadioGroupField<T extends FieldValues>({
           </RadioOption>
         ))}
       </RadioGroup>
+      {fieldState.error?.message ? (
+        <p role="alert" className="text-sm text-destructive">
+          {t(fieldState.error.message as ParseKeys)}
+        </p>
+      ) : null}
     </fieldset>
   );
 }

@@ -158,7 +158,7 @@ function QuestionEditor({
           <legend className="text-sm font-medium">{t('quiz.options')}</legend>
           <p className="text-xs text-muted-foreground">{t('quiz.optionsHint')}</p>
           <RadioGroup
-            asChild
+            aria-label={t('quiz.options')}
             value={question.options.find((option) => option.isCorrect)?.id ?? ''}
             onValueChange={(optionId) =>
               onChange((quiz) => setCorrectOption(quiz, question.id, optionId))

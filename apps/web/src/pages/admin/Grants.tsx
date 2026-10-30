@@ -249,6 +249,10 @@ export function AdminGrants() {
             options={[
               { value: '', label: t('admin:grants.allCourses') },
               ...[...courseTitles].map(([id, title]) => ({ value: id, label: title })),
+              // a linked course that is still loading (or gone) keeps showing as the filter
+              ...(courseId && !courseTitles.has(courseId)
+                ? [{ value: courseId, label: courseId }]
+                : []),
             ]}
           />
         </div>

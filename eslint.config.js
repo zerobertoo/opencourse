@@ -9,6 +9,29 @@ import jsxA11y from 'eslint-plugin-jsx-a11y';
 // (String.raw keeps the `\s` escapes: in a plain string they would silently become "s")
 const PHYSICAL_CLASS_PATTERN = String.raw`(^|\s)-?(m|p)[lr]-|(^|\s)-?(left|right)-|(^|\s)text-(left|right)(\s|$)|(^|\s)(border|rounded)-[lr](-|\s|$)|(^|\s)(rounded)-(t|b)[lr](-|\s|$)`;
 
+const WEB_SYNTAX_RULES = [
+  {
+    selector: `Literal[value=/${PHYSICAL_CLASS_PATTERN}/]`,
+    message:
+      'Use logical properties (ms-, me-, ps-, pe-, start-, end-, text-start, text-end) to support RTL.',
+  },
+  {
+    selector: 'JSXText[value=/[A-Za-z0-9À-ÿ]/]',
+    message: 'No hard-coded UI strings: use react-i18next.',
+  },
+  {
+    selector:
+      'JSXAttribute[name.name=/^(aria-label|aria-description|title|placeholder|alt)$/] > Literal',
+    message: 'No hard-coded UI strings: use react-i18next.',
+  },
+];
+
+// form controls go through components/ui so they look and behave the same in every browser
+const NATIVE_CONTROL_RULE = {
+  selector: 'JSXOpeningElement[name.name=/^(select|textarea|input)$/]',
+  message: 'Use the form controls from components/ui instead of native elements.',
+};
+
 export default tseslint.config(
   { ignores: ['**/dist/**', '**/node_modules/**', '**/.turbo/**', 'docs/**'] },
   js.configs.recommended,
@@ -32,38 +55,13 @@ export default tseslint.config(
       ...reactHooks.configs.recommended.rules,
       ...jsxA11y.flatConfigs.recommended.rules,
       'react-refresh/only-export-components': ['warn', { allowConstantExport: true }],
-      'no-restricted-syntax': [
-        'error',
-        {
-          selector: `Literal[value=/${PHYSICAL_CLASS_PATTERN}/]`,
-          message:
-            'Use logical properties (ms-, me-, ps-, pe-, start-, end-, text-start, text-end) to support RTL.',
-        },
-        {
-          selector: 'JSXText[value=/[A-Za-z0-9À-ÿ]/]',
-          message: 'No hard-coded UI strings: use react-i18next.',
-        },
-        {
-          selector:
-            'JSXAttribute[name.name=/^(aria-label|aria-description|title|placeholder|alt)$/] > Literal',
-          message: 'No hard-coded UI strings: use react-i18next.',
-        },
-      ],
+      'no-restricted-syntax': ['error', ...WEB_SYNTAX_RULES, NATIVE_CONTROL_RULE],
     },
   },
   {
-    // form controls go through components/ui so they look and behave the same in every browser
-    files: ['apps/web/src/**/*.tsx'],
-    ignores: ['apps/web/src/components/ui/**', '**/*.test.tsx'],
-    rules: {
-      'no-restricted-syntax': [
-        'error',
-        {
-          selector: 'JSXOpeningElement[name.name=/^(select|textarea|input)$/]',
-          message: 'Use the form controls from components/ui instead of native elements.',
-        },
-      ],
-    },
+    // the wrappers themselves (and tests) may use native elements
+    files: ['apps/web/src/components/ui/**/*.tsx', 'apps/web/src/**/*.test.tsx'],
+    rules: { 'no-restricted-syntax': ['error', ...WEB_SYNTAX_RULES] },
   },
   {
     // components only know the `@/services` interfaces, never the mock implementation

@@ -72,7 +72,12 @@ export const NumberInput = forwardRef<HTMLInputElement, NumberInputProps>(
           onChange={(event) => {
             const text = event.target.value;
             setDraft(text);
-            if (/^-?\d+$/.test(text)) onValueChange(clamp(Number(text)));
+            if (/^-?\d+$/.test(text)) {
+              const clamped = clamp(Number(text));
+              // show what was kept when the typed number is out of range
+              if (clamped !== Number(text)) setDraft(String(clamped));
+              onValueChange(clamped);
+            }
           }}
           onBlur={() => setDraft(null)}
           onKeyDown={(event) => {
