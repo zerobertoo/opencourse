@@ -2,6 +2,7 @@ import {
   resolveVideoUrl,
   type ExternalVideoAsset,
   type LessonType,
+  quizSchema,
   type Quiz,
   type UpdateLessonRequest,
 } from '@opencourse/shared';
@@ -14,6 +15,15 @@ export type LessonColumns = Partial<
 
 /** What a new quiz lesson starts with. */
 export const DEFAULT_QUIZ: Quiz = { passingScore: 70, questions: [] };
+
+/**
+ * The quiz stored in `lessons.quiz`. The column is plain jsonb, so a row written by an older
+ * shape reads as an empty quiz instead of failing the whole course.
+ */
+export function readQuiz(stored: unknown): Quiz {
+  const parsed = quizSchema.safeParse(stored);
+  return parsed.success ? parsed.data : DEFAULT_QUIZ;
+}
 
 /**
  * Column values for a lesson update. A field that does not belong to the lesson type is

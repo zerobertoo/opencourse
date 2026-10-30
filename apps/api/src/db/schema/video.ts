@@ -1,3 +1,4 @@
+import { videoAssetStatusSchema } from '@opencourse/shared';
 import {
   bigint,
   boolean,
@@ -11,12 +12,7 @@ import {
 } from 'drizzle-orm/pg-core';
 import { lessons } from './courses';
 
-export const videoAssetStatus = pgEnum('video_asset_status', [
-  'uploading',
-  'processing',
-  'ready',
-  'error',
-]);
+export const videoAssetStatus = pgEnum('video_asset_status', videoAssetStatusSchema.enum);
 
 /** A video file sent to this instance. Links to external providers live in `lessons.video`. */
 export const videoAssets = pgTable('video_assets', {

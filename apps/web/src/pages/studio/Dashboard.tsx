@@ -13,6 +13,7 @@ import { useStudioCourses, useStudioDashboard } from '@/hooks/studioQueries';
 import { localizeCourse, toLocale } from '@/lib/content';
 import { useFormatters } from '@/lib/intl';
 import type { CourseStats } from '@/services';
+import { routes } from '@/lib/routes';
 
 /** How many courses the dashboard lists before pointing to the full list. */
 const DASHBOARD_COURSE_LIMIT = 5;
@@ -127,7 +128,7 @@ function CoursesSection({ onCreate }: { onCreate: () => void }) {
         return (
           <li key={course.id}>
             <Link
-              to={`/studio/courses/${course.id}`}
+              to={routes.studioCourse(course.id)}
               className="flex flex-col gap-2 p-4 hover:bg-muted/60 sm:flex-row sm:items-center sm:justify-between"
             >
               <span className="flex min-w-0 items-center gap-3">

@@ -1,6 +1,6 @@
 import { and, desc, eq, gt, isNull, ne } from 'drizzle-orm';
-import type { Database } from '../plugins/db';
-import { sessions, users, type SessionRow, type UserRow } from '../db/schema';
+import type { Database } from '../../plugins/db';
+import { sessions, users, type SessionRow, type UserRow } from '../../db/schema';
 import { generateToken, hashToken } from './tokens';
 
 /**

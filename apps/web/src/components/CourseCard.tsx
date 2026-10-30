@@ -7,6 +7,7 @@ import { ProgressBar } from '@/components/ui/progress';
 import { localizeCourse, toLocale } from '@/lib/content';
 import { useFormatters } from '@/lib/intl';
 import type { EnrolledCourse } from '@/services';
+import { routes } from '@/lib/routes';
 
 /** Card of an enrolled course with progress; links to the course page. */
 export function CourseCard({
@@ -39,7 +40,7 @@ export function CourseCard({
           <h3 className="text-lg font-semibold leading-snug">
             {/* the whole card is clickable through the stretched link */}
             <Link
-              to={`/courses/${course.slug}`}
+              to={routes.course(course.slug)}
               className="after:absolute after:inset-0 focus-visible:outline-none"
             >
               {title}

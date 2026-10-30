@@ -1,7 +1,7 @@
 import type { User } from '@opencourse/shared';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useMemo } from 'react';
-import { queryKeys } from '@/hooks/queries';
+import { queryKeys, queryRoots } from '@/hooks/queries';
 import { useServices } from '@/services/ServicesContext';
 import { AuthContext, type AuthContextValue } from './AuthContext';
 
@@ -18,7 +18,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const value = useMemo<AuthContextValue>(() => {
     /** Stores the user and discards cached data that belonged to the previous session. */
     const startSession = (user: User): User => {
-      queryClient.removeQueries({ predicate: (query) => query.queryKey[0] !== 'auth' });
+      queryClient.removeQueries({ predicate: (query) => query.queryKey[0] !== queryRoots.auth });
       queryClient.setQueryData(queryKeys.me, user);
       return user;
     };
@@ -37,7 +37,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         // Clearing the whole cache first would detach the session observer from its query, and
         // the app would keep showing the old user (and bounce /login straight back).
         queryClient.setQueryData(queryKeys.me, null);
-        queryClient.removeQueries({ predicate: (query) => query.queryKey[0] !== 'auth' });
+        queryClient.removeQueries({ predicate: (query) => query.queryKey[0] !== queryRoots.auth });
       },
       setUser: (user) => queryClient.setQueryData(queryKeys.me, user),
     };

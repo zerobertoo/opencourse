@@ -9,6 +9,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useFailedVideos, useRetryVideo } from '@/hooks/adminQueries';
 import { useFormatters } from '@/lib/intl';
 import { useServiceErrorMessage } from '@/lib/serviceError';
+import { routes } from '@/lib/routes';
 
 function FailedVideoRow({
   video,
@@ -29,7 +30,7 @@ function FailedVideoRow({
       <div className="min-w-0 space-y-1">
         <p className="text-sm text-muted-foreground">{video.courseTitle}</p>
         <Link
-          to={`/studio/courses/${video.courseId}`}
+          to={routes.studioCourse(video.courseId)}
           className="font-medium underline-offset-4 hover:underline"
         >
           {video.lessonTitle}

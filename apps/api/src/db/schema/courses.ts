@@ -1,4 +1,11 @@
-import type { Caption, CertificateTemplate, ExternalVideoAsset, Quiz } from '@opencourse/shared';
+import {
+  courseStatusSchema,
+  lessonTypeSchema,
+  type Caption,
+  type CertificateTemplate,
+  type ExternalVideoAsset,
+  type Quiz,
+} from '@opencourse/shared';
 import {
   boolean,
   index,
@@ -13,8 +20,8 @@ import {
 } from 'drizzle-orm/pg-core';
 import { users } from './users';
 
-export const courseStatus = pgEnum('course_status', ['draft', 'published', 'archived']);
-export const lessonType = pgEnum('lesson_type', ['video', 'text', 'file', 'quiz']);
+export const courseStatus = pgEnum('course_status', courseStatusSchema.enum);
+export const lessonType = pgEnum('lesson_type', lessonTypeSchema.enum);
 
 export const courses = pgTable(
   'courses',
@@ -90,7 +97,7 @@ export const lessons = pgTable(
     /** Video lessons only: a link to an external provider. Uploaded files live in `video_assets`. */
     video: jsonb('video').$type<ExternalVideoAsset>(),
     captions: jsonb('captions').$type<Caption[]>().notNull().default([]),
-    /** Quiz lessons only; moves to relational tables in milestone 5. */
+    /** Quiz lessons only. Plain jsonb, graded on the server; `readQuiz` validates it on read. */
     quiz: jsonb('quiz').$type<Quiz>(),
   },
   (table) => [index('lessons_module_idx').on(table.moduleId)],

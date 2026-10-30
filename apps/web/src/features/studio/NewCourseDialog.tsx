@@ -13,6 +13,7 @@ import { useCreateCourse, useEnabledLocales } from '@/hooks/studioQueries';
 import { toLocale } from '@/lib/content';
 import { newCourseSchema, type NewCourseValues } from '@/lib/schemas';
 import { useServiceErrorMessage } from '@/lib/serviceError';
+import { routes } from '@/lib/routes';
 
 /** Dialog that creates a draft course and opens it in the editor. */
 export function NewCourseDialog({
@@ -53,7 +54,7 @@ export function NewCourseDialog({
       const course = await createCourse.mutateAsync(values);
       toast.success(t('studio:newCourse.createdToast'));
       handleOpenChange(false);
-      navigate(`/studio/courses/${course.id}/details`);
+      navigate(routes.studioCourse(course.id, 'details'));
     } catch (error) {
       setFormError(describeError(error));
     }

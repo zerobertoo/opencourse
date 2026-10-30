@@ -13,6 +13,7 @@ import { useContinueLearning, useMyCertificates, useMyCourses } from '@/hooks/qu
 import { formatClock } from '@/lib/duration';
 import { localizeCourse, localizeLesson, toLocale } from '@/lib/content';
 import { useFormatters } from '@/lib/intl';
+import { routes } from '@/lib/routes';
 
 /** Large banner for the course the student should open next. */
 function HeroSection({ timeZone }: { timeZone: string }) {
@@ -49,9 +50,7 @@ function HeroSection({ timeZone }: { timeZone: string }) {
   // the banner follows the search: a query that does not match its course hides it
   if (search && !courseContent.title.toLowerCase().includes(search.toLowerCase())) return null;
   const lessonContent = resume ? localizeLesson(resume.lesson, locale, course.defaultLocale) : null;
-  const target = resume
-    ? `/courses/${course.slug}/lessons/${resume.lesson.id}`
-    : `/courses/${course.slug}`;
+  const target = resume ? routes.lesson(course.slug, resume.lesson.id) : routes.course(course.slug);
   const resumeSeconds = resume?.lesson.type === 'video' ? resume.videoPositionSeconds : 0;
 
   return (

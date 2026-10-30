@@ -21,6 +21,7 @@ import { LocaleTabs } from '@/features/studio/LocaleTabs';
 import { useEnabledLocales, useUpdateCourse } from '@/hooks/studioQueries';
 import { courseDetailsSchema, type CourseDetailsValues } from '@/lib/schemas';
 import { useServiceErrorMessage } from '@/lib/serviceError';
+import { routes } from '@/lib/routes';
 
 /** One learning outcome per line in the form, an array in the course. */
 function splitOutcomes(text: string): string[] {
@@ -166,7 +167,7 @@ export function DetailsTab({ course }: { course: CourseDetail }) {
                       })}
                     </p>
                     <Button asChild variant="outline" size="sm">
-                      <Link to={`/studio/courses/${course.id}/content`}>
+                      <Link to={routes.studioCourse(course.id, 'content')}>
                         {t('studio:translation.goToContent')}
                       </Link>
                     </Button>

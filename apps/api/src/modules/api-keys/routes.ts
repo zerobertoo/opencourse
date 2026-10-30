@@ -10,9 +10,10 @@ import {
 import { desc, eq } from 'drizzle-orm';
 import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod';
 import { recordAudit } from '../../audit';
-import { generateToken, hashToken } from '../../auth/tokens';
+import { generateToken, hashToken } from '../auth/tokens';
 import { apiKeys, type ApiKeyRow } from '../../db/schema';
 import { notFound } from '../../errors';
+import { authContext } from '../../plugins/auth';
 
 const TOKEN_PREFIX_LENGTH = 10;
 
@@ -74,12 +75,12 @@ export const apiKeyRoutes: FastifyPluginAsyncZod = async (app) => {
             name: request.body.name,
             tokenHash: hashToken(token),
             tokenPrefix: token.slice(0, TOKEN_PREFIX_LENGTH),
-            createdById: request.auth!.user.id,
+            createdById: authContext(request).user.id,
           })
           .returning();
         if (!created) throw new Error('Failed to create API key');
         await recordAudit(tx, {
-          actorId: request.auth!.user.id,
+          actorId: authContext(request).user.id,
           action: 'api_key.created',
           targetType: 'api_key',
           targetId: created.id,
@@ -119,7 +120,7 @@ export const apiKeyRoutes: FastifyPluginAsyncZod = async (app) => {
           .returning();
         if (!revoked) throw new Error('Failed to revoke API key');
         await recordAudit(tx, {
-          actorId: request.auth!.user.id,
+          actorId: authContext(request).user.id,
           action: 'api_key.revoked',
           targetType: 'api_key',
           targetId: revoked.id,

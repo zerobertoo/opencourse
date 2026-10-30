@@ -15,16 +15,17 @@ import type {
   UpdateLessonInput,
   UpdateModuleInput,
 } from '@/services';
+import { queryKeys, queryRoots } from './queries';
 import { useServices } from '@/services/ServicesContext';
 
 /** Cache keys of the Studio. Everything here is dropped when the signed-in user changes. */
 export const studioKeys = {
-  dashboard: ['studio', 'dashboard'] as const,
-  courses: (filters: CourseFilters) => ['studio', 'courses', filters] as const,
-  course: (courseId: string) => ['courses', 'id', courseId] as const,
-  students: (courseId: string) => ['studio', 'students', courseId] as const,
-  invites: (courseId: string) => ['studio', 'invites', courseId] as const,
-  assignable: ['studio', 'assignable-students'] as const,
+  dashboard: [queryRoots.studio, 'dashboard'] as const,
+  courses: (filters: CourseFilters) => [queryRoots.studio, 'courses', filters] as const,
+  course: (courseId: string) => [queryRoots.courses, 'id', courseId] as const,
+  students: (courseId: string) => [queryRoots.studio, 'students', courseId] as const,
+  invites: (courseId: string) => [queryRoots.studio, 'invites', courseId] as const,
+  assignable: [queryRoots.studio, 'assignable-students'] as const,
   settings: ['settings'] as const,
 };
 
@@ -112,7 +113,7 @@ export function useCreateCourse() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (input: CreateCourseInput) => courses.create(input),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['studio'] }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: [queryRoots.studio] }),
   });
 }
 
@@ -121,9 +122,9 @@ function useCourseSync(courseId: string) {
   const queryClient = useQueryClient();
   return (course: CourseDetail) => {
     queryClient.setQueryData(studioKeys.course(courseId), course);
-    void queryClient.invalidateQueries({ queryKey: ['studio'] });
-    void queryClient.invalidateQueries({ queryKey: ['courses', 'slug'] });
-    void queryClient.invalidateQueries({ queryKey: ['enrollments'] });
+    void queryClient.invalidateQueries({ queryKey: [queryRoots.studio] });
+    void queryClient.invalidateQueries({ queryKey: queryKeys.coursesBySlug });
+    void queryClient.invalidateQueries({ queryKey: [queryRoots.enrollments] });
   };
 }
 
@@ -242,7 +243,7 @@ export function useGrantMutations(courseId: string) {
       queryClient.invalidateQueries({ queryKey: studioKeys.students(courseId) }),
       queryClient.invalidateQueries({ queryKey: studioKeys.invites(courseId) }),
       queryClient.invalidateQueries({ queryKey: studioKeys.dashboard }),
-      queryClient.invalidateQueries({ queryKey: ['enrollments'] }),
+      queryClient.invalidateQueries({ queryKey: [queryRoots.enrollments] }),
     ]);
 
   return {

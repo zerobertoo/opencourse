@@ -6,6 +6,7 @@ import {
 import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod';
 import type { Config } from '../../config';
 import { loadPlatformSettings, updatePlatformSettings, withoutEmailDetails } from './service';
+import { authContext } from '../../plugins/auth';
 
 export const settingsRoutes: FastifyPluginAsyncZod<{ config: Config }> = async (
   app,
@@ -46,6 +47,6 @@ export const settingsRoutes: FastifyPluginAsyncZod<{ config: Config }> = async (
       },
     },
     (request): Promise<PlatformSettings> =>
-      updatePlatformSettings(app.db, config, request.body, request.auth!.user.id),
+      updatePlatformSettings(app.db, config, request.body, authContext(request).user.id),
   );
 };

@@ -17,7 +17,6 @@ import { eq, inArray } from 'drizzle-orm';
 import type { FastifyRequest } from 'fastify';
 import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod';
 import {
-  courses,
   lessons,
   lessonTranslations,
   moduleTranslations,
@@ -29,7 +28,7 @@ import { badRequest, conflict } from '../../errors';
 import { loadPlatformSettings } from '../settings/service';
 import { deleteLessonFiles, deleteUnreferencedCaptionFiles } from '../files/service';
 import { deleteVideoFiles, videoAssetsOfLessons } from '../video/service';
-import { requireManagedCourse } from './access';
+import { requireManagedCourse, requireManagedCourseById } from './access';
 import {
   changeCurriculum,
   findCourseOfLesson,
@@ -39,6 +38,7 @@ import {
   nextModulePosition,
 } from './curriculum';
 import { DEFAULT_QUIZ, toLessonColumns } from './lesson-fields';
+import { authContext } from '../../plugins/auth';
 
 export const curriculumRoutes: FastifyPluginAsyncZod<{ config: Config }> = async (
   app,
@@ -47,7 +47,7 @@ export const curriculumRoutes: FastifyPluginAsyncZod<{ config: Config }> = async
   /** Course owning the module, under the course rules: unknown and invisible look the same. */
   async function managedCourseOfModule(request: FastifyRequest, moduleId: string) {
     const course = await findCourseOfModule(app.db, moduleId);
-    return requireManagedCourse(app.db, request.auth!.user, course, 'Module not found');
+    return requireManagedCourse(app.db, authContext(request).user, course, 'Module not found');
   }
 
   /** Lesson and its course, under the course rules: unknown and invisible look the same. */
@@ -55,7 +55,7 @@ export const curriculumRoutes: FastifyPluginAsyncZod<{ config: Config }> = async
     const found = await findCourseOfLesson(app.db, lessonId);
     const course = await requireManagedCourse(
       app.db,
-      request.auth!.user,
+      authContext(request).user,
       found?.course,
       'Lesson not found',
     );
@@ -75,11 +75,11 @@ export const curriculumRoutes: FastifyPluginAsyncZod<{ config: Config }> = async
       },
     },
     async (request, reply) => {
-      const [existing] = await app.db
-        .select()
-        .from(courses)
-        .where(eq(courses.id, request.params.id));
-      const course = await requireManagedCourse(app.db, request.auth!.user, existing);
+      const course = await requireManagedCourseById(
+        app.db,
+        authContext(request).user,
+        request.params.id,
+      );
       const { title, locale } = request.body;
 
       const { course: detail, result: moduleId } = await changeCurriculum(
@@ -321,11 +321,11 @@ export const curriculumRoutes: FastifyPluginAsyncZod<{ config: Config }> = async
       },
     },
     async (request) => {
-      const [existing] = await app.db
-        .select()
-        .from(courses)
-        .where(eq(courses.id, request.params.id));
-      const course = await requireManagedCourse(app.db, request.auth!.user, existing);
+      const course = await requireManagedCourseById(
+        app.db,
+        authContext(request).user,
+        request.params.id,
+      );
       const layout = request.body.modules;
 
       // the order of the curriculum never adds or removes a publish issue

@@ -3,20 +3,34 @@ import { useEffect } from 'react';
 import type { Caption, Progress } from '@opencourse/shared';
 import { useServices } from '@/services/ServicesContext';
 
+/** First segment of every cache key, so invalidating a whole area never repeats a literal. */
+export const queryRoots = {
+  auth: 'auth',
+  admin: 'admin',
+  studio: 'studio',
+  enrollments: 'enrollments',
+  courses: 'courses',
+  users: 'users',
+} as const;
+
 /** Cache keys. Switching users discards everything that is not `auth`. */
 export const queryKeys = {
-  me: ['auth', 'me'] as const,
-  myCourses: ['enrollments', 'mine'] as const,
-  continueLearning: ['enrollments', 'continue'] as const,
-  course: (slug: string) => ['courses', 'slug', slug] as const,
-  courseAccess: (courseId: string) => ['courses', courseId, 'access'] as const,
+  me: [queryRoots.auth, 'me'] as const,
+  myCourses: [queryRoots.enrollments, 'mine'] as const,
+  continueLearning: [queryRoots.enrollments, 'continue'] as const,
+  coursesBySlug: [queryRoots.courses, 'slug'] as const,
+  course: (slug: string) => [queryRoots.courses, 'slug', slug] as const,
+  courseAccess: (courseId: string) => [queryRoots.courses, courseId, 'access'] as const,
   courseProgress: (courseId: string) => ['progress', courseId] as const,
-  user: (userId: string) => ['users', userId] as const,
+  user: (userId: string) => [queryRoots.users, userId] as const,
   certificates: ['certificates', 'mine'] as const,
   quizAttempts: (lessonId: string) => ['quiz-attempts', lessonId] as const,
   lessonNote: (lessonId: string) => ['notes', lessonId] as const,
-  invite: (token: string) => ['auth', 'invite', token] as const,
+  invite: (token: string) => [queryRoots.auth, 'invite', token] as const,
   sessions: ['sessions', 'mine'] as const,
+  videoPlayback: (assetId: string) => ['video', 'playback', assetId] as const,
+  videoCaption: (url: string) => ['video', 'caption', url] as const,
+  certificateVerification: (code: string) => ['certificates', 'verify', code] as const,
 };
 
 export function useMyCourses() {
@@ -63,7 +77,7 @@ const PLAYBACK_URL_STALE_MS = 5 * 60 * 60 * 1000;
 export function useVideoPlayback(assetId: string | undefined) {
   const { video } = useServices();
   return useQuery({
-    queryKey: ['video', 'playback', assetId ?? ''],
+    queryKey: queryKeys.videoPlayback(assetId ?? ''),
     queryFn: () => video.getPlayback(assetId!),
     enabled: assetId !== undefined,
     staleTime: PLAYBACK_URL_STALE_MS,
@@ -81,7 +95,7 @@ export function useCaptionTracks(captions: Caption[]): Caption[] {
   const { video } = useServices();
   const tracks = useQueries({
     queries: captions.map((caption) => ({
-      queryKey: ['video', 'caption', caption.url],
+      queryKey: queryKeys.videoCaption(caption.url),
       queryFn: () => video.getCaptionUrl(caption.url),
       staleTime: Infinity,
       gcTime: 0,
@@ -216,7 +230,7 @@ export function useSaveLessonNote(lessonId: string) {
 export function useVerifyCertificate(code: string) {
   const { certificates } = useServices();
   return useQuery({
-    queryKey: ['certificates', 'verify', code] as const,
+    queryKey: queryKeys.certificateVerification(code),
     queryFn: () => certificates.verify(code),
     enabled: code.trim() !== '',
   });

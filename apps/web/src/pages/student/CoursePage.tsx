@@ -27,6 +27,7 @@ import { localizeCourse, localizeLesson, localizeModuleTitle, toLocale } from '@
 import { formatClock } from '@/lib/duration';
 import { useFormatters } from '@/lib/intl';
 import { isServiceError } from '@/services';
+import { routes } from '@/lib/routes';
 
 function CoursePageSkeleton() {
   const { t } = useTranslation();
@@ -165,9 +166,7 @@ export function CoursePage() {
             </div>
             {targetLessonId ? (
               <Button asChild className="w-full sm:w-auto">
-                <Link to={`/courses/${courseQuery.data.slug}/lessons/${targetLessonId}`}>
-                  {t(ctaKey)}
-                </Link>
+                <Link to={routes.lesson(courseQuery.data.slug, targetLessonId)}>{t(ctaKey)}</Link>
               </Button>
             ) : null}
           </Card>
@@ -283,7 +282,7 @@ export function CoursePage() {
                                 </div>
                               ) : (
                                 <Link
-                                  to={`/courses/${courseQuery.data.slug}/lessons/${lesson.id}`}
+                                  to={routes.lesson(courseQuery.data.slug, lesson.id)}
                                   className="flex items-center gap-3 px-4 py-3 text-sm hover:bg-muted/60"
                                 >
                                   {row}

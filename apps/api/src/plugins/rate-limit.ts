@@ -1,7 +1,7 @@
 import rateLimit from '@fastify/rate-limit';
 import type { FastifyRequest, preHandlerAsyncHookHandler } from 'fastify';
 import fp from 'fastify-plugin';
-import { HttpError } from '../errors';
+import { tooManyRequests } from '../errors';
 
 export interface ExtraLimit {
   /** Distinguishes this counter from the others (it is part of the Redis key). */
@@ -22,8 +22,8 @@ declare module 'fastify' {
   }
 }
 
-const tooManyRequests = (ttlMs: number) =>
-  new HttpError(429, `Too many requests. Try again in ${Math.ceil(ttlMs / 1000)}s.`);
+const tooManyRequestsFor = (ttlMs: number) =>
+  tooManyRequests(`Too many requests. Try again in ${Math.ceil(ttlMs / 1000)}s.`);
 
 /**
  * Per-route limits, shared across API instances through Redis. Routes opt in with
@@ -39,7 +39,7 @@ export const rateLimitPlugin = fp<{ disabled: boolean }>(async (app, { disabled 
     // an unreachable Redis must not lock everyone out of signing in
     skipOnError: true,
     allowList: () => disabled,
-    errorResponseBuilder: (_request, context) => tooManyRequests(context.ttl),
+    errorResponseBuilder: (_request, context) => tooManyRequestsFor(context.ttl),
   });
 
   app.decorate('rateLimitBy', ({ name, max, timeWindow, key }: ExtraLimit) => {
@@ -52,7 +52,7 @@ export const rateLimitPlugin = fp<{ disabled: boolean }>(async (app, { disabled 
       const result = await check(request);
       // `isAllowed` is true only for allow-listed requests; within the limit it is still false,
       // so the real signal for going over is `isExceeded`
-      if (!result.isAllowed && result.isExceeded) throw tooManyRequests(result.ttl);
+      if (!result.isAllowed && result.isExceeded) throw tooManyRequestsFor(result.ttl);
     };
   });
 });

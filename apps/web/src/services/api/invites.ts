@@ -3,8 +3,7 @@ import type { GrantService } from '../grants';
 import type { ApiClient } from './client';
 
 /**
- * The invite half of `GrantService`, backed by the real API. Grants themselves stay with the
- * mock until the courses milestone brings real courses to grant access to.
+ * The invite half of `GrantService`, backed by the real API (the grant half is `api/grants`).
  */
 export function createApiInviteService(
   client: ApiClient,

@@ -1,8 +1,8 @@
 import { apiErrorSchema, sessionResponseSchema } from '@opencourse/shared';
 import { eq } from 'drizzle-orm';
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
-import { REFRESH_GRACE_MS } from '../src/auth/sessions';
-import { signAccessToken } from '../src/auth/tokens';
+import { REFRESH_GRACE_MS } from '../src/modules/auth/sessions';
+import { signAccessToken } from '../src/modules/auth/tokens';
 import { passwordResetTokens, sessions } from '../src/db/schema';
 import {
   createTestApp,

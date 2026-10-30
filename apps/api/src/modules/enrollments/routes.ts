@@ -8,14 +8,16 @@ import {
   type CourseStudentItem,
   type EnrolledCourseItem,
 } from '@opencourse/shared';
-import { and, desc, eq, gt, isNull, ne, or } from 'drizzle-orm';
+import { and, desc, eq, isNull, ne } from 'drizzle-orm';
 import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod';
 import { courses, grants, users } from '../../db/schema';
-import { requireManagedCourse } from '../courses/access';
+import { requireManagedCourseById } from '../courses/access';
 import { loadCourseDetail, loadCourseDetails } from '../courses/detail';
 import { toListedCourse } from '../courses/listed';
+import { activeGrantCondition } from '../grants/active';
 import { toGrant } from '../grants/mappers';
 import { loadStudentProgress, progressOf, summarizeStudent } from '../progress/stats';
+import { authContext } from '../../plugins/auth';
 
 export const enrollmentRoutes: FastifyPluginAsyncZod = async (app) => {
   /**
@@ -28,12 +30,7 @@ export const enrollmentRoutes: FastifyPluginAsyncZod = async (app) => {
       .from(grants)
       .innerJoin(courses, eq(courses.id, grants.courseId))
       .where(
-        and(
-          eq(grants.userId, userId),
-          isNull(grants.revokedAt),
-          or(isNull(grants.expiresAt), gt(grants.expiresAt, now)),
-          ne(courses.status, 'draft'),
-        ),
+        and(eq(grants.userId, userId), activeGrantCondition(now), ne(courses.status, 'draft')),
       );
     if (rows.length === 0) return [];
 
@@ -79,7 +76,7 @@ export const enrollmentRoutes: FastifyPluginAsyncZod = async (app) => {
       },
     },
     async (request) => {
-      const enrollments = await loadEnrollments(request.auth!.user.id, new Date());
+      const enrollments = await loadEnrollments(authContext(request).user.id, new Date());
       return { courses: enrollments.map((enrollment) => enrollment.item) };
     },
   );
@@ -96,7 +93,7 @@ export const enrollmentRoutes: FastifyPluginAsyncZod = async (app) => {
       },
     },
     async (request) => {
-      const enrollments = await loadEnrollments(request.auth!.user.id, new Date());
+      const enrollments = await loadEnrollments(authContext(request).user.id, new Date());
       const current = enrollments.find(
         // a finished course has no next lesson, so this also skips it
         ({ item }) => item.lastActivityAt !== null && item.progress.nextLessonId,
@@ -137,11 +134,11 @@ export const enrollmentRoutes: FastifyPluginAsyncZod = async (app) => {
       },
     },
     async (request) => {
-      const [existing] = await app.db
-        .select()
-        .from(courses)
-        .where(eq(courses.id, request.params.id));
-      const course = await requireManagedCourse(app.db, request.auth!.user, existing);
+      const course = await requireManagedCourseById(
+        app.db,
+        authContext(request).user,
+        request.params.id,
+      );
       const now = new Date();
 
       const rows = await app.db

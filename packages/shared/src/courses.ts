@@ -37,7 +37,7 @@ export type ListedCourse = z.infer<typeof listedCourseSchema>;
 export const listCoursesResponseSchema = z.object({ courses: z.array(listedCourseSchema) });
 export const courseResponseSchema = z.object({ course: courseDetailSchema });
 
-/** Links to files hosted elsewhere: https only until the storage adapter exists (milestone 4b). */
+/** Links to files hosted elsewhere: https only. */
 export const httpsUrlSchema = z
   .url()
   .max(2048)

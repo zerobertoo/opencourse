@@ -43,6 +43,7 @@ import {
 import { localizeCourse, localizeLesson, toLocale } from '@/lib/content';
 import { useServiceErrorMessage } from '@/lib/serviceError';
 import { isServiceError } from '@/services';
+import { routes } from '@/lib/routes';
 
 // Video.js and hls.js are heavy, so text and quiz lessons never download them
 const LazyVideoPlayer = lazy(() =>
@@ -260,7 +261,7 @@ export function LessonPlayer() {
   const courseTitle = localizeCourse(courseQuery.data, locale).title;
   const backToCourse = (
     <Button asChild variant="outline">
-      <Link to={`/courses/${courseQuery.data.slug}`}>{t('lesson.backToCourse')}</Link>
+      <Link to={routes.course(courseQuery.data.slug)}>{t('lesson.backToCourse')}</Link>
     </Button>
   );
 
@@ -296,7 +297,7 @@ export function LessonPlayer() {
       <EmptyState title={t('lesson.lockedTitle')} description={t('lesson.lockedDescription')}>
         {nextPending ? (
           <Button asChild>
-            <Link to={`/courses/${courseQuery.data.slug}/lessons/${nextPending}`}>
+            <Link to={routes.lesson(courseQuery.data.slug, nextPending)}>
               {t('lesson.goToPending')}
             </Link>
           </Button>
@@ -316,7 +317,7 @@ export function LessonPlayer() {
   const savedPosition =
     progressEntries.find((entry) => entry.lessonId === lesson.id)?.videoPositionSeconds ?? 0;
   const timeZone = user?.timeZone ?? 'UTC';
-  const lessonUrl = (target: Lesson) => `/courses/${courseQuery.data.slug}/lessons/${target.id}`;
+  const lessonUrl = (target: Lesson) => routes.lesson(courseQuery.data.slug, target.id);
 
   const toggleCompleted = (completed: boolean) => {
     setCompleted.mutate(
@@ -342,7 +343,7 @@ export function LessonPlayer() {
     <div className="space-y-5">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <Link
-          to={`/courses/${courseQuery.data.slug}`}
+          to={routes.course(courseQuery.data.slug)}
           className="inline-flex min-w-0 items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"
         >
           <ArrowLeft className="size-4 shrink-0 rtl:rotate-180" aria-hidden="true" />

@@ -5,7 +5,7 @@ import { videoProviders, type Locale, type Quiz, type Role } from '@opencourse/s
 import { and, eq, inArray } from 'drizzle-orm';
 import { drizzle } from 'drizzle-orm/postgres-js';
 import postgres from 'postgres';
-import { hashPassword } from '../auth/passwords';
+import { hashPassword } from '../modules/auth/passwords';
 import { toExternalVideo } from '../modules/courses/lesson-fields';
 import type { Database } from '../plugins/db';
 import * as schema from './schema';

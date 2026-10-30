@@ -10,13 +10,14 @@ import { z } from 'zod';
 import { certificates, users } from '../db/schema';
 import type { Mailer } from '../mail/mailer';
 import { certificateEmail } from '../mail/templates';
-import { toLocale } from '../mappers';
+import { toLocale } from '@opencourse/shared';
 import { issueCertificate } from '../modules/certificates/service';
 import { deliverWebhook, fanOutWebhooks, type AddDeliveryJob } from '../modules/webhooks/delivery';
 import type { Logger } from 'pino';
 import type { Database } from '../plugins/db';
 import type { Storage } from '../storage/s3';
 import { processVideo } from '../modules/video/process';
+import { JOB_NAMES } from './jobs';
 
 const deliveryJobPayloadSchema = z.object({ deliveryId: z.uuid() });
 const transcodeJobPayloadSchema = z.object({ assetId: z.uuid() });
@@ -117,7 +118,7 @@ export const consumers: readonly Consumer[] = [
 
   // queued by `fan-out-webhooks` and by the manual retry, never by the relay
   {
-    name: 'deliver-webhook',
+    name: JOB_NAMES.deliverWebhook,
     events: [],
     run: ({ db, allowPrivateNetworks, webhookTimeoutMs }, payload, job) =>
       deliverWebhook(db, deliveryJobPayloadSchema.parse(payload).deliveryId, {
@@ -129,7 +130,7 @@ export const consumers: readonly Consumer[] = [
 
   // queued by the API when an upload completes, on the video queue (one encode at a time)
   {
-    name: 'transcode-video',
+    name: JOB_NAMES.transcodeVideo,
     events: [],
     run: ({ db, storage, log }, payload, job) =>
       processVideo(
@@ -141,3 +142,17 @@ export const consumers: readonly Consumer[] = [
       ),
   },
 ];
+
+/** Consumers by job name. Two with the same name would shadow each other, so loading fails. */
+export const consumersByName: ReadonlyMap<string, Consumer> = new Map(
+  consumers.map((candidate) => [candidate.name, candidate]),
+);
+if (consumersByName.size !== consumers.length) throw new Error('Two consumers share a name');
+
+/** Consumers by the domain event they answer, in the order of `consumers`. */
+export const consumersByEvent: ReadonlyMap<DomainEventName, readonly Consumer[]> = new Map(
+  [...new Set(consumers.flatMap((candidate) => candidate.events))].map((event) => [
+    event,
+    consumers.filter((candidate) => candidate.events.includes(event)),
+  ]),
+);

@@ -18,6 +18,7 @@ import { NewCourseDialog } from '@/features/studio/NewCourseDialog';
 import { useEnabledLocales, useStudioCourses, useStudioDashboard } from '@/hooks/studioQueries';
 import { localizeCourse, toLocale } from '@/lib/content';
 import { useFormatters } from '@/lib/intl';
+import { routes } from '@/lib/routes';
 
 function StudioCourseCard({
   course,
@@ -47,7 +48,7 @@ function StudioCourseCard({
           <h2 className="text-lg font-semibold leading-snug">
             {/* the whole card is clickable through the stretched link */}
             <Link
-              to={`/studio/courses/${course.id}`}
+              to={routes.studioCourse(course.id)}
               className="after:absolute after:inset-0 focus-visible:outline-none"
             >
               {title}

@@ -15,14 +15,21 @@ import type {
 } from '@opencourse/shared';
 import type { CreateInviteInput, GrantFilters, UserFilters } from '@/services';
 import { useServices } from '@/services/ServicesContext';
+import { queryRoots } from './queries';
 import { studioKeys } from './studioQueries';
 
 /** Cache keys of the admin area. Everything here is dropped when the signed-in user changes. */
 export const adminKeys = {
-  users: (filters: UserFilters) => ['admin', 'users', filters] as const,
-  allUsers: ['admin', 'all-users'] as const,
-  grants: (filters: GrantFilters) => ['admin', 'grants', filters] as const,
-  courses: ['admin', 'courses'] as const,
+  users: (filters: UserFilters) => [queryRoots.admin, 'users', filters] as const,
+  allUsers: [queryRoots.admin, 'all-users'] as const,
+  allGrants: [queryRoots.admin, 'grants'] as const,
+  grants: (filters: GrantFilters) => [queryRoots.admin, 'grants', filters] as const,
+  courses: [queryRoots.admin, 'courses'] as const,
+  failedVideos: [queryRoots.admin, 'failed-videos'] as const,
+  webhooks: [queryRoots.admin, 'webhooks'] as const,
+  webhookDeliveries: (webhookId: string) =>
+    [queryRoots.admin, 'webhooks', webhookId, 'deliveries'] as const,
+  apiKeys: [queryRoots.admin, 'api-keys'] as const,
 };
 
 export function useAdminUsers(filters: UserFilters) {
@@ -63,9 +70,9 @@ export function useUserMutations() {
   const queryClient = useQueryClient();
   const refresh = () =>
     Promise.all([
-      queryClient.invalidateQueries({ queryKey: ['admin'] }),
+      queryClient.invalidateQueries({ queryKey: [queryRoots.admin] }),
       queryClient.invalidateQueries({ queryKey: studioKeys.assignable }),
-      queryClient.invalidateQueries({ queryKey: ['users'] }),
+      queryClient.invalidateQueries({ queryKey: [queryRoots.users] }),
     ]);
 
   return {
@@ -90,9 +97,9 @@ export function useAdminGrantMutations() {
   const queryClient = useQueryClient();
   const refresh = () =>
     Promise.all([
-      queryClient.invalidateQueries({ queryKey: ['admin', 'grants'] }),
-      queryClient.invalidateQueries({ queryKey: ['studio'] }),
-      queryClient.invalidateQueries({ queryKey: ['enrollments'] }),
+      queryClient.invalidateQueries({ queryKey: adminKeys.allGrants }),
+      queryClient.invalidateQueries({ queryKey: [queryRoots.studio] }),
+      queryClient.invalidateQueries({ queryKey: [queryRoots.enrollments] }),
     ]);
 
   return {
@@ -122,11 +129,9 @@ export function useUpdateSettings() {
   });
 }
 
-const failedVideosKey = ['admin', 'failed-videos'] as const;
-
 export function useFailedVideos() {
   const { video } = useServices();
-  return useQuery({ queryKey: failedVideosKey, queryFn: () => video.listFailed() });
+  return useQuery({ queryKey: adminKeys.failedVideos, queryFn: () => video.listFailed() });
 }
 
 export function useRetryVideo() {
@@ -135,18 +140,13 @@ export function useRetryVideo() {
   return useMutation({
     mutationFn: (assetId: string) => video.retry(assetId),
     // a refused retry (someone else got there first) also leaves the list out of date
-    onSettled: () => queryClient.invalidateQueries({ queryKey: failedVideosKey }),
+    onSettled: () => queryClient.invalidateQueries({ queryKey: adminKeys.failedVideos }),
   });
 }
 
-const webhookKeys = {
-  list: ['admin', 'webhooks'] as const,
-  deliveries: (webhookId: string) => ['admin', 'webhooks', webhookId, 'deliveries'] as const,
-};
-
 export function useWebhooks() {
   const { webhooks } = useServices();
-  return useQuery({ queryKey: webhookKeys.list, queryFn: () => webhooks.list() });
+  return useQuery({ queryKey: adminKeys.webhooks, queryFn: () => webhooks.list() });
 }
 
 export const WEBHOOK_DELIVERIES_PAGE_SIZE = 50;
@@ -155,7 +155,7 @@ export const WEBHOOK_DELIVERIES_PAGE_SIZE = 50;
 export function useWebhookDeliveries(webhookId: string) {
   const { webhooks } = useServices();
   return useInfiniteQuery({
-    queryKey: webhookKeys.deliveries(webhookId),
+    queryKey: adminKeys.webhookDeliveries(webhookId),
     queryFn: ({ pageParam }) =>
       webhooks.listDeliveries(webhookId, {
         limit: WEBHOOK_DELIVERIES_PAGE_SIZE,
@@ -176,7 +176,7 @@ const selectDeliveries = (data: { pages: WebhookDelivery[][] }) => ({
 export function useWebhookMutations() {
   const { webhooks } = useServices();
   const queryClient = useQueryClient();
-  const refresh = () => queryClient.invalidateQueries({ queryKey: webhookKeys.list });
+  const refresh = () => queryClient.invalidateQueries({ queryKey: adminKeys.webhooks });
 
   return {
     create: useMutation({
@@ -196,22 +196,20 @@ export function useWebhookMutations() {
     sendTest: useMutation({ mutationFn: (id: string) => webhooks.sendTest(id) }),
     retryDelivery: useMutation({
       mutationFn: (deliveryId: string) => webhooks.retryDelivery(deliveryId),
-      onSuccess: () => queryClient.invalidateQueries({ queryKey: webhookKeys.list }),
+      onSuccess: () => queryClient.invalidateQueries({ queryKey: adminKeys.webhooks }),
     }),
   };
 }
 
-const apiKeysKey = ['admin', 'api-keys'] as const;
-
 export function useApiKeys() {
   const { apiKeys } = useServices();
-  return useQuery({ queryKey: apiKeysKey, queryFn: () => apiKeys.list() });
+  return useQuery({ queryKey: adminKeys.apiKeys, queryFn: () => apiKeys.list() });
 }
 
 export function useApiKeyMutations() {
   const { apiKeys } = useServices();
   const queryClient = useQueryClient();
-  const refresh = () => queryClient.invalidateQueries({ queryKey: apiKeysKey });
+  const refresh = () => queryClient.invalidateQueries({ queryKey: adminKeys.apiKeys });
 
   return {
     create: useMutation({

@@ -31,6 +31,7 @@ import {
 } from '../../worker/jobs';
 import { postWebhook, resolveDestination } from './http';
 import { toWebhook, toWebhookDelivery } from './mappers';
+import { authContext } from '../../plugins/auth';
 
 const TEST_TIMEOUT_MS = 10_000;
 /** How long saving an endpoint waits for the host name to resolve. */
@@ -117,11 +118,11 @@ export const webhookRoutes: FastifyPluginAsyncZod<WebhookRoutesOptions> = async 
       const row = await app.db.transaction(async (tx) => {
         const [created] = await tx
           .insert(webhookEndpoints)
-          .values({ ...request.body, secret, createdById: request.auth!.user.id })
+          .values({ ...request.body, secret, createdById: authContext(request).user.id })
           .returning();
         if (!created) throw new Error('Failed to create webhook');
         await recordAudit(tx, {
-          actorId: request.auth!.user.id,
+          actorId: authContext(request).user.id,
           action: 'webhook.created',
           targetType: 'webhook',
           targetId: created.id,
@@ -162,7 +163,7 @@ export const webhookRoutes: FastifyPluginAsyncZod<WebhookRoutesOptions> = async 
           .returning();
         if (!updated) throw notFound('Webhook not found');
         await recordAudit(tx, {
-          actorId: request.auth!.user.id,
+          actorId: authContext(request).user.id,
           action: 'webhook.updated',
           targetType: 'webhook',
           targetId: updated.id,
@@ -193,7 +194,7 @@ export const webhookRoutes: FastifyPluginAsyncZod<WebhookRoutesOptions> = async 
           .returning();
         if (!deleted) throw notFound('Webhook not found');
         await recordAudit(tx, {
-          actorId: request.auth!.user.id,
+          actorId: authContext(request).user.id,
           action: 'webhook.deleted',
           targetType: 'webhook',
           targetId: deleted.id,
@@ -226,7 +227,7 @@ export const webhookRoutes: FastifyPluginAsyncZod<WebhookRoutesOptions> = async 
           .returning();
         if (!updated) throw notFound('Webhook not found');
         await recordAudit(tx, {
-          actorId: request.auth!.user.id,
+          actorId: authContext(request).user.id,
           action: 'webhook.secret_rotated',
           targetType: 'webhook',
           targetId: updated.id,

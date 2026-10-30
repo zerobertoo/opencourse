@@ -8,8 +8,8 @@ import type {
 } from 'fastify';
 import { and, eq, isNull } from 'drizzle-orm';
 import fp from 'fastify-plugin';
-import { createSession, findActiveSession } from '../auth/sessions';
-import { hashToken, signAccessToken, verifyAccessToken } from '../auth/tokens';
+import { createSession, findActiveSession } from '../modules/auth/sessions';
+import { hashToken, signAccessToken, verifyAccessToken } from '../modules/auth/tokens';
 import type { Config } from '../config';
 import { apiKeys, users, type SessionRow, type UserRow } from '../db/schema';
 import { forbidden, unauthorized } from '../errors';
@@ -33,6 +33,15 @@ export interface AuthContext {
   apiKeyId?: string;
 }
 
+/**
+ * The caller of a route behind `authenticate` or `authenticateOrApiKey`. A route that forgot its
+ * preHandler answers 401 instead of dereferencing null.
+ */
+export function authContext(request: FastifyRequest): AuthContext {
+  if (!request.auth) throw unauthorized();
+  return request.auth;
+}
+
 declare module 'fastify' {
   interface FastifyRequest {
     /** Set by `authenticate`; null on unauthenticated requests. */
@@ -50,6 +59,8 @@ declare module 'fastify' {
     authenticateOrApiKey: preHandlerAsyncHookHandler;
     /** preHandler that requires a valid session and one of the given roles. */
     requireRole(...roles: Role[]): preHandlerAsyncHookHandler;
+    /** `requireRole` for routes that also take an API key, which always acts as an admin. */
+    requireRoleOrApiKey(...roles: Role[]): preHandlerAsyncHookHandler;
     /** Creates a session for the user and sets both cookies on the reply. */
     startSession(request: FastifyRequest, reply: FastifyReply, user: UserRow): Promise<void>;
     /** Sets a fresh access cookie (and the rotated refresh cookie, when given). */
@@ -184,6 +195,15 @@ export const authPlugin = fp<{ config: Config }>(async (app, { config }) => {
       if (!request.auth || !roles.includes(request.auth.user.role)) throw forbidden();
     };
     AUTH_KINDS.set(handler, 'session');
+    return handler;
+  });
+
+  app.decorate('requireRoleOrApiKey', (...roles: Role[]): preHandlerAsyncHookHandler => {
+    const handler: preHandlerAsyncHookHandler = async function (request, reply) {
+      await authenticateOrApiKey.call(this, request, reply);
+      if (!request.auth || !roles.includes(request.auth.user.role)) throw forbidden();
+    };
+    AUTH_KINDS.set(handler, 'apiKey');
     return handler;
   });
 });

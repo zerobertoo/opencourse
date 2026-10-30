@@ -1,7 +1,7 @@
 import type { CourseDetail } from '@opencourse/shared';
 
 /**
- * Hides which option is correct and why. Grading happens on the server (milestone 5), so people
+ * Hides which option is correct and why. Grading happens on the server, so people
  * who cannot manage the course never need the answers.
  */
 export function redactQuizAnswers(course: CourseDetail): CourseDetail {

@@ -1,9 +1,12 @@
 import { studioMetricsSchema, type StudioMetrics } from '@opencourse/shared';
-import { and, eq, gt, inArray, isNull, or } from 'drizzle-orm';
+import { and, eq, inArray } from 'drizzle-orm';
+import { activeGrantCondition } from '../grants/active';
 import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod';
 import { courses, grants, users } from '../../db/schema';
 import { loadCourseDetails } from '../courses/detail';
 import { loadStudentProgress, progressOf, summarizeStudent } from '../progress/stats';
+import { ownedUnlessAdmin } from '../../ownership';
+import { authContext } from '../../plugins/auth';
 
 export const studioRoutes: FastifyPluginAsyncZod = async (app) => {
   app.get(
@@ -20,12 +23,12 @@ export const studioRoutes: FastifyPluginAsyncZod = async (app) => {
       },
     },
     async (request): Promise<StudioMetrics> => {
-      const { user } = request.auth!;
+      const { user } = authContext(request);
       const now = new Date();
       const rows = await app.db
         .select()
         .from(courses)
-        .where(user.role === 'admin' ? undefined : eq(courses.instructorId, user.id));
+        .where(ownedUnlessAdmin(user, courses.instructorId));
       if (rows.length === 0) {
         return { activeStudents: 0, publishedCourses: 0, completionRate: 0, courses: [] };
       }
@@ -36,13 +39,7 @@ export const studioRoutes: FastifyPluginAsyncZod = async (app) => {
         .from(grants)
         // deactivated people cannot study, so they are not students
         .innerJoin(users, and(eq(users.id, grants.userId), eq(users.active, true)))
-        .where(
-          and(
-            inArray(grants.courseId, courseIds),
-            isNull(grants.revokedAt),
-            or(isNull(grants.expiresAt), gt(grants.expiresAt, now)),
-          ),
-        );
+        .where(and(inArray(grants.courseId, courseIds), activeGrantCondition(now)));
       const studentIds = [...new Set(active.map((grant) => grant.userId))];
       // ponytail: whole curricula and every record in memory; per-course SQL counts if instances grow large
       const details = await loadCourseDetails(app.db, rows);

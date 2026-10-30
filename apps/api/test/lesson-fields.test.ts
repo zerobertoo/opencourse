@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { HttpError } from '../src/errors';
-import { toLessonColumns } from '../src/modules/courses/lesson-fields';
+import { DEFAULT_QUIZ, readQuiz, toLessonColumns } from '../src/modules/courses/lesson-fields';
 
 const quiz = { passingScore: 50, questions: [] };
 const enabled = ['youtube', 'vimeo'];
@@ -57,4 +57,17 @@ describe('toLessonColumns', () => {
     ).toEqual({ durationSeconds: 90 });
     expect(toLessonColumns('quiz', { quiz }, enabled)).toEqual({ quiz });
   });
+});
+
+describe('readQuiz', () => {
+  it('keeps a valid stored quiz', () => {
+    expect(readQuiz(quiz)).toEqual(quiz);
+  });
+
+  it.each([null, {}, { passingScore: 'high', questions: [] }, { passingScore: 50 }])(
+    'falls back to an empty quiz for %j',
+    (stored) => {
+      expect(readQuiz(stored)).toEqual(DEFAULT_QUIZ);
+    },
+  );
 });

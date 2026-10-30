@@ -9,7 +9,7 @@ export interface Mail {
   text: string;
 }
 
-/** Outbound e-mail boundary. A queue-backed implementation can replace SMTP later. */
+/** Outbound e-mail boundary. */
 export interface Mailer {
   send(mail: Mail): Promise<void>;
 }
@@ -28,6 +28,10 @@ export function createSmtpMailer(config: Config, getDatabase: () => Database): M
         host: email.host,
         port: email.port,
         secure: email.secure,
+        // an unreachable server must fail the send, not hold a worker slot for minutes
+        connectionTimeout: 10_000,
+        greetingTimeout: 10_000,
+        socketTimeout: 30_000,
         // the environment password only goes to the environment host: an admin who saves another
         // host must not be able to collect it
         auth:

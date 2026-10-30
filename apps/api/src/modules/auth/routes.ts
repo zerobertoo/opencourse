@@ -8,20 +8,16 @@ import {
 import { and, eq, gt, isNull } from 'drizzle-orm';
 import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod';
 import { z } from 'zod';
-import { hashPassword, verifyPassword } from '../../auth/passwords';
-import {
-  findActiveSession,
-  refreshSession,
-  revokeSession,
-  revokeUserSessions,
-} from '../../auth/sessions';
-import { generateToken, hashToken, verifyAccessToken } from '../../auth/tokens';
+import { hashPassword, verifyPassword } from './passwords';
+import { findActiveSession, refreshSession, revokeSession, revokeUserSessions } from './sessions';
+import { generateToken, hashToken, verifyAccessToken } from './tokens';
 import { passwordResetTokens, sessions, users } from '../../db/schema';
 import { badRequest, forbidden, unauthorized } from '../../errors';
 import { passwordResetEmail } from '../../mail/templates';
-import { toLocale, toPublicUser } from '../../mappers';
+import { toLocale } from '@opencourse/shared';
+import { toPublicUser } from '../users/mappers';
 import { ACCESS_COOKIE, REFRESH_COOKIE } from '../../plugins/auth';
-import { createUser } from '../../users/create-user';
+import { createUser } from '../users/service';
 import type { Config } from '../../config';
 
 const PASSWORD_RESET_TTL_MS = 60 * 60 * 1000;

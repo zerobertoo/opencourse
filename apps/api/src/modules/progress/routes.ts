@@ -31,6 +31,7 @@ import {
   toQuizAttempt,
   upsertProgress,
 } from './service';
+import { authContext } from '../../plugins/auth';
 
 export const progressRoutes: FastifyPluginAsyncZod = async (app) => {
   app.get(
@@ -47,7 +48,12 @@ export const progressRoutes: FastifyPluginAsyncZod = async (app) => {
     async (request) => {
       const [course] = await app.db.select().from(courses).where(eq(courses.id, request.params.id));
       if (!course) throw notFound('Course not found');
-      const access = await resolveCourseAccess(app.db, request.auth!.user, course, new Date());
+      const access = await resolveCourseAccess(
+        app.db,
+        authContext(request).user,
+        course,
+        new Date(),
+      );
       if (!access.isVisible) throw notFound('Course not found');
       if (!access.canViewContent) throw forbidden('Access to this course requires a grant');
 
@@ -56,7 +62,9 @@ export const progressRoutes: FastifyPluginAsyncZod = async (app) => {
         .from(progress)
         .innerJoin(lessons, eq(lessons.id, progress.lessonId))
         .innerJoin(modules, eq(modules.id, lessons.moduleId))
-        .where(and(eq(progress.userId, request.auth!.user.id), eq(modules.courseId, course.id)))
+        .where(
+          and(eq(progress.userId, authContext(request).user.id), eq(modules.courseId, course.id)),
+        )
         .orderBy(asc(progress.updatedAt));
       return { progress: rows.map(({ row }) => toProgress(row)) };
     },
@@ -78,7 +86,7 @@ export const progressRoutes: FastifyPluginAsyncZod = async (app) => {
       },
     },
     async (request) => {
-      const { user } = request.auth!;
+      const { user } = authContext(request);
       const { completed, videoPositionSeconds } = request.body;
       const now = new Date();
 
@@ -138,7 +146,7 @@ export const progressRoutes: FastifyPluginAsyncZod = async (app) => {
       },
     },
     async (request) => {
-      const { user } = request.auth!;
+      const { user } = authContext(request);
       const { lesson } = await requireReadableLesson(app.db, user, request.params.lessonId);
       const rows = await app.db
         .select()
@@ -165,7 +173,7 @@ export const progressRoutes: FastifyPluginAsyncZod = async (app) => {
       },
     },
     async (request, reply) => {
-      const { user } = request.auth!;
+      const { user } = authContext(request);
       const { answers } = request.body;
       const now = new Date();
 
@@ -216,7 +224,7 @@ export const progressRoutes: FastifyPluginAsyncZod = async (app) => {
       },
     },
     async (request) => {
-      const { user } = request.auth!;
+      const { user } = authContext(request);
       const { lesson } = await requireReadableLesson(app.db, user, request.params.id);
       const [row] = await app.db
         .select()
@@ -240,7 +248,7 @@ export const progressRoutes: FastifyPluginAsyncZod = async (app) => {
       },
     },
     async (request) => {
-      const { user } = request.auth!;
+      const { user } = authContext(request);
       const { content } = request.body;
       const { lesson } = await requireReadableLesson(app.db, user, request.params.id);
 

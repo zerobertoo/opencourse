@@ -7,14 +7,15 @@ import {
   listCoursesResponseSchema,
   updateCourseRequestSchema,
 } from '@opencourse/shared';
-import { and, desc, eq, gt, inArray, isNull, or, sql, type SQL } from 'drizzle-orm';
+import { and, desc, eq, inArray, isNull, or, sql, type SQL } from 'drizzle-orm';
 import type { FastifyRequest } from 'fastify';
 import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod';
 import { courses, courseTranslations, grants, type CourseRow } from '../../db/schema';
 import { recordAudit } from '../../audit';
 import { conflict, forbidden, isUniqueViolation, notFound } from '../../errors';
 import { escapeLike } from '../../sql';
-import { requireManagedCourse, resolveCourseAccess } from './access';
+import { requireManagedCourseById, resolveCourseAccess } from './access';
+import { activeGrantCondition } from '../grants/active';
 import { toGrant } from '../grants/mappers';
 import { deleteReplacedCover } from './cover';
 import { loadCourseDetail, loadCourseDetails } from './detail';
@@ -22,6 +23,8 @@ import { toListedCourse } from './listed';
 import { assertPublishable } from './publish';
 import { redactQuizAnswers } from './redact';
 import { slugify } from './slug';
+import { ownedUnlessAdmin } from '../../ownership';
+import { authContext } from '../../plugins/auth';
 
 const MAX_SLUG_ATTEMPTS = 20;
 
@@ -32,7 +35,7 @@ export const courseRoutes: FastifyPluginAsyncZod = async (app) => {
    */
   async function readCourse(request: FastifyRequest, course: CourseRow | undefined) {
     if (!course) throw notFound('Course not found');
-    const access = await resolveCourseAccess(app.db, request.auth!.user, course, new Date());
+    const access = await resolveCourseAccess(app.db, authContext(request).user, course, new Date());
     if (!access.isVisible) throw notFound('Course not found');
     if (!access.canViewContent) throw forbidden('Access to this course requires a grant');
     const detail = await loadCourseDetail(app.db, course);
@@ -54,25 +57,19 @@ export const courseRoutes: FastifyPluginAsyncZod = async (app) => {
       },
     },
     async (request) => {
-      const { user } = request.auth!;
+      const { user } = authContext(request);
       const { scope, status, search } = request.query;
       const now = new Date();
 
       let visibility: SQL | undefined;
       if (scope === 'managed') {
         if (user.role === 'student') throw forbidden();
-        visibility = user.role === 'admin' ? undefined : eq(courses.instructorId, user.id);
+        visibility = ownedUnlessAdmin(user, courses.instructorId);
       } else {
         const grantedCourseIds = app.db
           .select({ id: grants.courseId })
           .from(grants)
-          .where(
-            and(
-              eq(grants.userId, user.id),
-              isNull(grants.revokedAt),
-              or(isNull(grants.expiresAt), gt(grants.expiresAt, now)),
-            ),
-          );
+          .where(and(eq(grants.userId, user.id), activeGrantCondition(now)));
         visibility = or(
           eq(courses.status, 'published'),
           and(eq(courses.status, 'archived'), inArray(courses.id, grantedCourseIds)),
@@ -163,7 +160,7 @@ export const courseRoutes: FastifyPluginAsyncZod = async (app) => {
       },
     },
     async (request, reply) => {
-      const { user } = request.auth!;
+      const { user } = authContext(request);
       const { title, description, defaultLocale } = request.body;
       const baseSlug = slugify(title);
 
@@ -217,13 +214,13 @@ export const courseRoutes: FastifyPluginAsyncZod = async (app) => {
       },
     },
     async (request) => {
-      const [existing] = await app.db
-        .select()
-        .from(courses)
-        .where(eq(courses.id, request.params.id));
-      const course = await requireManagedCourse(app.db, request.auth!.user, existing);
+      const course = await requireManagedCourseById(
+        app.db,
+        authContext(request).user,
+        request.params.id,
+      );
       const { translations, ...fields } = request.body;
-      const actorId = request.auth!.user.id;
+      const actorId = authContext(request).user.id;
 
       const result = await app.db.transaction(async (tx) => {
         const before = course.status === 'published' ? await loadCourseDetail(tx, course) : null;

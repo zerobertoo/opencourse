@@ -46,6 +46,24 @@ API tests hit a real Postgres, Redis and S3 storage, never mocks.
 - Use logical CSS properties (`ms`, `me`, `ps`, `pe`) and CSS variables for colors.
 - Add or update tests with your change.
 
+## File layout
+
+The layout names things after what they do, not after a type. With a contract-first API the types are inferred from the zod schemas (`z.infer`), so there are no separate `*.types.ts` or `*.schema.ts` files, and no `utils` or `helpers`: name a file after what it does.
+
+| File | Holds | Lives in | Required |
+| --- | --- | --- | --- |
+| `<domain>.ts` | zod schemas, their `z.infer` types and the domain constants | `packages/shared/src` | one per domain |
+| `routes.ts` (or `<part>-routes.ts` when it grows) | Fastify handlers of the module | `apps/api/src/modules/<module>/` | yes |
+| `service.ts` | business rules used by more than one route or consumer | same | only when reused |
+| `mappers.ts` | database row to shared DTO | same | optional |
+| `constants.ts` | constants with 3+ items or used outside the file | same | optional |
+| `errors.ts` | `HttpError` helpers (one for the whole API) | `apps/api/src` | one |
+| `<Name>.tsx`, `use<Name>.ts` | component, hook | `apps/web/src` | yes |
+| `services/{x, api/x, mock/x}.ts` | interface, real and mock implementation | `apps/web/src/services` | yes |
+| `<file>.test.ts(x)` | test beside its source (web, shared); API tests live in `apps/api/test/` | | yes |
+
+Enumerations are `z.enum([...])` in `packages/shared` (or `as const` for a plain list), with the type inferred from it. Do not use TypeScript `enum`: it does not derive from zod. The database enums (`pgEnum`) are built from those same schemas (`schema.enum`).
+
 ## Commits and pull requests
 
 - Commits follow [Conventional Commits](https://www.conventionalcommits.org/) in English, e.g. `feat(video): add caption upload` or `fix: keep cues with blank lines`.

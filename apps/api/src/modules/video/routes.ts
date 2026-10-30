@@ -20,10 +20,10 @@ import { Queue } from 'bullmq';
 import { and, eq } from 'drizzle-orm';
 import type { FastifyRequest } from 'fastify';
 import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod';
-import { findActiveSession } from '../../auth/sessions';
+import { findActiveSession } from '../auth/sessions';
 import type { Config } from '../../config';
 import { lessons, users, videoAssets, type CourseRow, type VideoAssetRow } from '../../db/schema';
-import { HttpError, badRequest, conflict, forbidden, notFound, unauthorized } from '../../errors';
+import { badRequest, conflict, forbidden, notFound, unauthorized } from '../../errors';
 import {
   addTranscodeJob,
   DEFAULT_QUEUE_PREFIX,
@@ -54,6 +54,7 @@ import {
   type VideoAssetRef,
 } from './service';
 import { claimStream, isStreamHeldElsewhere, releaseStream, renewStream } from './stream-lease';
+import { authContext } from '../../plugins/auth';
 
 const PLAYLIST_CONTENT_TYPE = 'application/vnd.apple.mpegurl';
 /** Time a browser has to start uploading each part. */
@@ -99,7 +100,7 @@ export const videoRoutes: FastifyPluginAsyncZod<VideoRoutesOptions> = async (
     const found = await findCourseOfLesson(app.db, lessonId);
     const course = await requireManagedCourse(
       app.db,
-      request.auth!.user,
+      authContext(request).user,
       found?.course,
       'Lesson not found',
     );
@@ -165,6 +166,8 @@ export const videoRoutes: FastifyPluginAsyncZod<VideoRoutesOptions> = async (
             key,
             uploadId,
             index + 1,
+            // every part is full-size but the last, which holds the rest
+            Math.min(VIDEO_UPLOAD_PART_BYTES, sizeBytes - index * VIDEO_UPLOAD_PART_BYTES),
             UPLOAD_URL_TTL_SECONDS,
           ),
         })),
@@ -225,6 +228,10 @@ export const videoRoutes: FastifyPluginAsyncZod<VideoRoutesOptions> = async (
       try {
         await app.storage.completeMultipartUpload(key, asset.uploadId, request.body.parts);
       } catch (error) {
+        // the claim above cleared uploadId, so nothing else would abort the parts left behind
+        await app.storage.abortMultipartUpload(key, asset.uploadId).catch((abortError: unknown) => {
+          request.log.warn({ err: abortError, assetId: asset.id }, 'could not abort the upload');
+        });
         await failUpload('The storage could not finish the upload. Upload the file again.');
         throw error;
       }
@@ -319,7 +326,12 @@ export const videoRoutes: FastifyPluginAsyncZod<VideoRoutesOptions> = async (
     },
     async (request) => {
       const context = await findAssetContext(app.db, request.params.assetId);
-      await requireManagedCourse(app.db, request.auth!.user, context?.course, 'Video not found');
+      await requireManagedCourse(
+        app.db,
+        authContext(request).user,
+        context?.course,
+        'Video not found',
+      );
       return { video: toLocalVideoAsset(context!.asset) };
     },
   );
@@ -338,7 +350,7 @@ export const videoRoutes: FastifyPluginAsyncZod<VideoRoutesOptions> = async (
       },
     },
     async (request) => {
-      const user = request.auth!.user;
+      const user = authContext(request).user;
       const context = await findAssetContext(app.db, request.params.assetId);
       if (!context) throw notFound('Video not found');
       const access = await resolveCourseAccess(app.db, user, context.course, new Date());
@@ -348,7 +360,7 @@ export const videoRoutes: FastifyPluginAsyncZod<VideoRoutesOptions> = async (
 
       const token = signPlaybackToken(
         config.AUTH_SECRET,
-        { assetId: context.asset.id, userId: user.id, sessionId: request.auth!.sessionId },
+        { assetId: context.asset.id, userId: user.id, sessionId: authContext(request).sessionId },
         PLAYBACK_TOKEN_TTL_SECONDS,
         new Date(),
       );
@@ -417,7 +429,7 @@ export const videoRoutes: FastifyPluginAsyncZod<VideoRoutesOptions> = async (
       },
     },
     async (request) => {
-      const { user, sessionId } = request.auth!;
+      const { user, sessionId } = authContext(request);
       const context = await findAssetContext(app.db, request.params.assetId);
       if (!context) throw notFound('Video not found');
       const access = await resolveCourseAccess(app.db, user, context.course, new Date());
@@ -471,7 +483,7 @@ export const videoRoutes: FastifyPluginAsyncZod<VideoRoutesOptions> = async (
           return false;
         });
         if (heldElsewhere) {
-          throw new HttpError(409, 'This account is playing a video on another device', {
+          throw conflict('This account is playing a video on another device', {
             reason: STREAM_IN_USE_REASON,
           });
         }

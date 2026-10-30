@@ -15,7 +15,7 @@ import type { Database } from '../../plugins/db';
 
 const PLATFORM_KEY = 'platform';
 const SMTPS_PORT = 465;
-/** Arbitrary constant, next to the other advisory locks (7_301_001 and 7_301_002 in create-user). */
+/** Arbitrary constant, next to the other advisory locks (7_301_001 and 7_301_002 in users/service). */
 const SETTINGS_LOCK_ID = 7_301_003;
 
 /** What the platform uses until an admin saves something: branding stock, e-mail from the environment. */

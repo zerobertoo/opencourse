@@ -6,6 +6,7 @@ import { LessonTypeIcon } from '@/components/LessonTypeIcon';
 import { localizeLesson, localizeModuleTitle, toLocale } from '@/lib/content';
 import { formatClock } from '@/lib/duration';
 import { cn } from '@/lib/utils';
+import { routes } from '@/lib/routes';
 
 interface CurriculumSidebarProps {
   course: CourseDetail;
@@ -71,7 +72,7 @@ export function CurriculumSidebar({
                       </div>
                     ) : (
                       <Link
-                        to={`/courses/${course.slug}/lessons/${lesson.id}`}
+                        to={routes.lesson(course.slug, lesson.id)}
                         aria-current={isCurrent ? 'page' : undefined}
                         className={cn(
                           'flex items-center gap-2 rounded-md px-2 py-2.5 hover:bg-muted',

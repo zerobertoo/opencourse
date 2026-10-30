@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 import { CourseCover } from './CourseCover';
-import { generateCoverShapes } from './coverShapes';
+import { generateCoverShapes } from '@/lib/coverShapes';
 import { demoId } from '@/services/mock/seed/ids';
 
 describe('generateCoverShapes', () => {

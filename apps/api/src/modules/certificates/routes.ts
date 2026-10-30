@@ -8,6 +8,7 @@ import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod';
 import { certificates } from '../../db/schema';
 import { notFound } from '../../errors';
 import { normalizeCertificateCode, toCertificateDetails, toPublicCertificate } from './service';
+import { authContext } from '../../plugins/auth';
 
 /** Public lookups are guessable only by brute force, so they are capped per client. */
 const VERIFY_LIMIT = { max: 30, timeWindow: '1 minute' };
@@ -27,7 +28,7 @@ export const certificateRoutes: FastifyPluginAsyncZod = async (app) => {
       const rows = await app.db
         .select()
         .from(certificates)
-        .where(eq(certificates.userId, request.auth!.user.id))
+        .where(eq(certificates.userId, authContext(request).user.id))
         .orderBy(desc(certificates.issuedAt));
       return { certificates: rows.map(toCertificateDetails) };
     },

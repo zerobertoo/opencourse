@@ -1,6 +1,7 @@
 import { boolean, pgEnum, pgTable, text, timestamp, uuid } from 'drizzle-orm/pg-core';
+import { roleSchema } from '@opencourse/shared';
 
-export const userRole = pgEnum('user_role', ['student', 'instructor', 'admin']);
+export const userRole = pgEnum('user_role', roleSchema.enum);
 
 export const users = pgTable('users', {
   id: uuid('id').primaryKey().defaultRandom(),
