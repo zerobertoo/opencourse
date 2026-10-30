@@ -5,6 +5,7 @@ import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod';
 import { courses, grants, users } from '../../db/schema';
 import { loadCourseDetails } from '../courses/detail';
 import { loadStudentProgress, progressOf, summarizeStudent } from '../progress/stats';
+import { authContext } from '../../plugins/auth';
 
 export const studioRoutes: FastifyPluginAsyncZod = async (app) => {
   app.get(
@@ -21,7 +22,7 @@ export const studioRoutes: FastifyPluginAsyncZod = async (app) => {
       },
     },
     async (request): Promise<StudioMetrics> => {
-      const { user } = request.auth!;
+      const { user } = authContext(request);
       const now = new Date();
       const rows = await app.db
         .select()

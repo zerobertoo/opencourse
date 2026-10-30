@@ -35,6 +35,7 @@ import {
   lessonFileKeys,
   toFileAttachment,
 } from './service';
+import { authContext } from '../../plugins/auth';
 
 export interface FileRoutesOptions {
   config: Config;
@@ -53,7 +54,7 @@ export const fileRoutes: FastifyPluginAsyncZod<FileRoutesOptions> = async (app, 
     const found = await findCourseOfLesson(app.db, lessonId);
     const course = await requireManagedCourse(
       app.db,
-      request.auth!.user,
+      authContext(request).user,
       found?.course,
       'Lesson not found',
     );
@@ -192,7 +193,7 @@ export const fileRoutes: FastifyPluginAsyncZod<FileRoutesOptions> = async (app, 
       if (!context) throw notFound('Attachment not found');
       const access = await resolveCourseAccess(
         app.db,
-        request.auth!.user,
+        authContext(request).user,
         context.course,
         new Date(),
       );
@@ -318,7 +319,7 @@ export const fileRoutes: FastifyPluginAsyncZod<FileRoutesOptions> = async (app, 
       if (!found) throw notFound('Captions not found');
       const access = await resolveCourseAccess(
         app.db,
-        request.auth!.user,
+        authContext(request).user,
         found.course,
         new Date(),
       );

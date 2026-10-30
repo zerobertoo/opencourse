@@ -33,6 +33,15 @@ export interface AuthContext {
   apiKeyId?: string;
 }
 
+/**
+ * The caller of a route behind `authenticate` or `authenticateOrApiKey`. A route that forgot its
+ * preHandler answers 401 instead of dereferencing null.
+ */
+export function authContext(request: FastifyRequest): AuthContext {
+  if (!request.auth) throw unauthorized();
+  return request.auth;
+}
+
 declare module 'fastify' {
   interface FastifyRequest {
     /** Set by `authenticate`; null on unauthenticated requests. */

@@ -1,6 +1,6 @@
 import { and, eq } from 'drizzle-orm';
 import { activeGrantCondition } from '../grants/active';
-import { grants, type CourseRow, type UserRow } from '../../db/schema';
+import { courses, grants, type CourseRow, type UserRow } from '../../db/schema';
 import { forbidden, notFound } from '../../errors';
 import type { Database } from '../../plugins/db';
 
@@ -76,4 +76,14 @@ export async function requireManagedCourse(
   if (!access.isVisible) throw notFound(notFoundMessage);
   if (!access.canManage) throw forbidden('Only the course instructor or an admin can edit it');
   return course;
+}
+
+/** `requireManagedCourse` for a course id: loads the course first. */
+export async function requireManagedCourseById(
+  db: Pick<Database, 'select'>,
+  user: UserRow,
+  courseId: string,
+): Promise<CourseRow> {
+  const [course] = await db.select().from(courses).where(eq(courses.id, courseId));
+  return requireManagedCourse(db, user, course);
 }

@@ -14,7 +14,7 @@ import type { FastifyRequest } from 'fastify';
 import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod';
 import { courses, type CourseRow } from '../../db/schema';
 import { badRequest, notFound } from '../../errors';
-import { requireManagedCourse } from './access';
+import { requireManagedCourseById } from './access';
 import {
   COVER_READ_TTL_SECONDS,
   COVER_UPLOAD_TTL_SECONDS,
@@ -22,12 +22,12 @@ import {
   deleteReplacedCover,
 } from './cover';
 import { loadCourseDetail } from './detail';
+import { authContext } from '../../plugins/auth';
 
 /** Cover images: direct upload to the storage, then a stable address on the API. */
 export const coverRoutes: FastifyPluginAsyncZod = async (app) => {
   async function managedCourse(request: FastifyRequest, courseId: string) {
-    const [existing] = await app.db.select().from(courses).where(eq(courses.id, courseId));
-    return requireManagedCourse(app.db, request.auth!.user, existing);
+    return requireManagedCourseById(app.db, authContext(request).user, courseId);
   }
 
   /** Points the course at `url` (or at nothing) and removes the file it used to point at. */

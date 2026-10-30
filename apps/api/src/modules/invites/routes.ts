@@ -20,6 +20,7 @@ import { effectiveInviteStatus, toLocale, toPublicInvite, toPublicUser } from '.
 import { createUser } from '../../users/create-user';
 import { resolveCourseAccess } from '../courses/access';
 import { createGrantRow } from '../grants/service';
+import { authContext } from '../../plugins/auth';
 
 const DEFAULT_INVITE_TTL_MS = 14 * 24 * 60 * 60 * 1000;
 const ACCEPT_LIMIT = { max: 10, timeWindow: '1 minute' };
@@ -53,7 +54,7 @@ export const inviteRoutes: FastifyPluginAsyncZod<{ config: Config }> = async (ap
       },
     },
     async (request, reply) => {
-      const inviter = request.auth!.user;
+      const inviter = authContext(request).user;
       const { email, courseId } = request.body;
       const now = new Date();
       const expiresAt = request.body.expiresAt
@@ -112,7 +113,7 @@ export const inviteRoutes: FastifyPluginAsyncZod<{ config: Config }> = async (ap
       },
     },
     async (request) => {
-      const { user } = request.auth!;
+      const { user } = authContext(request);
       const rows = await app.db
         .select()
         .from(invites)

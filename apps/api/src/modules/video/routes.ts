@@ -54,6 +54,7 @@ import {
   type VideoAssetRef,
 } from './service';
 import { claimStream, isStreamHeldElsewhere, releaseStream, renewStream } from './stream-lease';
+import { authContext } from '../../plugins/auth';
 
 const PLAYLIST_CONTENT_TYPE = 'application/vnd.apple.mpegurl';
 /** Time a browser has to start uploading each part. */
@@ -99,7 +100,7 @@ export const videoRoutes: FastifyPluginAsyncZod<VideoRoutesOptions> = async (
     const found = await findCourseOfLesson(app.db, lessonId);
     const course = await requireManagedCourse(
       app.db,
-      request.auth!.user,
+      authContext(request).user,
       found?.course,
       'Lesson not found',
     );
@@ -325,7 +326,7 @@ export const videoRoutes: FastifyPluginAsyncZod<VideoRoutesOptions> = async (
     },
     async (request) => {
       const context = await findAssetContext(app.db, request.params.assetId);
-      await requireManagedCourse(app.db, request.auth!.user, context?.course, 'Video not found');
+      await requireManagedCourse(app.db, authContext(request).user, context?.course, 'Video not found');
       return { video: toLocalVideoAsset(context!.asset) };
     },
   );
@@ -344,7 +345,7 @@ export const videoRoutes: FastifyPluginAsyncZod<VideoRoutesOptions> = async (
       },
     },
     async (request) => {
-      const user = request.auth!.user;
+      const user = authContext(request).user;
       const context = await findAssetContext(app.db, request.params.assetId);
       if (!context) throw notFound('Video not found');
       const access = await resolveCourseAccess(app.db, user, context.course, new Date());
@@ -354,7 +355,7 @@ export const videoRoutes: FastifyPluginAsyncZod<VideoRoutesOptions> = async (
 
       const token = signPlaybackToken(
         config.AUTH_SECRET,
-        { assetId: context.asset.id, userId: user.id, sessionId: request.auth!.sessionId },
+        { assetId: context.asset.id, userId: user.id, sessionId: authContext(request).sessionId },
         PLAYBACK_TOKEN_TTL_SECONDS,
         new Date(),
       );
@@ -423,7 +424,7 @@ export const videoRoutes: FastifyPluginAsyncZod<VideoRoutesOptions> = async (
       },
     },
     async (request) => {
-      const { user, sessionId } = request.auth!;
+      const { user, sessionId } = authContext(request);
       const context = await findAssetContext(app.db, request.params.assetId);
       if (!context) throw notFound('Video not found');
       const access = await resolveCourseAccess(app.db, user, context.course, new Date());

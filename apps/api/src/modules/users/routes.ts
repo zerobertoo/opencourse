@@ -19,6 +19,7 @@ import { toPublicUser } from '../../mappers';
 import { escapeLike } from '../../sql';
 import type { Database } from '../../plugins/db';
 import { ADMIN_GUARD_LOCK_ID } from '../../users/create-user';
+import { authContext } from '../../plugins/auth';
 
 const userIdParamsSchema = z.object({ id: z.uuid() });
 
@@ -80,7 +81,7 @@ export const userRoutes: FastifyPluginAsyncZod = async (app) => {
       },
     },
     async (request) => {
-      const { user: requester } = request.auth!;
+      const { user: requester } = authContext(request);
       if (requester.id !== request.params.id && requester.role === 'student') throw forbidden();
       const [row] = await app.db.select().from(users).where(eq(users.id, request.params.id));
       if (!row) throw notFound('User not found');
@@ -101,7 +102,7 @@ export const userRoutes: FastifyPluginAsyncZod = async (app) => {
       },
     },
     async (request) => {
-      const actorId = request.auth!.user.id;
+      const actorId = authContext(request).user.id;
       const { role } = request.body;
 
       const updated = await withAdminGuardLock(app.db, async (tx) => {
@@ -142,7 +143,7 @@ export const userRoutes: FastifyPluginAsyncZod = async (app) => {
       },
     },
     async (request) => {
-      const actorId = request.auth!.user.id;
+      const actorId = authContext(request).user.id;
       const { active } = request.body;
 
       const updated = await withAdminGuardLock(app.db, async (tx) => {

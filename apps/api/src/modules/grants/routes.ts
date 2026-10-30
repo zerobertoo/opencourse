@@ -11,10 +11,11 @@ import { and, desc, eq, isNotNull, isNull, lte, } from 'drizzle-orm';
 import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod';
 import { courses, grants, users } from '../../db/schema';
 import { badRequest, conflict, forbidden, isUniqueViolation, notFound } from '../../errors';
-import { requireManagedCourse } from '../courses/access';
+import { requireManagedCourseById } from '../courses/access';
 import { activeGrantCondition } from './active';
 import { toGrant } from './mappers';
 import { grantOrExtend, loadManagedGrant, revokeGrantRow, setGrantExpiry } from './service';
+import { authContext } from '../../plugins/auth';
 
 /** SQL form of the effective status, so filtering agrees with what `toGrant` reports. */
 function statusCondition(status: GrantStatus, now: Date) {
@@ -36,7 +37,7 @@ export const grantRoutes: FastifyPluginAsyncZod = async (app) => {
         app.authenticateOrApiKey,
         async (request) => {
           // same rule as requireRole('admin', 'instructor')
-          if (!['admin', 'instructor'].includes(request.auth!.user.role)) throw forbidden();
+          if (!['admin', 'instructor'].includes(authContext(request).user.role)) throw forbidden();
         },
       ],
       schema: {
@@ -49,7 +50,7 @@ export const grantRoutes: FastifyPluginAsyncZod = async (app) => {
       },
     },
     async (request) => {
-      const { user } = request.auth!;
+      const { user } = authContext(request);
       const { courseId, userId, status } = request.query;
       const now = new Date();
       const rows = await app.db
@@ -82,11 +83,11 @@ export const grantRoutes: FastifyPluginAsyncZod = async (app) => {
       },
     },
     async (request) => {
-      const manager = request.auth!.user;
+      const manager = authContext(request).user;
       const now = new Date();
       const row = await app.db.transaction(async (tx) => {
         const grant = await loadManagedGrant(tx, manager, request.params.id);
-        return revokeGrantRow(tx, grant, manager.id, now, request.auth!.apiKeyId);
+        return revokeGrantRow(tx, grant, manager.id, now, authContext(request).apiKeyId);
       });
       return { grant: toGrant(row, now) };
     },
@@ -107,7 +108,7 @@ export const grantRoutes: FastifyPluginAsyncZod = async (app) => {
       },
     },
     async (request) => {
-      const manager = request.auth!.user;
+      const manager = authContext(request).user;
       const now = new Date();
       const expiresAt = request.body.expiresAt ? new Date(request.body.expiresAt) : null;
       const row = await app.db.transaction(async (tx) => {
@@ -115,7 +116,7 @@ export const grantRoutes: FastifyPluginAsyncZod = async (app) => {
         const grant = await loadManagedGrant(tx, manager, request.params.id);
         if (grant.revokedAt) throw conflict('A revoked grant cannot be extended');
         if (expiresAt && expiresAt <= now) throw badRequest('Expiry must be in the future');
-        return setGrantExpiry(tx, grant, expiresAt, manager.id, request.auth!.apiKeyId);
+        return setGrantExpiry(tx, grant, expiresAt, manager.id, authContext(request).apiKeyId);
       });
       return { grant: toGrant(row, now) };
     },
@@ -135,12 +136,11 @@ export const grantRoutes: FastifyPluginAsyncZod = async (app) => {
       },
     },
     async (request, reply) => {
-      const manager = request.auth!.user;
+      const manager = authContext(request).user;
       const { userId, courseId } = request.body;
       const now = new Date();
 
-      const [course] = await app.db.select().from(courses).where(eq(courses.id, courseId));
-      await requireManagedCourse(app.db, manager, course);
+      await requireManagedCourseById(app.db, manager, courseId);
 
       const expiresAt = request.body.expiresAt ? new Date(request.body.expiresAt) : null;
       if (expiresAt && expiresAt <= now) throw badRequest('Expiry must be in the future');
@@ -159,8 +159,8 @@ export const grantRoutes: FastifyPluginAsyncZod = async (app) => {
             courseId,
             expiresAt,
             actorId: manager.id,
-            ...(request.auth!.apiKeyId ? { apiKeyId: request.auth!.apiKeyId } : {}),
-            source: request.auth!.apiKeyId ? 'plugin' : 'manual',
+            ...(authContext(request).apiKeyId ? { apiKeyId: authContext(request).apiKeyId } : {}),
+            source: authContext(request).apiKeyId ? 'plugin' : 'manual',
           }),
         );
       let result;

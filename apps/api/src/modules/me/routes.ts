@@ -13,6 +13,7 @@ import { listUserSessions, revokeOwnSession, revokeUserSessions } from '../../au
 import { users } from '../../db/schema';
 import { badRequest, notFound } from '../../errors';
 import { toPublicUser } from '../../mappers';
+import { authContext } from '../../plugins/auth';
 
 const CHANGE_PASSWORD_LIMIT = { max: 10, timeWindow: '15 minutes' };
 
@@ -27,7 +28,7 @@ export const meRoutes: FastifyPluginAsyncZod = async (app) => {
         response: { 200: sessionResponseSchema },
       },
     },
-    async (request) => ({ user: toPublicUser(request.auth!.user) }),
+    async (request) => ({ user: toPublicUser(authContext(request).user) }),
   );
 
   app.patch(
@@ -47,7 +48,7 @@ export const meRoutes: FastifyPluginAsyncZod = async (app) => {
         .update(users)
         // undefined fields are skipped by Drizzle, so omitted properties stay untouched
         .set({ name, locale, timeZone, updatedAt: new Date() })
-        .where(eq(users.id, request.auth!.user.id))
+        .where(eq(users.id, authContext(request).user.id))
         .returning();
       if (!updated) throw notFound('User not found');
       return { user: toPublicUser(updated) };
@@ -65,7 +66,7 @@ export const meRoutes: FastifyPluginAsyncZod = async (app) => {
       },
     },
     async (request) => {
-      const { user, sessionId } = request.auth!;
+      const { user, sessionId } = authContext(request);
       const rows = await listUserSessions(app.db, user.id, new Date());
       return {
         sessions: rows.map((row) => ({
@@ -93,7 +94,7 @@ export const meRoutes: FastifyPluginAsyncZod = async (app) => {
       },
     },
     async (request, reply) => {
-      const { user, sessionId } = request.auth!;
+      const { user, sessionId } = authContext(request);
       const ended = await revokeOwnSession(app.db, user.id, request.params.id, new Date());
       if (!ended) throw notFound('Session not found');
       if (request.params.id === sessionId) app.clearSessionCookies(reply);
@@ -115,7 +116,7 @@ export const meRoutes: FastifyPluginAsyncZod = async (app) => {
       },
     },
     async (request, reply) => {
-      const { user, sessionId } = request.auth!;
+      const { user, sessionId } = authContext(request);
       const matches = await verifyPassword(user.passwordHash, request.body.currentPassword);
       if (!matches) throw badRequest('Current password is incorrect', { field: 'currentPassword' });
 
