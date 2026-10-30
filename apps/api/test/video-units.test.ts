@@ -4,7 +4,9 @@ import { rewriteMasterPlaylist, rewriteRenditionPlaylist } from '../src/modules/
 import {
   buildMasterPlaylist,
   chooseRenditions,
+  killRunningEncodes,
   playlistDurationSeconds,
+  runFfmpeg,
 } from '../src/modules/video/transcode';
 
 const SECRET = 'a-secret-with-at-least-thirty-two-characters';
@@ -126,5 +128,18 @@ describe('renditions', () => {
     expect(master).toContain('RESOLUTION=640x360\n360p/index.m3u8');
     expect(master).toContain('RESOLUTION=1280x720\n720p/index.m3u8');
     expect(master.indexOf('360p')).toBeLessThan(master.indexOf('1080p'));
+  });
+});
+
+describe('running encodes', () => {
+  it('kills an ffmpeg run in flight, so a stopping worker leaves no orphan', async () => {
+    // -re paces the input in real time, so the run is still going when it is killed
+    const run = runFfmpeg(['-re', '-f', 'lavfi', '-i', 'sine=duration=600', '-f', 'null', '-']);
+    const outcome = expect(run).rejects.toThrow(/SIGKILL/);
+    await new Promise((resolve) => setTimeout(resolve, 300));
+
+    killRunningEncodes();
+
+    await outcome;
   });
 });

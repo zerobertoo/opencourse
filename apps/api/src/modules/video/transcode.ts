@@ -1,4 +1,4 @@
-import { execFile, spawn } from 'node:child_process';
+import { type ChildProcess, execFile, spawn } from 'node:child_process';
 import { randomBytes } from 'node:crypto';
 import { mkdir, readdir, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
@@ -43,15 +43,11 @@ export interface Rendition {
 export async function probeVideo(file: string): Promise<VideoProbe> {
   let output: string;
   try {
-    ({ stdout: output } = await execFileAsync('ffprobe', [
-      '-v',
-      'error',
-      '-print_format',
-      'json',
-      '-show_streams',
-      '-show_format',
-      file,
-    ]));
+    ({ stdout: output } = await execFileAsync(
+      'ffprobe',
+      ['-v', 'error', '-print_format', 'json', '-show_streams', '-show_format', file],
+      { timeout: FFPROBE_TIMEOUT_MS, killSignal: 'SIGKILL' },
+    ));
   } catch (error) {
     // ffprobe exits non-zero for files it cannot parse; a missing binary is a deployment bug
     if ((error as NodeJS.ErrnoException).code === 'ENOENT') throw error;
@@ -118,18 +114,35 @@ export function buildMasterPlaylist(probe: VideoProbe, renditions: Rendition[]):
   return `${lines.join('\n')}\n`;
 }
 
-function runFfmpeg(args: string[]): Promise<void> {
+// ponytail: one fixed ceiling for every file; scale it with the source duration if long lectures hit it
+const FFMPEG_TIMEOUT_MS = 2 * 60 * 60 * 1000;
+const FFPROBE_TIMEOUT_MS = 60 * 1000;
+
+const runningEncodes = new Set<ChildProcess>();
+
+/** Kills the ffmpeg runs in flight, so a worker that shuts down does not leave them orphaned. */
+export function killRunningEncodes(): void {
+  for (const child of runningEncodes) child.kill('SIGKILL');
+}
+
+/** Runs ffmpeg to completion; a run that outlives the timeout is killed and rejects. */
+export function runFfmpeg(args: string[]): Promise<void> {
   return new Promise((resolve, reject) => {
-    const child = spawn('ffmpeg', ['-hide_banner', '-loglevel', 'error', '-nostdin', ...args]);
+    const child = spawn('ffmpeg', ['-hide_banner', '-loglevel', 'error', '-nostdin', ...args], {
+      timeout: FFMPEG_TIMEOUT_MS,
+      killSignal: 'SIGKILL',
+    });
+    runningEncodes.add(child);
     let stderr = '';
     child.stderr.on('data', (chunk: Buffer) => {
       // only the tail matters in an error message
       stderr = (stderr + chunk.toString()).slice(-2000);
     });
     child.on('error', reject);
-    child.on('close', (code) => {
+    child.on('close', (code, signal) => {
+      runningEncodes.delete(child);
       if (code === 0) resolve();
-      else reject(new Error(`ffmpeg exited with code ${code}: ${stderr.trim()}`));
+      else reject(new Error(`ffmpeg exited with ${signal ?? `code ${code}`}: ${stderr.trim()}`));
     });
   });
 }

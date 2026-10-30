@@ -10,6 +10,7 @@ import { createSmtpMailer, type Mailer } from '../mail/mailer';
 import { removeStaleAttachments } from '../modules/files/service';
 import { requeueOrphanedVideos } from '../modules/video/requeue';
 import { removeStaleUploads } from '../modules/video/service';
+import { killRunningEncodes } from '../modules/video/transcode';
 import { openDatabase } from '../plugins/db';
 import { createS3Storage, type Storage } from '../storage/s3';
 import { consumers } from './consumers';
@@ -175,6 +176,8 @@ export async function startWorker(
   return {
     async stop() {
       stopSignal.abort();
+      // an encode can run for an hour: cut it, the queue hands the job out again on the next start
+      killRunningEncodes();
       await loop;
       await worker.close();
       await videoWorker.close();
