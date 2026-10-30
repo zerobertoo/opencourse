@@ -166,9 +166,7 @@ export function CoursePage() {
             </div>
             {targetLessonId ? (
               <Button asChild className="w-full sm:w-auto">
-                <Link to={routes.lesson(courseQuery.data.slug, targetLessonId)}>
-                  {t(ctaKey)}
-                </Link>
+                <Link to={routes.lesson(courseQuery.data.slug, targetLessonId)}>{t(ctaKey)}</Link>
               </Button>
             ) : null}
           </Card>

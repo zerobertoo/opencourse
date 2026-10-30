@@ -97,7 +97,7 @@ export const lessons = pgTable(
     /** Video lessons only: a link to an external provider. Uploaded files live in `video_assets`. */
     video: jsonb('video').$type<ExternalVideoAsset>(),
     captions: jsonb('captions').$type<Caption[]>().notNull().default([]),
-    /** Quiz lessons only; moves to relational tables in milestone 5. */
+    /** Quiz lessons only. Plain jsonb, graded on the server; `readQuiz` validates it on read. */
     quiz: jsonb('quiz').$type<Quiz>(),
   },
   (table) => [index('lessons_module_idx').on(table.moduleId)],

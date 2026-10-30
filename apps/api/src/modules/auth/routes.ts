@@ -9,12 +9,7 @@ import { and, eq, gt, isNull } from 'drizzle-orm';
 import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod';
 import { z } from 'zod';
 import { hashPassword, verifyPassword } from './passwords';
-import {
-  findActiveSession,
-  refreshSession,
-  revokeSession,
-  revokeUserSessions,
-} from './sessions';
+import { findActiveSession, refreshSession, revokeSession, revokeUserSessions } from './sessions';
 import { generateToken, hashToken, verifyAccessToken } from './tokens';
 import { passwordResetTokens, sessions, users } from '../../db/schema';
 import { badRequest, forbidden, unauthorized } from '../../errors';

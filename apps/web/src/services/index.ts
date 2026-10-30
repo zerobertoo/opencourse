@@ -22,8 +22,8 @@ function getPreferences() {
 
 /**
  * The single place that decides which services implementation the app uses.
- * Without `VITE_API_URL` it is the full mock; with it, the real API handles auth, users and
- * invites while the rest stays mocked until its backend milestone.
+ * Without `VITE_API_URL` it is the full mock; with it (the hybrid), everything is real and only
+ * the signed-in user is mirrored into the mock session.
  */
 export const services: Services = API_URL
   ? createHybridServices(

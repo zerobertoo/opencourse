@@ -50,9 +50,7 @@ function HeroSection({ timeZone }: { timeZone: string }) {
   // the banner follows the search: a query that does not match its course hides it
   if (search && !courseContent.title.toLowerCase().includes(search.toLowerCase())) return null;
   const lessonContent = resume ? localizeLesson(resume.lesson, locale, course.defaultLocale) : null;
-  const target = resume
-    ? routes.lesson(course.slug, resume.lesson.id)
-    : routes.course(course.slug);
+  const target = resume ? routes.lesson(course.slug, resume.lesson.id) : routes.course(course.slug);
   const resumeSeconds = resume?.lesson.type === 'video' ? resume.videoPositionSeconds : 0;
 
   return (

@@ -24,7 +24,7 @@ const SAFE_METHODS = new Set(['GET', 'HEAD', 'OPTIONS']);
 
 /**
  * Versioned REST API, mounted under `/api/v1`.
- * Domain modules (auth, courses, grants...) register here as their milestones land.
+ * Domain modules (auth, courses, grants...) register here.
  */
 export const v1Routes: FastifyPluginAsyncZod<{
   config: Config;
