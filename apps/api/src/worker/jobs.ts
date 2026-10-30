@@ -1,3 +1,4 @@
+import type { DomainEventName } from '@opencourse/shared';
 import type { Queue } from 'bullmq';
 import type { AddDeliveryJob } from '../modules/webhooks/delivery';
 
@@ -10,10 +11,17 @@ export const QUEUE_NAME = 'jobs';
 export const VIDEO_QUEUE_NAME = 'video';
 export const DEFAULT_QUEUE_PREFIX = 'opencourse:queue';
 
+/** Names of the jobs that are not answers to a domain event; also part of their job ids. */
+export const JOB_NAMES = {
+  deliverWebhook: 'deliver-webhook',
+  transcodeVideo: 'transcode-video',
+} as const;
+
 /** Data carried by every queue job: which outbox event it answers, and its payload. */
 export interface JobData {
   eventId: string;
-  eventName: string;
+  /** A domain event, or the marker of a job that the API or another consumer queued. */
+  eventName: DomainEventName | 'video.upload' | 'webhook.delivery';
   /** When the event was written, as ISO 8601. */
   eventCreatedAt: string;
   payload: unknown;
@@ -42,10 +50,10 @@ export function jobOptions(retryDelayMs: number) {
 export function addTranscodeJob(
   queue: Queue<JobData>,
   assetId: string,
-  jobId = `transcode-video-${assetId}`,
+  jobId = `${JOB_NAMES.transcodeVideo}-${assetId}`,
 ) {
   return queue.add(
-    'transcode-video',
+    JOB_NAMES.transcodeVideo,
     {
       eventId: assetId,
       eventName: 'video.upload',
@@ -63,7 +71,7 @@ export function addTranscodeJob(
 export function deliveryJobAdder(queue: Queue<JobData>, retryDelayMs: number): AddDeliveryJob {
   return async (deliveryId, jobId) => {
     await queue.add(
-      'deliver-webhook',
+      JOB_NAMES.deliverWebhook,
       {
         eventId: deliveryId,
         eventName: 'webhook.delivery',

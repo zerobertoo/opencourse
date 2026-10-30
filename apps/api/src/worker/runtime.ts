@@ -13,7 +13,7 @@ import { removeStaleUploads } from '../modules/video/service';
 import { killRunningEncodes } from '../modules/video/transcode';
 import { openDatabase } from '../plugins/db';
 import { createS3Storage, type Storage } from '../storage/s3';
-import { consumers } from './consumers';
+import { consumersByName } from './consumers';
 import {
   DEFAULT_QUEUE_PREFIX,
   DEFAULT_RETRY_DELAY_MS,
@@ -84,7 +84,7 @@ export async function startWorker(
   };
 
   const handleJob = async (job: Job<JobData>): Promise<void> => {
-    const consumer = consumers.find((candidate) => candidate.name === job.name);
+    const consumer = consumersByName.get(job.name);
     if (!consumer) throw new Error(`No consumer named ${job.name}`);
     await consumer.run(context, job.data.payload, {
       eventId: job.data.eventId,

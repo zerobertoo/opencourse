@@ -2,7 +2,7 @@ import { asc, inArray, isNull, lt, sql } from 'drizzle-orm';
 import type { Queue } from 'bullmq';
 import { outboxEvents, webhookDeliveries } from '../db/schema';
 import type { Database } from '../plugins/db';
-import { consumers } from './consumers';
+import { consumersByEvent } from './consumers';
 import { jobOptions, type JobData } from './jobs';
 
 const BATCH_SIZE = 100;
@@ -28,7 +28,7 @@ export async function relayPendingEvents(
       .limit(BATCH_SIZE)
       .for('update', { skipLocked: true });
     for (const row of rows) {
-      for (const consumer of consumers.filter((candidate) => candidate.events.includes(row.name))) {
+      for (const consumer of consumersByEvent.get(row.name) ?? []) {
         await queue.add(
           consumer.name,
           {
