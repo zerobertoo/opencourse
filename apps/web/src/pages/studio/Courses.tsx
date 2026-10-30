@@ -43,7 +43,7 @@ function StudioCourseCard({
       />
       <div className="flex flex-1 flex-col gap-3 p-4">
         <div className="flex items-start justify-between gap-2">
-          <h3 className="text-lg font-semibold leading-snug">
+          <h2 className="text-lg font-semibold leading-snug">
             {/* the whole card is clickable through the stretched link */}
             <Link
               to={`/studio/courses/${course.id}`}
@@ -51,7 +51,7 @@ function StudioCourseCard({
             >
               {title}
             </Link>
-          </h3>
+          </h2>
           <CourseStatusBadge status={course.status} />
         </div>
         <p className="font-mono text-xs text-muted-foreground">

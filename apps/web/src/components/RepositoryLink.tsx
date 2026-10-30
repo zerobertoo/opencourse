@@ -11,7 +11,7 @@ export function RepositoryLink() {
       href={REPOSITORY_URL}
       target="_blank"
       rel="noreferrer noopener"
-      className="inline-flex items-center gap-1.5 text-sm text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
+      className="-my-3 inline-flex min-h-11 items-center gap-1.5 text-sm text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
     >
       {t('app.repository')}
       <ExternalLink className="size-3.5" aria-hidden="true" />

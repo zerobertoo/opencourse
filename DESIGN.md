@@ -57,7 +57,7 @@ typography:
     fontWeight: 500
   numeric:
     fontFamily: "JetBrains Mono Variable, ui-monospace, monospace"
-    fontSize: "0.75rem"
+    fontSize: "0.8125rem"
 rounded:
   md: "8px"
   lg: "10px"
@@ -127,7 +127,7 @@ The system is an Operate surface: scanability and consistency outrank expression
 - Logical properties throughout (`ms`, `me`, `ps`, `pe`, `start`) for future RTL.
 
 **Known drift and open items.** The directional drift recorded earlier (light default, green-tinted dark, serif headings, grid home) is resolved. What remains:
-- Touch targets: below `sm` buttons, icon buttons, drag handles and the dialog close are 40 to 44px (`size-11`, `h-10`), back to 36 to 40px from `sm`; native checkboxes and radios are 20px; inline text links stay at text height.
+- Touch targets: below `sm` buttons, icon buttons, drag handles and the dialog close are 40 to 44px (`size-11`, `h-10`), back to 36 to 40px from `sm`; native checkboxes and radios are 20px; inline text links stay at text height, except stand-alone links ("View all", the repository link), which are at least 44px high. Radios and checkboxes sit inside labels that are about 44px tall, so the whole label is the target.
 - Short count phrases ("4 of 10 lessons", "40%") are set in mono as a whole span, not digit by digit, because the number is embedded in a translated phrase.
 - `PRODUCT.md`, `CLAUDE.md` and `docs/PRD.md` still list `#f4f6f2` as the brand background; the light page background is now `#f6f7f8`.
 
@@ -168,7 +168,7 @@ One configurable accent over a quiet graphite neutral set. The dark theme is the
 - **Title** (600, 18px, 1.375): card and lesson titles.
 - **Body** (400, 14px): default UI and reading text.
 - **Label** (500, 14px): buttons, tabs, form labels.
-- **Numeric** (mono, 12px): lesson counts, percentages, durations.
+- **Numeric** (mono, 13px, the `text-xs` step): lesson counts, percentages, durations. All small text (badges, help text, captions) uses this same 13px step with a 20px line height.
 
 ### Named Rules
 **The Numbers Are Mono Rule.** Counts, percentages and durations use the mono face; prose, names, URLs, e-mails and form text never do. Code blocks and the certificate code keep mono because they are code.

@@ -178,7 +178,7 @@ export function StudioDashboard() {
           </h2>
           <Link
             to="/studio/courses"
-            className="text-sm text-primary underline-offset-4 hover:underline"
+            className="-my-2 inline-flex min-h-11 items-center text-sm text-primary underline-offset-4 hover:underline"
           >
             {t('studio:dashboard.viewAll')}
           </Link>
