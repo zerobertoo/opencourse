@@ -225,6 +225,10 @@ export const videoRoutes: FastifyPluginAsyncZod<VideoRoutesOptions> = async (
       try {
         await app.storage.completeMultipartUpload(key, asset.uploadId, request.body.parts);
       } catch (error) {
+        // the claim above cleared uploadId, so nothing else would abort the parts left behind
+        await app.storage.abortMultipartUpload(key, asset.uploadId).catch((abortError: unknown) => {
+          request.log.warn({ err: abortError, assetId: asset.id }, 'could not abort the upload');
+        });
         await failUpload('The storage could not finish the upload. Upload the file again.');
         throw error;
       }

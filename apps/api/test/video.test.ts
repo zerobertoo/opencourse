@@ -290,6 +290,34 @@ describe('video upload, processing and playback', () => {
     expect(asset?.status).toBe('error');
   });
 
+  it('aborts the multipart upload when the storage cannot complete it', async () => {
+    const { cast, lesson } = await setup();
+    const started = await cast.instructorA.client.post(`/api/v1/lessons/${lesson.id}/video/upload`, {
+      filename: 'clip.mp4',
+      contentType: 'video/mp4',
+      sizeBytes: clip.length,
+    });
+    const upload = createVideoUploadResponseSchema.parse(started.json());
+    const [before] = await ctx.app.db.select().from(videoAssets);
+    const put = await fetch(upload.parts[0]!.url, { method: 'PUT', body: clip });
+    const complete = vi
+      .spyOn(ctx.app.storage, 'completeMultipartUpload')
+      .mockRejectedValueOnce(new Error('storage down'));
+    const abort = vi.spyOn(ctx.app.storage, 'abortMultipartUpload');
+
+    const response = await cast.instructorA.client.post(
+      `/api/v1/lessons/${lesson.id}/video/complete`,
+      { parts: [{ partNumber: 1, etag: put.headers.get('etag')! }] },
+    );
+
+    expect(response.statusCode).toBe(500);
+    expect(abort).toHaveBeenCalledWith(`videos/${upload.assetId}/source`, before!.uploadId);
+    const [after] = await ctx.app.db.select().from(videoAssets);
+    expect(after?.status).toBe('error');
+    complete.mockRestore();
+    abort.mockRestore();
+  });
+
   it('replaces an uploaded video with a pasted link and deletes its files', async () => {
     const { cast, lesson } = await setup();
     const { upload } = await sendFile(cast.instructorA.client, lesson.id, clip);
