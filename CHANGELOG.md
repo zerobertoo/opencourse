@@ -10,6 +10,7 @@ All notable changes to OpenCourse. Releases are tagged `vX.Y.Z`; the PRD in [doc
 
 ### Changed
 
+- Mailpit now runs only with the `dev` Compose profile (`docker compose --profile dev up`; `pnpm infra` still starts it). A plain `docker compose up` no longer starts a development inbox, so set `SMTP_*` (or save an SMTP server under Administration → Settings) to deliver e-mail, or add `--profile dev` to keep capturing it.
 - On upgrade, an instance that never saved the setting gets that default, so an admin who already pastes links from one of the other providers has to turn it on under Plugins before adding new ones.
 
 ## 1.0.0 (2026-10-27)

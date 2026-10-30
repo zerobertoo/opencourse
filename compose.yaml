@@ -67,8 +67,11 @@ services:
           || aws --endpoint-url http://storage:9000 s3api create-bucket --bucket "$$S3_BUCKET"
     restart: 'no'
 
+  # development inbox: it captures e-mails and never delivers them, and its UI has no login.
+  # Off by default; start it with `--profile dev` (naming it, as `pnpm infra` does, also starts it).
   mailpit:
     image: axllent/mailpit:v1.31
+    profiles: [dev]
     ports:
       - '${MAILPIT_SMTP_PORT:-1025}:1025'
       - '${MAILPIT_UI_PORT:-8025}:8025'
@@ -121,7 +124,7 @@ services:
       S3_SECRET_KEY: ${S3_SECRET_KEY:-opencourse-secret}
       VIDEO_MAX_UPLOAD_BYTES: ${VIDEO_MAX_UPLOAD_BYTES:-2147483648}
       ATTACHMENT_MAX_BYTES: ${ATTACHMENT_MAX_BYTES:-52428800}
-      # Mailpit by default; point these at a real SMTP server for a deployment
+      # the default host only exists with `--profile dev` (Mailpit); set a real SMTP server for a deployment
       SMTP_HOST: ${SMTP_HOST:-mailpit}
       SMTP_PORT: ${SMTP_PORT:-1025}
       SMTP_USER: ${SMTP_USER:-}
