@@ -39,9 +39,7 @@ export const studioRoutes: FastifyPluginAsyncZod = async (app) => {
         .from(grants)
         // deactivated people cannot study, so they are not students
         .innerJoin(users, and(eq(users.id, grants.userId), eq(users.active, true)))
-        .where(
-          and(inArray(grants.courseId, courseIds), activeGrantCondition(now)),
-        );
+        .where(and(inArray(grants.courseId, courseIds), activeGrantCondition(now)));
       const studentIds = [...new Set(active.map((grant) => grant.userId))];
       // ponytail: whole curricula and every record in memory; per-course SQL counts if instances grow large
       const details = await loadCourseDetails(app.db, rows);

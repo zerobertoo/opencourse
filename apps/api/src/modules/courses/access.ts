@@ -30,13 +30,7 @@ export async function hasActiveGrant(
   const [grant] = await db
     .select({ id: grants.id })
     .from(grants)
-    .where(
-      and(
-        eq(grants.userId, userId),
-        eq(grants.courseId, courseId),
-        activeGrantCondition(now),
-      ),
-    )
+    .where(and(eq(grants.userId, userId), eq(grants.courseId, courseId), activeGrantCondition(now)))
     .limit(1);
   return grant !== undefined;
 }

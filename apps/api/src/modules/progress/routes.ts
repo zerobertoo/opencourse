@@ -48,7 +48,12 @@ export const progressRoutes: FastifyPluginAsyncZod = async (app) => {
     async (request) => {
       const [course] = await app.db.select().from(courses).where(eq(courses.id, request.params.id));
       if (!course) throw notFound('Course not found');
-      const access = await resolveCourseAccess(app.db, authContext(request).user, course, new Date());
+      const access = await resolveCourseAccess(
+        app.db,
+        authContext(request).user,
+        course,
+        new Date(),
+      );
       if (!access.isVisible) throw notFound('Course not found');
       if (!access.canViewContent) throw forbidden('Access to this course requires a grant');
 
@@ -57,7 +62,9 @@ export const progressRoutes: FastifyPluginAsyncZod = async (app) => {
         .from(progress)
         .innerJoin(lessons, eq(lessons.id, progress.lessonId))
         .innerJoin(modules, eq(modules.id, lessons.moduleId))
-        .where(and(eq(progress.userId, authContext(request).user.id), eq(modules.courseId, course.id)))
+        .where(
+          and(eq(progress.userId, authContext(request).user.id), eq(modules.courseId, course.id)),
+        )
         .orderBy(asc(progress.updatedAt));
       return { progress: rows.map(({ row }) => toProgress(row)) };
     },

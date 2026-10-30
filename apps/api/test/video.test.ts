@@ -289,11 +289,14 @@ describe('video upload, processing and playback', () => {
 
   it('aborts the multipart upload when the storage cannot complete it', async () => {
     const { cast, lesson } = await setup();
-    const started = await cast.instructorA.client.post(`/api/v1/lessons/${lesson.id}/video/upload`, {
-      filename: 'clip.mp4',
-      contentType: 'video/mp4',
-      sizeBytes: clip.length,
-    });
+    const started = await cast.instructorA.client.post(
+      `/api/v1/lessons/${lesson.id}/video/upload`,
+      {
+        filename: 'clip.mp4',
+        contentType: 'video/mp4',
+        sizeBytes: clip.length,
+      },
+    );
     const upload = createVideoUploadResponseSchema.parse(started.json());
     const [before] = await ctx.app.db.select().from(videoAssets);
     const put = await fetch(upload.parts[0]!.url, { method: 'PUT', body: clip });

@@ -7,7 +7,7 @@ import {
   listGrantsResponseSchema,
   type GrantStatus,
 } from '@opencourse/shared';
-import { and, desc, eq, isNotNull, isNull, lte, } from 'drizzle-orm';
+import { and, desc, eq, isNotNull, isNull, lte } from 'drizzle-orm';
 import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod';
 import { courses, grants, users } from '../../db/schema';
 import { badRequest, conflict, isUniqueViolation, notFound } from '../../errors';

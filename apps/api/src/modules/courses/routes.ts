@@ -69,9 +69,7 @@ export const courseRoutes: FastifyPluginAsyncZod = async (app) => {
         const grantedCourseIds = app.db
           .select({ id: grants.courseId })
           .from(grants)
-          .where(
-            and(eq(grants.userId, user.id), activeGrantCondition(now)),
-          );
+          .where(and(eq(grants.userId, user.id), activeGrantCondition(now)));
         visibility = or(
           eq(courses.status, 'published'),
           and(eq(courses.status, 'archived'), inArray(courses.id, grantedCourseIds)),
@@ -216,7 +214,11 @@ export const courseRoutes: FastifyPluginAsyncZod = async (app) => {
       },
     },
     async (request) => {
-      const course = await requireManagedCourseById(app.db, authContext(request).user, request.params.id);
+      const course = await requireManagedCourseById(
+        app.db,
+        authContext(request).user,
+        request.params.id,
+      );
       const { translations, ...fields } = request.body;
       const actorId = authContext(request).user.id;
 

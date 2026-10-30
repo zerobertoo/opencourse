@@ -326,7 +326,12 @@ export const videoRoutes: FastifyPluginAsyncZod<VideoRoutesOptions> = async (
     },
     async (request) => {
       const context = await findAssetContext(app.db, request.params.assetId);
-      await requireManagedCourse(app.db, authContext(request).user, context?.course, 'Video not found');
+      await requireManagedCourse(
+        app.db,
+        authContext(request).user,
+        context?.course,
+        'Video not found',
+      );
       return { video: toLocalVideoAsset(context!.asset) };
     },
   );

@@ -75,7 +75,11 @@ export const curriculumRoutes: FastifyPluginAsyncZod<{ config: Config }> = async
       },
     },
     async (request, reply) => {
-      const course = await requireManagedCourseById(app.db, authContext(request).user, request.params.id);
+      const course = await requireManagedCourseById(
+        app.db,
+        authContext(request).user,
+        request.params.id,
+      );
       const { title, locale } = request.body;
 
       const { course: detail, result: moduleId } = await changeCurriculum(
@@ -317,7 +321,11 @@ export const curriculumRoutes: FastifyPluginAsyncZod<{ config: Config }> = async
       },
     },
     async (request) => {
-      const course = await requireManagedCourseById(app.db, authContext(request).user, request.params.id);
+      const course = await requireManagedCourseById(
+        app.db,
+        authContext(request).user,
+        request.params.id,
+      );
       const layout = request.body.modules;
 
       // the order of the curriculum never adds or removes a publish issue
