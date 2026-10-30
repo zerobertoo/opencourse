@@ -306,13 +306,16 @@ export async function transcodeVideo(
   if (!encodedPlaylist.includes(`URI="${KEY_PLACEHOLDER}"`)) {
     throw new Error('ffmpeg did not write the expected encryption key tag');
   }
-  await storage.putText(videoKeys.encryptionKey(assetId), keyHex, 'text/plain');
   // the container may not know its length (browser-recorded WebM): the encoded playlist does
   const durationSeconds =
     probe.durationSeconds ??
     playlistDurationSeconds(
       await readFile(path.join(workDir, renditions[0]!.name, 'index.m3u8'), 'utf8'),
     );
+  if (!durationSeconds || durationSeconds <= 0) {
+    throw new UnreadableVideoError('The file has no playable video stream');
+  }
+  await storage.putText(videoKeys.encryptionKey(assetId), keyHex, 'text/plain');
 
   for (const rendition of renditions) {
     const outputDir = path.join(workDir, rendition.name);
@@ -329,9 +332,6 @@ export async function transcodeVideo(
   await writeFile(masterPath, buildMasterPlaylist(probe, renditions));
   await storage.uploadFile(videoKeys.masterPlaylist(assetId), masterPath, contentTypeOf('.m3u8'));
 
-  if (!durationSeconds || durationSeconds <= 0) {
-    throw new UnreadableVideoError('The file has no playable video stream');
-  }
   const poster = await storePoster(storage, assetId, sourcePath, workDir, durationSeconds).then(
     () => true,
     (error: unknown) => {

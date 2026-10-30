@@ -13,11 +13,12 @@ import { transcodeVideo, UnreadableVideoError } from './transcode';
 
 const GENERIC_FAILURE = 'The video could not be processed. Try uploading it again.';
 
+/** Fails an asset that is still processing; a late job never overwrites a finished video. */
 async function markFailed(db: Database, assetId: string, message: string): Promise<void> {
   await db
     .update(videoAssets)
     .set({ status: 'error', errorMessage: message, updatedAt: new Date() })
-    .where(eq(videoAssets.id, assetId));
+    .where(and(eq(videoAssets.id, assetId), eq(videoAssets.status, 'processing')));
 }
 
 /**
@@ -85,7 +86,12 @@ export async function processVideo(
       await markFailed(db, assetId, error.message);
       return;
     }
-    if (isLastAttempt) await markFailed(db, assetId, GENERIC_FAILURE);
+    if (isLastAttempt) {
+      // a failure to record the failure must not hide the error that caused it
+      await markFailed(db, assetId, GENERIC_FAILURE).catch((markError: unknown) =>
+        log.warn({ err: markError, assetId }, 'could not mark the video as failed'),
+      );
+    }
     throw error;
   } finally {
     await rm(workDir, { recursive: true, force: true });
