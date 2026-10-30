@@ -1,5 +1,5 @@
 import { Minus, Plus } from 'lucide-react';
-import { forwardRef } from 'react';
+import { forwardRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
 import { Button } from './button';
@@ -37,9 +37,12 @@ export const NumberInput = forwardRef<HTMLInputElement, NumberInputProps>(
     ref,
   ) => {
     const { t } = useTranslation();
+    // text being typed; it only follows `value` again when the field loses focus
+    const [draft, setDraft] = useState<string | null>(null);
+    const clamp = (next: number) => Math.min(max, Math.max(min, Math.round(next)));
     const commit = (next: number) => {
-      const rounded = Math.round(next);
-      onValueChange(Number.isFinite(rounded) ? Math.min(max, Math.max(min, rounded)) : min);
+      setDraft(null);
+      onValueChange(clamp(next));
     };
     const disabled = rest.disabled;
 
@@ -65,8 +68,13 @@ export const NumberInput = forwardRef<HTMLInputElement, NumberInputProps>(
           aria-valuemax={Number.isFinite(max) ? max : undefined}
           aria-invalid={invalid ? true : undefined}
           className="min-w-0 text-center tabular-nums"
-          value={value}
-          onChange={(event) => commit(Number(event.target.value))}
+          value={draft ?? value}
+          onChange={(event) => {
+            const text = event.target.value;
+            setDraft(text);
+            if (/^-?\d+$/.test(text)) onValueChange(clamp(Number(text)));
+          }}
+          onBlur={() => setDraft(null)}
           onKeyDown={(event) => {
             if (event.key === 'ArrowUp' || event.key === 'ArrowDown') {
               event.preventDefault();

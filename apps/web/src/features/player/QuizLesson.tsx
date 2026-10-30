@@ -115,7 +115,6 @@ export function QuizLesson({
                     setAnswers((current) => ({ ...current, [question.id]: next }))
                   }
                   disabled={result !== undefined}
-                  aria-label={content.prompt}
                 >
                   {question.options.map((option) => {
                     const isSelected = answers[question.id] === option.id;
@@ -130,7 +129,7 @@ export function QuizLesson({
                       <label
                         key={option.id}
                         className={cn(
-                          'flex cursor-pointer items-start gap-3 rounded-lg border bg-surface p-3 text-sm ',
+                          'flex cursor-pointer items-start gap-3 rounded-lg border bg-surface p-3 text-sm',
                           isSelected && !questionResult && 'border-primary bg-accent',
                           isCorrectOption && 'border-primary bg-accent',
                           isWrongSelection && 'border-destructive',

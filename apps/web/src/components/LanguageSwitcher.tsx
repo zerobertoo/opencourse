@@ -2,6 +2,7 @@ import { SUPPORTED_LOCALES } from '@opencourse/shared';
 import { Languages } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Select } from '@/components/ui/select';
+import { toLocale } from '@/lib/content';
 
 /** Interface language selector; switching happens without reloading the page. */
 export function LanguageSwitcher() {
@@ -15,7 +16,7 @@ export function LanguageSwitcher() {
       />
       <Select
         aria-label={t('language.label')}
-        value={i18n.resolvedLanguage ?? ''}
+        value={toLocale(i18n.resolvedLanguage)}
         onValueChange={(locale) => void i18n.changeLanguage(locale)}
         className="w-auto ps-8"
         options={SUPPORTED_LOCALES.map((locale) => ({

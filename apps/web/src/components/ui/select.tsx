@@ -13,7 +13,8 @@ export interface SelectOption {
 /** Radix rejects empty item values, so the "no filter" option travels under this stand-in. */
 const EMPTY_VALUE = '__empty__';
 
-const toRadixValue = (value: string) => (value === '' ? EMPTY_VALUE : value);
+const toRadixValue = (value: string, options: SelectOption[]) =>
+  value === '' && options.some((option) => option.value === '') ? EMPTY_VALUE : value;
 const fromRadixValue = (value: string) => (value === EMPTY_VALUE ? '' : value);
 
 export interface SelectProps {
@@ -42,7 +43,7 @@ export const Select = forwardRef<HTMLButtonElement, SelectProps>(
     ref,
   ) => (
     <SelectPrimitive.Root
-      value={toRadixValue(value)}
+      value={toRadixValue(value, options)}
       onValueChange={(next) => onValueChange(fromRadixValue(next))}
       disabled={triggerProps.disabled}
       name={triggerProps.name}
@@ -77,7 +78,7 @@ export const Select = forwardRef<HTMLButtonElement, SelectProps>(
             {options.map((option) => (
               <SelectPrimitive.Item
                 key={option.value}
-                value={toRadixValue(option.value)}
+                value={toRadixValue(option.value, options)}
                 disabled={option.disabled}
                 className="relative flex min-h-10 cursor-pointer select-none items-center rounded-sm ps-8 pe-3 text-sm outline-none data-[disabled]:pointer-events-none data-[highlighted]:bg-accent data-[disabled]:opacity-60"
               >
