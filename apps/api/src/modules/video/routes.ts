@@ -165,6 +165,8 @@ export const videoRoutes: FastifyPluginAsyncZod<VideoRoutesOptions> = async (
             key,
             uploadId,
             index + 1,
+            // every part is full-size but the last, which holds the rest
+            Math.min(VIDEO_UPLOAD_PART_BYTES, sizeBytes - index * VIDEO_UPLOAD_PART_BYTES),
             UPLOAD_URL_TTL_SECONDS,
           ),
         })),
