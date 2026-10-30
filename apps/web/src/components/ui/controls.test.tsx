@@ -163,6 +163,7 @@ describe('NumberInput', () => {
 
     await user.clear(field);
     await user.type(field, '99');
+    await user.tab();
     expect(field).toHaveValue('7');
   });
 });
