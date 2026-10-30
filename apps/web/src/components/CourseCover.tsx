@@ -1,6 +1,6 @@
 import { resolveApiFileUrl } from '@/lib/apiUrl';
 import { cn } from '@/lib/utils';
-import { generateCoverShapes, type CoverShape } from './coverShapes';
+import { generateCoverShapes, type CoverShape } from '@/lib/coverShapes';
 
 function CoverShapeMark({ shape }: { shape: CoverShape }) {
   const { kind, x, y, size, opacity } = shape;
