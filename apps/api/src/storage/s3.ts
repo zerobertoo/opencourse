@@ -81,7 +81,12 @@ export function createS3Storage(config: Config): Storage {
     requestChecksumCalculation: 'WHEN_REQUIRED' as const,
     responseChecksumValidation: 'WHEN_REQUIRED' as const,
   };
-  const client = new S3Client({ ...common, endpoint: config.S3_ENDPOINT });
+  const client = new S3Client({
+    ...common,
+    endpoint: config.S3_ENDPOINT,
+    // a stalled storage must fail the job, not hold its slot forever; requestTimeout is idle time
+    requestHandler: { connectionTimeout: 10_000, requestTimeout: 60_000 },
+  });
   // a presigned address is bound to its host, so browsers need it signed for the public one
   const publicClient = new S3Client({ ...common, endpoint: config.S3_PUBLIC_URL });
   const Bucket = config.S3_BUCKET;
@@ -166,13 +171,15 @@ export function createS3Storage(config: Config): Storage {
       await pipeline(result.Body as Readable, createWriteStream(filePath));
     },
     async uploadFile(key, filePath, contentType) {
+      // stat before opening the stream, so a failure here cannot leak the file descriptor
+      const { size } = await stat(filePath);
       await client.send(
         new PutObjectCommand({
           Bucket,
           Key: key,
           Body: createReadStream(filePath),
           ContentType: contentType,
-          ContentLength: (await stat(filePath)).size,
+          ContentLength: size,
         }),
       );
     },
@@ -188,9 +195,13 @@ export function createS3Storage(config: Config): Storage {
         );
         const keys = (page.Contents ?? []).flatMap((item) => (item.Key ? [{ Key: item.Key }] : []));
         if (keys.length > 0) {
-          await client.send(
+          const deleted = await client.send(
             new DeleteObjectsCommand({ Bucket, Delete: { Objects: keys, Quiet: true } }),
           );
+          // quiet mode still reports the keys it could not delete
+          if (deleted.Errors?.length) {
+            throw new Error('The storage could not delete ' + deleted.Errors.length + ' objects');
+          }
         }
         continuationToken = page.IsTruncated ? page.NextContinuationToken : undefined;
       } while (continuationToken);
