@@ -48,6 +48,15 @@
     "label": "Search",
     "placeholder": "Search my courses"
   },
+  "datePicker": {
+    "placeholder": "Pick a date",
+    "nextMonth": "Next month",
+    "previousMonth": "Previous month"
+  },
+  "numberInput": {
+    "decrease": "Decrease",
+    "increase": "Increase"
+  },
   "language": {
     "label": "Language",
     "pt-BR": "Português (Brasil)",
