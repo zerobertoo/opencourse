@@ -18,6 +18,7 @@ import { useCourseById, useEnabledLocales } from '@/hooks/studioQueries';
 import { localizeCourse, toLocale } from '@/lib/content';
 import { isServiceError } from '@/services';
 import { Forbidden } from '../Forbidden';
+import { routes } from '@/lib/routes';
 
 const EDITOR_TABS = ['details', 'content', 'students', 'certificate', 'settings'] as const;
 type EditorTab = (typeof EDITOR_TABS)[number];
@@ -67,7 +68,7 @@ export function CourseEditor() {
   // instructors only edit their own courses; admins edit any
   if (user?.role === 'instructor' && course.instructorId !== user.id) return <Forbidden />;
   if (!isEditorTab(tab)) {
-    return <Navigate to={`/studio/courses/${course.id}/details`} replace />;
+    return <Navigate to={routes.studioCourse(course.id, 'details')} replace />;
   }
 
   const title = localizeCourse(course, toLocale(i18n.resolvedLanguage)).title;
@@ -90,7 +91,7 @@ export function CourseEditor() {
             <CourseStatusBadge status={course.status} />
           </div>
           <Button asChild variant="outline" size="sm">
-            <Link to={`/courses/${course.slug}`}>
+            <Link to={routes.course(course.slug)}>
               <ExternalLink aria-hidden="true" />
               {t('studio:editor.viewAsStudent')}
             </Link>
@@ -98,7 +99,7 @@ export function CourseEditor() {
         </div>
       </div>
 
-      <Tabs value={tab} onValueChange={(next) => navigate(`/studio/courses/${course.id}/${next}`)}>
+      <Tabs value={tab} onValueChange={(next) => navigate(routes.studioCourse(course.id, next))}>
         <TabsList aria-label={t('studio:editor.tabsLabel')}>
           {EDITOR_TABS.map((value) => (
             <TabsTrigger key={value} value={value} className="inline-flex items-center gap-1.5">
