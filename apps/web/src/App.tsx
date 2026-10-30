@@ -34,7 +34,9 @@ const AdminVideos = lazyPage(() => import('@/pages/admin/Videos'), 'AdminVideos'
 const AdminApiKeys = lazyPage(() => import('@/pages/admin/ApiKeys'), 'AdminApiKeys');
 const AdminWebhooks = lazyPage(() => import('@/pages/admin/Webhooks'), 'AdminWebhooks');
 // dev-only verification page; the ternary lets the production build drop its chunk
-const Showcase = import.meta.env.DEV ? lazyPage(() => import('@/pages/Showcase'), 'Showcase') : null;
+const Showcase = import.meta.env.DEV
+  ? lazyPage(() => import('@/pages/Showcase'), 'Showcase')
+  : null;
 const CourseEditor = lazyPage(() => import('@/pages/studio/CourseEditor'), 'CourseEditor');
 const StudioCourses = lazyPage(() => import('@/pages/studio/Courses'), 'StudioCourses');
 const StudioDashboard = lazyPage(() => import('@/pages/studio/Dashboard'), 'StudioDashboard');
