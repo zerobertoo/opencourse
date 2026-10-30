@@ -54,14 +54,25 @@ describe('Select', () => {
 
     screen.getByRole('combobox').focus();
     await user.keyboard('{Enter}');
-    expect(within(await screen.findByRole('listbox')).getByRole('option', { name: 'Cherry' })).toHaveAttribute('aria-disabled', 'true');
+    expect(
+      within(await screen.findByRole('listbox')).getByRole('option', { name: 'Cherry' }),
+    ).toHaveAttribute('aria-disabled', 'true');
     await user.keyboard('al{Enter}');
 
     expect(onChange).toHaveBeenCalledWith('a');
   });
 
   it('can be disabled and flags invalid state', () => {
-    render(<Select aria-label="Letter" value="a" options={OPTIONS} onValueChange={() => {}} disabled invalid />);
+    render(
+      <Select
+        aria-label="Letter"
+        value="a"
+        options={OPTIONS}
+        onValueChange={() => {}}
+        disabled
+        invalid
+      />,
+    );
     const trigger = screen.getByRole('combobox');
     expect(trigger).toBeDisabled();
     expect(trigger).toHaveAttribute('aria-invalid', 'true');
@@ -145,7 +156,9 @@ describe('DatePicker', () => {
 describe('NumberInput', () => {
   function Harness() {
     const [value, setValue] = useState(5);
-    return <NumberInput aria-describedby="x" min={0} max={7} value={value} onValueChange={setValue} />;
+    return (
+      <NumberInput aria-describedby="x" min={0} max={7} value={value} onValueChange={setValue} />
+    );
   }
 
   it('steps with the buttons and the arrow keys and clamps to the range', async () => {
