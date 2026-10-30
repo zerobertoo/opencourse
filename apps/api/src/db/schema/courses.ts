@@ -1,4 +1,11 @@
-import type { Caption, CertificateTemplate, ExternalVideoAsset, Quiz } from '@opencourse/shared';
+import {
+  courseStatusSchema,
+  lessonTypeSchema,
+  type Caption,
+  type CertificateTemplate,
+  type ExternalVideoAsset,
+  type Quiz,
+} from '@opencourse/shared';
 import {
   boolean,
   index,
@@ -13,8 +20,8 @@ import {
 } from 'drizzle-orm/pg-core';
 import { users } from './users';
 
-export const courseStatus = pgEnum('course_status', ['draft', 'published', 'archived']);
-export const lessonType = pgEnum('lesson_type', ['video', 'text', 'file', 'quiz']);
+export const courseStatus = pgEnum('course_status', courseStatusSchema.enum);
+export const lessonType = pgEnum('lesson_type', lessonTypeSchema.enum);
 
 export const courses = pgTable(
   'courses',

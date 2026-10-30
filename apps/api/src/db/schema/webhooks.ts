@@ -1,4 +1,4 @@
-import type { DomainEventName } from '@opencourse/shared';
+import { webhookDeliveryStatusSchema, type DomainEventName } from '@opencourse/shared';
 import {
   boolean,
   index,
@@ -29,11 +29,10 @@ export const webhookEndpoints = pgTable('webhook_endpoints', {
   updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
 });
 
-export const webhookDeliveryStatus = pgEnum('webhook_delivery_status', [
-  'pending',
-  'succeeded',
-  'failed',
-]);
+export const webhookDeliveryStatus = pgEnum(
+  'webhook_delivery_status',
+  webhookDeliveryStatusSchema.enum,
+);
 
 /** One event addressed to one endpoint, and what happened when the worker tried to deliver it. */
 export const webhookDeliveries = pgTable(

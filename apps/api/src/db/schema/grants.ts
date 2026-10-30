@@ -1,9 +1,10 @@
 import { sql } from 'drizzle-orm';
+import { grantSourceSchema } from '@opencourse/shared';
 import { index, pgEnum, pgTable, timestamp, uniqueIndex, uuid } from 'drizzle-orm/pg-core';
 import { courses } from './courses';
 import { users } from './users';
 
-export const grantSource = pgEnum('grant_source', ['manual', 'invite', 'plugin']);
+export const grantSource = pgEnum('grant_source', grantSourceSchema.enum);
 
 /** Access of a user to a course. Status is derived: revoked, expired by date, or active. */
 export const grants = pgTable(

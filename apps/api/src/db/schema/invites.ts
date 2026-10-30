@@ -1,8 +1,9 @@
 import { index, pgEnum, pgTable, text, timestamp, uuid } from 'drizzle-orm/pg-core';
+import { inviteStatusSchema } from '@opencourse/shared';
 import { courses } from './courses';
 import { users } from './users';
 
-export const inviteStatus = pgEnum('invite_status', ['pending', 'accepted', 'expired', 'revoked']);
+export const inviteStatus = pgEnum('invite_status', inviteStatusSchema.enum);
 
 export const invites = pgTable(
   'invites',

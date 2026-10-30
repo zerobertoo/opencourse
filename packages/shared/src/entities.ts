@@ -97,11 +97,13 @@ export const lessonTranslationSchema = z.object({
 });
 export type LessonTranslation = z.infer<typeof lessonTranslationSchema>;
 
+export const videoAssetStatusSchema = z.enum(['uploading', 'processing', 'ready', 'error']);
+
 /** A video sent to this instance: transcoded to HLS by the worker and played through the API. */
 export const localVideoAssetSchema = z.object({
   provider: z.literal('local'),
   assetId: idSchema,
-  status: z.enum(['uploading', 'processing', 'ready', 'error']),
+  status: videoAssetStatusSchema,
   /** Why processing failed; only set when the status is `error`. */
   errorMessage: z.string().nullable(),
   durationSeconds: z.number().nonnegative().nullable(),
