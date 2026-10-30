@@ -33,7 +33,10 @@ const AdminUsers = lazyPage(() => import('@/pages/admin/Users'), 'AdminUsers');
 const AdminVideos = lazyPage(() => import('@/pages/admin/Videos'), 'AdminVideos');
 const AdminApiKeys = lazyPage(() => import('@/pages/admin/ApiKeys'), 'AdminApiKeys');
 const AdminWebhooks = lazyPage(() => import('@/pages/admin/Webhooks'), 'AdminWebhooks');
-const Showcase = lazyPage(() => import('@/pages/Showcase'), 'Showcase');
+// dev-only verification page; the ternary lets the production build drop its chunk
+const Showcase = import.meta.env.DEV
+  ? lazyPage(() => import('@/pages/Showcase'), 'Showcase')
+  : null;
 const CourseEditor = lazyPage(() => import('@/pages/studio/CourseEditor'), 'CourseEditor');
 const StudioCourses = lazyPage(() => import('@/pages/studio/Courses'), 'StudioCourses');
 const StudioDashboard = lazyPage(() => import('@/pages/studio/Dashboard'), 'StudioDashboard');
@@ -57,7 +60,7 @@ export function App() {
         </Route>
 
         <Route element={<StudentLayout />}>
-          <Route path="showcase" element={<Showcase />} />
+          {Showcase && <Route path="showcase" element={<Showcase />} />}
           <Route element={<RequireAuth />}>
             <Route index element={<Home />} />
             <Route path="courses/:slug" element={<CoursePage />} />

@@ -244,7 +244,7 @@ function RecentCertificatesSection() {
         </h2>
         <Link
           to="/certificates"
-          className="text-sm text-primary underline-offset-4 hover:underline"
+          className="-my-2 inline-flex min-h-11 items-center text-sm text-primary underline-offset-4 hover:underline"
         >
           {t('home.viewAll')}
         </Link>
