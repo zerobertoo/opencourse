@@ -337,8 +337,23 @@ describe('outbound webhooks', () => {
       'https://[fe80::1]/hook',
       'https://[fd00::1]/hook',
       'https://localhost/hook',
+      // the URL parser turns decimal and octal forms into plain IPv4 literals
+      'https://2130706433/hook',
+      'https://0177.0.0.1/hook',
+      'https://[fec0::1]/hook',
+      'https://[2001::1]/hook',
     ])('refuses %s without opening a connection', async (url) => {
       expect(await send(url)).toMatchObject({ statusCode: null, refused: true });
+    });
+
+    it('answers with the status of a receiver that streams a huge body, and cuts it off', async () => {
+      receiver.respond = (_request, response) => {
+        response.writeHead(200);
+        const chunk = Buffer.alloc(32 * 1024);
+        const timer = setInterval(() => response.write(chunk), 1);
+        response.on('close', () => clearInterval(timer));
+      };
+      expect(await send(receiver.url, true)).toMatchObject({ statusCode: 200, refused: false });
     });
 
     it('does not report a response that was cut off as a success', async () => {
@@ -366,6 +381,9 @@ describe('outbound webhooks', () => {
       expect(isPublicAddress('64:ff9b::a00:1')).toBe(false);
       expect(isPublicAddress('2002:7f00:1::')).toBe(false);
       expect(isPublicAddress('203.0.113.9')).toBe(false);
+      expect(isPublicAddress('192.88.99.1')).toBe(false);
+      expect(isPublicAddress('64:ff9b:1::1')).toBe(false);
+      expect(isPublicAddress('100::1')).toBe(false);
     });
   });
 

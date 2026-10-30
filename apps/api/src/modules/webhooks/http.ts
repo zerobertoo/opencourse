@@ -99,6 +99,8 @@ export async function resolveDestination(
   return { url, target };
 }
 
+const MAX_DRAINED_RESPONSE_BYTES = 64 * 1024;
+
 /**
  * Sends one signed POST. Never throws: the caller decides from the result whether to retry.
  * The connection goes to the address `resolveDestination` checked, so DNS cannot change between
@@ -159,8 +161,16 @@ export async function postWebhook(input: WebhookRequest): Promise<WebhookRespons
               : failure('Connection closed before the response ended'),
           );
         });
-        // the body is not stored, only drained so the socket frees up
-        response.resume();
+        // the body is not stored, only drained so the socket frees up; a receiver that keeps
+        // sending has already answered with its status, so the connection is cut
+        let received = 0;
+        response.on('data', (chunk: Buffer) => {
+          received += chunk.length;
+          if (received <= MAX_DRAINED_RESPONSE_BYTES || complete) return;
+          complete = true;
+          resolve({ statusCode, error: null, refused: false });
+          request.destroy();
+        });
       },
     );
     request.on('error', (error) =>
