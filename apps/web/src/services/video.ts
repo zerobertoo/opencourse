@@ -23,7 +23,11 @@ export interface VideoService {
    * `play` takes the stream, `beat` renews it and answers false once another device took it over, `check` only asks, `stop` frees it,
    * which is the cue to pause. A failed report counts as active, so a hiccup never stops a lesson.
    */
-  reportPlayback(assetId: string, event: StreamEvent): Promise<boolean>;
+  reportPlayback(
+    assetId: string,
+    event: StreamEvent,
+    options?: { keepalive?: boolean },
+  ): Promise<boolean>;
   /**
    * Address a `<track>` can load a caption from. A caption uploaded to this instance is behind the
    * access check, so it is fetched with the session and handed over as a local object address.

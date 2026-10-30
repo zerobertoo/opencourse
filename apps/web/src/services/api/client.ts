@@ -17,6 +17,8 @@ export interface ApiRequestOptions<T> {
   query?: Record<string, string | undefined>;
   /** Validates the response body against the shared contract. Omit for 204 responses. */
   schema?: ZodType<T>;
+  /** Lets the request finish after the page is closed (the browser caps the body at 64 KiB). */
+  keepalive?: boolean;
 }
 
 export interface ApiClientOptions {
@@ -110,6 +112,7 @@ export class ApiClient {
       return await this.fetchImplementation(`${this.baseUrl}${path}${queryString}`, {
         method,
         credentials: 'include',
+        keepalive: options.keepalive,
         headers: {
           accept: 'application/json',
           [CSRF_HEADER_NAME]: CSRF_HEADER_VALUE,

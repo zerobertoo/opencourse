@@ -34,6 +34,18 @@ export function useSingleStream(assetId: string | undefined) {
   }, [assetId, video, stopBeats]);
   useEffect(() => release, [release]);
 
+  // closing the tab never unmounts the component: the report has to outlive the page
+  useEffect(() => {
+    if (!assetId) return;
+    const onPageHide = () => {
+      if (!playingRef.current) return;
+      playingRef.current = false;
+      void video.reportPlayback(assetId, 'stop', { keepalive: true });
+    };
+    window.addEventListener('pagehide', onPageHide);
+    return () => window.removeEventListener('pagehide', onPageHide);
+  }, [assetId, video]);
+
   const onPlay = useCallback(
     (element: HTMLVideoElement) => {
       if (!assetId) return;

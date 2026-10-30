@@ -19,12 +19,12 @@ export function createApiVideoService(client: ApiClient): VideoService {
       // the API answers with a path; the player needs the full address
       return { url: client.absoluteUrl(playbackUrl), posterUrl };
     },
-    async reportPlayback(assetId, event) {
+    async reportPlayback(assetId, event, options) {
       try {
         const { active } = await client.request(
           'POST',
           `/videos/${encodeURIComponent(assetId)}/heartbeat`,
-          { body: { event }, schema: streamHeartbeatResponseSchema },
+          { body: { event }, schema: streamHeartbeatResponseSchema, keepalive: options?.keepalive },
         );
         return active;
       } catch {

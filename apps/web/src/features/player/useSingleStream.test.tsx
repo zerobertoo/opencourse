@@ -57,6 +57,32 @@ describe('useSingleStream', () => {
     expect(reportPlayback).not.toHaveBeenCalled();
   });
 
+  it('frees the stream with a request that outlives the page when the tab is closed', () => {
+    const { result, reportPlayback, element, unmount } = setup();
+    act(() => result.current.onPlay(element));
+    reportPlayback.mockClear();
+
+    act(() => {
+      window.dispatchEvent(new Event('pagehide'));
+    });
+
+    expect(reportPlayback).toHaveBeenCalledWith(ASSET_ID, 'stop', { keepalive: true });
+    // the unmount that follows has nothing left to free
+    reportPlayback.mockClear();
+    unmount();
+    expect(reportPlayback).not.toHaveBeenCalled();
+  });
+
+  it('does not report a stop on pagehide when nothing is playing', () => {
+    const { reportPlayback } = setup();
+
+    act(() => {
+      window.dispatchEvent(new Event('pagehide'));
+    });
+
+    expect(reportPlayback).not.toHaveBeenCalled();
+  });
+
   it('frees the stream when the player goes away while playing', () => {
     const { result, reportPlayback, element, unmount } = setup();
     act(() => result.current.onPlay(element));
