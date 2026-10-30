@@ -1,7 +1,7 @@
 import { forwardRef } from 'react';
 import { cn } from '@/lib/utils';
 
-const fieldClassName =
+export const fieldClassName =
   'w-full rounded-md border border-input bg-surface px-3 text-sm text-surface-foreground placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-60 aria-[invalid=true]:border-destructive';
 
 export const Input = forwardRef<HTMLInputElement, React.InputHTMLAttributes<HTMLInputElement>>(
@@ -22,10 +22,3 @@ export const Textarea = forwardRef<
   />
 ));
 Textarea.displayName = 'Textarea';
-
-export const Select = forwardRef<HTMLSelectElement, React.SelectHTMLAttributes<HTMLSelectElement>>(
-  ({ className, ...props }, ref) => (
-    <select ref={ref} className={cn(fieldClassName, 'h-10', className)} {...props} />
-  ),
-);
-Select.displayName = 'Select';

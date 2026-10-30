@@ -7,6 +7,7 @@ import { Spinner } from '@/components/Spinner';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useQuizAttempts, useSubmitQuiz } from '@/hooks/queries';
 import { localizeExplanation, localizeOption, localizeQuestion } from '@/lib/content';
@@ -108,7 +109,13 @@ export function QuizLesson({
                   <span className="me-2 font-mono text-muted-foreground">{index + 1}.</span>
                   {content.prompt}
                 </legend>
-                <div className="space-y-2">
+                <RadioGroup
+                  value={answers[question.id] ?? ''}
+                  onValueChange={(next) =>
+                    setAnswers((current) => ({ ...current, [question.id]: next }))
+                  }
+                  disabled={result !== undefined}
+                >
                   {question.options.map((option) => {
                     const isSelected = answers[question.id] === option.id;
                     // the right option is only revealed once the attempt passed; before that a
@@ -122,22 +129,17 @@ export function QuizLesson({
                       <label
                         key={option.id}
                         className={cn(
-                          'flex cursor-pointer items-start gap-3 rounded-lg border bg-surface p-3 text-sm has-[:focus-visible]:outline has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-ring',
+                          'flex cursor-pointer items-start gap-3 rounded-lg border bg-surface p-3 text-sm',
                           isSelected && !questionResult && 'border-primary bg-accent',
                           isCorrectOption && 'border-primary bg-accent',
                           isWrongSelection && 'border-destructive',
                           result && 'cursor-default',
                         )}
                       >
-                        <input
-                          type="radio"
-                          name={question.id}
+                        <RadioGroupItem
                           value={option.id}
-                          checked={isSelected}
-                          onChange={() =>
-                            setAnswers((current) => ({ ...current, [question.id]: option.id }))
-                          }
-                          className="mt-0.5 size-5 accent-primary"
+                          className="mt-0.5"
+                          disabled={result !== undefined}
                         />
                         <span className="flex-1">
                           {localizeOption(option, locale, defaultLocale)}
@@ -157,7 +159,7 @@ export function QuizLesson({
                       </label>
                     );
                   })}
-                </div>
+                </RadioGroup>
                 {questionResult && explanation ? (
                   <p className="rounded-md bg-muted p-3 text-sm">
                     <span className="font-medium">{t('quiz.explanation')}: </span>

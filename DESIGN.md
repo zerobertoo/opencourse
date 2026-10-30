@@ -207,6 +207,13 @@ Gently rounded and consistent: controls and inputs 8px (`rounded-md`), menus 10p
 - **Style:** Surface fill, 3:1 input border, 8px radius, 40px high, 12px padding, muted placeholder (same on the topbar search). Textarea min 112px.
 - **Focus:** global 2px accent outline. **Error:** destructive border via `aria-invalid`. **Disabled:** 60% opacity.
 
+### Form controls
+- **Rule:** no native form control is used directly. `<select>`, `<textarea>`, `<input>` (including `type=date`, `file`, `number`, `radio`, `checkbox`) only appear inside `components/ui`; ESLint rejects them elsewhere. This keeps look and behaviour the same in Chrome, Firefox, Safari, Opera and mobile browsers.
+- **Select** (`ui/select`, Radix): same field look as Input, popover list with arrows, Home/End and type-ahead; an empty-string option is the "no filter" entry. **Checkbox** and **RadioGroup** (Radix): 20px mark inside a row that is at least 44px tall, the whole label toggles it.
+- **DatePicker** (`ui/date-picker`, react-day-picker in a Radix popover): trigger shaped like an input, calendar in the interface language, 44px day cells on mobile; value stays `yyyy-mm-dd`.
+- **NumberInput** (`ui/number-input`): integer field with minus/plus outline buttons and arrow-key stepping, clamped to min and max. **FilePicker** (`ui/file-picker`): an outline button over a hidden native input; shows a spinner while busy.
+- **Form fields** (`components/FormFields`): `SelectField`, `CheckboxField` and their `Form*` react-hook-form versions add the label, hint and `aria-invalid` error message.
+
 ### Navigation
 - Header links with an active state in the accent; tabs and the admin section nav use an underline: transparent border at rest, 2px accent border and full-contrast text when active, muted text otherwise, over an inset hairline.
 

@@ -6,11 +6,12 @@ import { useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import { useAuth } from '@/auth/AuthContext';
+import { FormSelectField } from '@/components/FormFields';
 import { Spinner } from '@/components/Spinner';
 import { TextField } from '@/components/TextField';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { Select } from '@/components/ui/input';
+import { RadioGroup, RadioOption } from '@/components/ui/radio-group';
 import { DevicesSection } from '@/features/account/DevicesSection';
 import {
   changePasswordSchema,
@@ -45,6 +46,7 @@ function ProfileSection() {
   const timeZones = useMemo(() => listTimeZones(user?.timeZone ?? 'UTC'), [user?.timeZone]);
   const {
     register,
+    control,
     handleSubmit,
     reset,
     formState: { errors, isSubmitting, isDirty },
@@ -92,30 +94,23 @@ function ProfileSection() {
         />
         <TextField label={t('settings.profile.email')} value={user.email} readOnly disabled />
         <div className="grid gap-4 sm:grid-cols-2">
-          <div className="space-y-1.5">
-            <label htmlFor="profile-locale" className="text-sm font-medium">
-              {t('settings.profile.language')}
-            </label>
-            <Select id="profile-locale" {...register('locale')}>
-              {SUPPORTED_LOCALES.map((locale) => (
-                <option key={locale} value={locale}>
-                  {t(`common:language.${locale}`)}
-                </option>
-              ))}
-            </Select>
-          </div>
-          <div className="space-y-1.5">
-            <label htmlFor="profile-timezone" className="text-sm font-medium">
-              {t('settings.profile.timeZone')}
-            </label>
-            <Select id="profile-timezone" {...register('timeZone')}>
-              {timeZones.map((zone) => (
-                <option key={zone} value={zone}>
-                  {zone}
-                </option>
-              ))}
-            </Select>
-          </div>
+          <FormSelectField
+            control={control}
+            name="locale"
+            id="profile-locale"
+            label={t('settings.profile.language')}
+            options={SUPPORTED_LOCALES.map((locale) => ({
+              value: locale,
+              label: t(`common:language.${locale}`),
+            }))}
+          />
+          <FormSelectField
+            control={control}
+            name="timeZone"
+            id="profile-timezone"
+            label={t('settings.profile.timeZone')}
+            options={timeZones.map((zone) => ({ value: zone, label: zone }))}
+          />
         </div>
         <Button type="submit" disabled={!isDirty || isSubmitting}>
           {isSubmitting ? <Spinner /> : null}
@@ -133,27 +128,27 @@ function ThemeSection() {
   return (
     <Card className="p-5">
       <fieldset className="space-y-4">
-        <legend className="text-xl font-semibold">{t('settings.theme.title')}</legend>
+        <legend id="theme-legend" className="text-xl font-semibold">
+          {t('settings.theme.title')}
+        </legend>
         <p className="text-sm text-muted-foreground">{t('settings.theme.description')}</p>
-        <div className="grid gap-2 sm:grid-cols-3">
+        <RadioGroup
+          value={preference}
+          onValueChange={(next) => setPreference(next as ThemePreference)}
+          aria-labelledby="theme-legend"
+          className="sm:grid-cols-3"
+        >
           {THEME_OPTIONS.map(({ value, icon: Icon }) => (
-            <label
+            <RadioOption
               key={value}
-              className="flex cursor-pointer items-center gap-2 rounded-lg border bg-surface p-3 text-sm has-[:checked]:border-primary has-[:checked]:bg-accent has-[:focus-visible]:outline has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-ring"
+              value={value}
+              className="rounded-lg border bg-surface p-3 has-[[data-state=checked]]:border-primary has-[[data-state=checked]]:bg-accent"
             >
-              <input
-                type="radio"
-                name="theme"
-                value={value}
-                checked={preference === value}
-                onChange={() => setPreference(value)}
-                className="size-5 accent-primary"
-              />
               <Icon className="size-4 text-muted-foreground" aria-hidden="true" />
               {t(`common:theme.${value}`)}
-            </label>
+            </RadioOption>
           ))}
-        </div>
+        </RadioGroup>
       </fieldset>
     </Card>
   );

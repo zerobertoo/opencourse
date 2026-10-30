@@ -1,6 +1,6 @@
 import { COVER_CONTENT_TYPES, COVER_MAX_BYTES, type CourseDetail } from '@opencourse/shared';
 import { ImagePlus, Trash2 } from 'lucide-react';
-import { useRef, useState, type ChangeEvent } from 'react';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import { CourseCover } from '@/components/CourseCover';
@@ -8,6 +8,7 @@ import { FormError } from '@/components/FormFields';
 import { Spinner } from '@/components/Spinner';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
+import { FilePicker } from '@/components/ui/file-picker';
 import { useCourseCover } from '@/hooks/studioQueries';
 import { useServiceErrorMessage } from '@/lib/serviceError';
 
@@ -18,14 +19,10 @@ export function CoverCard({ course }: { course: CourseDetail }) {
   const { t } = useTranslation('studio');
   const describeError = useServiceErrorMessage();
   const cover = useCourseCover(course.id);
-  const input = useRef<HTMLInputElement>(null);
   const [error, setError] = useState<string | null>(null);
   const isBusy = cover.upload.isPending || cover.remove.isPending;
 
-  async function onPick(event: ChangeEvent<HTMLInputElement>) {
-    const file = event.target.files?.[0];
-    // so picking the same file again still fires a change
-    event.target.value = '';
+  async function onPick([file]: File[]) {
     if (!file) return;
     setError(null);
     if (!COVER_CONTENT_TYPES.some((type) => type === file.type)) {
@@ -70,23 +67,14 @@ export function CoverCard({ course }: { course: CourseDetail }) {
           className="aspect-video w-48 rounded-md"
         />
         <div className="flex flex-wrap gap-2">
-          <input
-            ref={input}
-            type="file"
+          <FilePicker
+            label={course.coverImageUrl ? t('details.cover.replace') : t('details.cover.upload')}
             accept={COVER_CONTENT_TYPES.join(',')}
-            className="sr-only"
-            aria-label={t('details.cover.fileLabel')}
-            onChange={onPick}
-          />
-          <Button
-            type="button"
-            variant="outline"
+            icon={ImagePlus}
+            loading={cover.upload.isPending}
             disabled={isBusy}
-            onClick={() => input.current?.click()}
-          >
-            {cover.upload.isPending ? <Spinner /> : <ImagePlus aria-hidden="true" />}
-            {course.coverImageUrl ? t('details.cover.replace') : t('details.cover.upload')}
-          </Button>
+            onFiles={(files) => void onPick(files)}
+          />
           {course.coverImageUrl ? (
             <Button type="button" variant="ghost" disabled={isBusy} onClick={onRemove}>
               {cover.remove.isPending ? <Spinner /> : <Trash2 aria-hidden="true" />}

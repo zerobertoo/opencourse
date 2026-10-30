@@ -81,7 +81,6 @@
     "cover": {
       "title": "Cover image",
       "hint": "PNG, JPEG or WebP, up to {max} MB. Without one, the course gets a generated cover.",
-      "fileLabel": "Cover image file",
       "upload": "Upload image",
       "replace": "Replace image",
       "remove": "Remove image",

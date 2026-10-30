@@ -6,8 +6,8 @@ import {
   type Lesson,
   type Locale,
 } from '@opencourse/shared';
-import { FileText, Trash2, Upload, Video } from 'lucide-react';
-import { useId, useRef, useState } from 'react';
+import { FileText, Trash2, Video } from 'lucide-react';
+import { useId, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
@@ -16,6 +16,7 @@ import { Spinner } from '@/components/Spinner';
 import { TextField } from '@/components/TextField';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { FilePicker } from '@/components/ui/file-picker';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { usePlatformSettings } from '@/hooks/adminQueries';
 import { useCurriculumMutations } from '@/hooks/studioQueries';
@@ -51,52 +52,6 @@ export function PanelSection({
       </div>
       {children}
     </section>
-  );
-}
-
-/** Button that opens the native file picker for a hidden input. */
-function FilePicker({
-  label,
-  accept,
-  multiple,
-  disabled,
-  onFiles,
-}: {
-  label: string;
-  accept: string;
-  multiple?: boolean;
-  disabled?: boolean;
-  onFiles: (files: File[]) => void;
-}) {
-  const inputRef = useRef<HTMLInputElement>(null);
-  const inputId = useId();
-  return (
-    <>
-      <input
-        ref={inputRef}
-        id={inputId}
-        type="file"
-        accept={accept}
-        multiple={multiple}
-        className="sr-only"
-        tabIndex={-1}
-        aria-label={label}
-        onChange={(event) => {
-          onFiles(Array.from(event.target.files ?? []));
-          // lets the same file be picked again
-          event.target.value = '';
-        }}
-      />
-      <Button
-        variant="outline"
-        size="sm"
-        disabled={disabled}
-        onClick={() => inputRef.current?.click()}
-      >
-        <Upload aria-hidden="true" />
-        {label}
-      </Button>
-    </>
   );
 }
 
@@ -271,6 +226,7 @@ export function VideoSection({
             </TabsList>
             <TabsContent value="upload" className="space-y-3">
               <FilePicker
+                size="sm"
                 label={t('studio:video.upload')}
                 accept="video/mp4,video/webm,video/quicktime,video/x-matroska,.mp4,.webm,.mov,.mkv,.m4v"
                 disabled={setVideo.isPending || isUploading}
@@ -348,6 +304,7 @@ export function VideoSection({
                 </span>
                 <span className="flex gap-2">
                   <FilePicker
+                    size="sm"
                     label={t('studio:video.captionUpload', { language })}
                     accept=".vtt,.srt,text/vtt,application/x-subrip"
                     disabled={isSavingCaption}
@@ -445,6 +402,7 @@ export function MaterialsSection({ courseId, lesson }: { courseId: string; lesso
       )}
       <div className="space-y-1.5">
         <FilePicker
+          size="sm"
           label={t('studio:materials.add')}
           accept="*/*"
           multiple

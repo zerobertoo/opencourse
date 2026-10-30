@@ -25,6 +25,17 @@ if (!window.matchMedia) {
   }));
 }
 
+// jsdom lacks the layout and pointer APIs that Radix Select and Popover rely on
+globalThis.ResizeObserver ??= class {
+  observe() {}
+  unobserve() {}
+  disconnect() {}
+};
+Element.prototype.hasPointerCapture ??= () => false;
+Element.prototype.setPointerCapture ??= () => {};
+Element.prototype.releasePointerCapture ??= () => {};
+Element.prototype.scrollIntoView ??= () => {};
+
 // jsdom exposes `audioTracks` and `videoTracks` as plain lists, but the player listens to them
 // like event targets (as browsers that support them do), so tests give it empty ones
 class EmptyTrackList extends EventTarget {

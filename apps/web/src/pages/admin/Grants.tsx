@@ -9,7 +9,8 @@ import { ConfirmDialog } from '@/components/ConfirmDialog';
 import { EmptyState, ErrorState } from '@/components/StateViews';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Input, Select } from '@/components/ui/input';
+import { Input } from '@/components/ui/input';
+import { Select } from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ExtendGrantDialog } from '@/features/admin/ExtendGrantDialog';
 import {
@@ -244,15 +245,16 @@ export function AdminGrants() {
           <Select
             id="admin-grants-course"
             value={courseId}
-            onChange={(event) => updateParam('course', event.target.value)}
-          >
-            <option value="">{t('admin:grants.allCourses')}</option>
-            {[...courseTitles].map(([id, title]) => (
-              <option key={id} value={id}>
-                {title}
-              </option>
-            ))}
-          </Select>
+            onValueChange={(next) => updateParam('course', next)}
+            options={[
+              { value: '', label: t('admin:grants.allCourses') },
+              ...[...courseTitles].map(([id, title]) => ({ value: id, label: title })),
+              // a linked course that is still loading (or gone) keeps showing as the filter
+              ...(courseId && !courseTitles.has(courseId)
+                ? [{ value: courseId, label: courseId }]
+                : []),
+            ]}
+          />
         </div>
         <div>
           <label htmlFor="admin-grants-status" className="sr-only">
@@ -261,15 +263,15 @@ export function AdminGrants() {
           <Select
             id="admin-grants-status"
             value={status ?? ''}
-            onChange={(event) => updateParam('status', event.target.value)}
-          >
-            <option value="">{t('admin:grants.allStatuses')}</option>
-            {grantStatusSchema.options.map((option) => (
-              <option key={option} value={option}>
-                {t(`admin:grants.status.${option}`)}
-              </option>
-            ))}
-          </Select>
+            onValueChange={(next) => updateParam('status', next)}
+            options={[
+              { value: '', label: t('admin:grants.allStatuses') },
+              ...grantStatusSchema.options.map((option) => ({
+                value: option,
+                label: t(`admin:grants.status.${option}`),
+              })),
+            ]}
+          />
         </div>
       </div>
 

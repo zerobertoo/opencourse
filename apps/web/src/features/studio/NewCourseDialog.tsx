@@ -4,7 +4,7 @@ import { useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
-import { FormError, SelectField, TextAreaField } from '@/components/FormFields';
+import { FormError, FormSelectField, TextAreaField } from '@/components/FormFields';
 import { Spinner } from '@/components/Spinner';
 import { TextField } from '@/components/TextField';
 import { Button } from '@/components/ui/button';
@@ -30,6 +30,7 @@ export function NewCourseDialog({
   const [formError, setFormError] = useState<string | null>(null);
   const {
     register,
+    control,
     handleSubmit,
     reset,
     formState: { errors },
@@ -76,18 +77,16 @@ export function NewCourseDialog({
             error={errors.description}
             {...register('description')}
           />
-          <SelectField
+          <FormSelectField
+            control={control}
+            name="defaultLocale"
             label={t('studio:newCourse.defaultLanguage')}
             hint={t('studio:newCourse.defaultLanguageHint')}
-            error={errors.defaultLocale}
-            {...register('defaultLocale')}
-          >
-            {locales.map((locale) => (
-              <option key={locale} value={locale}>
-                {t(`common:language.${locale}`)}
-              </option>
-            ))}
-          </SelectField>
+            options={locales.map((locale) => ({
+              value: locale,
+              label: t(`common:language.${locale}`),
+            }))}
+          />
           <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
             <Button type="button" variant="outline" onClick={() => handleOpenChange(false)}>
               {t('common:actions.cancel')}

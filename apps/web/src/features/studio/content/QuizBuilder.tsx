@@ -33,6 +33,8 @@ import { Spinner } from '@/components/Spinner';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Input, Textarea } from '@/components/ui/input';
+import { NumberInput } from '@/components/ui/number-input';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { useCurriculumMutations } from '@/hooks/studioQueries';
 import {
   MIN_OPTIONS,
@@ -155,44 +157,46 @@ function QuestionEditor({
         <fieldset className="space-y-2">
           <legend className="text-sm font-medium">{t('quiz.options')}</legend>
           <p className="text-xs text-muted-foreground">{t('quiz.optionsHint')}</p>
-          <ul className="space-y-2">
-            {question.options.map((option, optionIndex) => {
-              const optionNumber = optionIndex + 1;
-              return (
-                <li key={option.id} className="flex items-center gap-2">
-                  <input
-                    type="radio"
-                    name={`${baseId}-correct`}
-                    checked={option.isCorrect}
-                    className="size-5 shrink-0 accent-primary"
-                    aria-label={t('quiz.markCorrect', { number: optionNumber })}
-                    onChange={() =>
-                      onChange((quiz) => setCorrectOption(quiz, question.id, option.id))
-                    }
-                  />
-                  <Input
-                    value={getOptionText(option, locale)}
-                    placeholder={isDefault ? undefined : getOptionText(option, defaultLocale)}
-                    aria-label={t('quiz.optionText', { number: optionNumber })}
-                    onChange={(event) =>
-                      onChange((quiz) =>
-                        setOptionText(quiz, question.id, option.id, locale, event.target.value),
-                      )
-                    }
-                  />
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    aria-label={t('quiz.removeOption', { number: optionNumber })}
-                    disabled={question.options.length <= MIN_OPTIONS}
-                    onClick={() => onChange((quiz) => removeOption(quiz, question.id, option.id))}
-                  >
-                    <Trash2 aria-hidden="true" />
-                  </Button>
-                </li>
-              );
-            })}
-          </ul>
+          <RadioGroup
+            aria-label={t('quiz.options')}
+            value={question.options.find((option) => option.isCorrect)?.id ?? ''}
+            onValueChange={(optionId) =>
+              onChange((quiz) => setCorrectOption(quiz, question.id, optionId))
+            }
+          >
+            <ul className="space-y-2">
+              {question.options.map((option, optionIndex) => {
+                const optionNumber = optionIndex + 1;
+                return (
+                  <li key={option.id} className="flex items-center gap-2">
+                    <RadioGroupItem
+                      value={option.id}
+                      aria-label={t('quiz.markCorrect', { number: optionNumber })}
+                    />
+                    <Input
+                      value={getOptionText(option, locale)}
+                      placeholder={isDefault ? undefined : getOptionText(option, defaultLocale)}
+                      aria-label={t('quiz.optionText', { number: optionNumber })}
+                      onChange={(event) =>
+                        onChange((quiz) =>
+                          setOptionText(quiz, question.id, option.id, locale, event.target.value),
+                        )
+                      }
+                    />
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      aria-label={t('quiz.removeOption', { number: optionNumber })}
+                      disabled={question.options.length <= MIN_OPTIONS}
+                      onClick={() => onChange((quiz) => removeOption(quiz, question.id, option.id))}
+                    >
+                      <Trash2 aria-hidden="true" />
+                    </Button>
+                  </li>
+                );
+              })}
+            </ul>
+          </RadioGroup>
           <Button
             variant="ghost"
             size="sm"
@@ -325,18 +329,12 @@ export function QuizBuilder({
         <label htmlFor="quiz-passing-score" className="text-sm font-medium">
           {t('studio:quiz.passingScore')}
         </label>
-        <Input
+        <NumberInput
           id="quiz-passing-score"
-          type="number"
-          inputMode="numeric"
           min={0}
           max={100}
           value={draft.passingScore}
-          onChange={(event) => {
-            const parsed = Math.round(Number(event.target.value));
-            const clamped = Number.isFinite(parsed) ? Math.min(100, Math.max(0, parsed)) : 0;
-            setDraft((quiz) => setPassingScore(quiz, clamped));
-          }}
+          onValueChange={(next) => setDraft((quiz) => setPassingScore(quiz, next))}
         />
         <p className="text-xs text-muted-foreground">{t('studio:quiz.passingScoreHint')}</p>
       </div>
