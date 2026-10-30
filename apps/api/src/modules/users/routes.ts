@@ -12,13 +12,13 @@ import { and, desc, eq, ilike, ne, or, sql, type SQL } from 'drizzle-orm';
 import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod';
 import { z } from 'zod';
 import { recordAudit } from '../../audit';
-import { revokeUserSessions } from '../../auth/sessions';
+import { revokeUserSessions } from '../auth/sessions';
 import { auditLog, users } from '../../db/schema';
 import { conflict, forbidden, notFound } from '../../errors';
-import { toPublicUser } from '../../mappers';
+import { toPublicUser } from './mappers';
 import { escapeLike } from '../../sql';
 import type { Database } from '../../plugins/db';
-import { ADMIN_GUARD_LOCK_ID } from '../../users/create-user';
+import { ADMIN_GUARD_LOCK_ID } from '../users/service';
 import { authContext } from '../../plugins/auth';
 
 const userIdParamsSchema = z.object({ id: z.uuid() });

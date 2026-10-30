@@ -10,7 +10,7 @@ import { z } from 'zod';
 import { certificates, users } from '../db/schema';
 import type { Mailer } from '../mail/mailer';
 import { certificateEmail } from '../mail/templates';
-import { toLocale } from '../mappers';
+import { toLocale } from '@opencourse/shared';
 import { issueCertificate } from '../modules/certificates/service';
 import { deliverWebhook, fanOutWebhooks, type AddDeliveryJob } from '../modules/webhooks/delivery';
 import type { Logger } from 'pino';

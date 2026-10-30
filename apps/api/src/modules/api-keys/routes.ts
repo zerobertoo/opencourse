@@ -10,7 +10,7 @@ import {
 import { desc, eq } from 'drizzle-orm';
 import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod';
 import { recordAudit } from '../../audit';
-import { generateToken, hashToken } from '../../auth/tokens';
+import { generateToken, hashToken } from '../auth/tokens';
 import { apiKeys, type ApiKeyRow } from '../../db/schema';
 import { notFound } from '../../errors';
 import { authContext } from '../../plugins/auth';

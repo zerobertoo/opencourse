@@ -20,7 +20,7 @@ import { Queue } from 'bullmq';
 import { and, eq } from 'drizzle-orm';
 import type { FastifyRequest } from 'fastify';
 import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod';
-import { findActiveSession } from '../../auth/sessions';
+import { findActiveSession } from '../auth/sessions';
 import type { Config } from '../../config';
 import { lessons, users, videoAssets, type CourseRow, type VideoAssetRow } from '../../db/schema';
 import { badRequest, conflict, forbidden, notFound, unauthorized } from '../../errors';

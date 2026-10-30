@@ -16,7 +16,7 @@ import {
   videoAssets,
   type VideoAssetRow,
 } from '../../db/schema';
-import { toLocale } from '../../mappers';
+import { toLocale } from '@opencourse/shared';
 import { readQuiz } from './lesson-fields';
 import type { Database } from '../../plugins/db';
 import { toFileAttachment } from '../files/service';

@@ -8,11 +8,11 @@ import {
 import { eq } from 'drizzle-orm';
 import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod';
 import { z } from 'zod';
-import { hashPassword, verifyPassword } from '../../auth/passwords';
-import { listUserSessions, revokeOwnSession, revokeUserSessions } from '../../auth/sessions';
+import { hashPassword, verifyPassword } from '../auth/passwords';
+import { listUserSessions, revokeOwnSession, revokeUserSessions } from '../auth/sessions';
 import { users } from '../../db/schema';
 import { badRequest, notFound } from '../../errors';
-import { toPublicUser } from '../../mappers';
+import { toPublicUser } from '../users/mappers';
 import { authContext } from '../../plugins/auth';
 
 const CHANGE_PASSWORD_LIMIT = { max: 10, timeWindow: '15 minutes' };

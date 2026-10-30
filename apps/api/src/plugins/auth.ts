@@ -8,8 +8,8 @@ import type {
 } from 'fastify';
 import { and, eq, isNull } from 'drizzle-orm';
 import fp from 'fastify-plugin';
-import { createSession, findActiveSession } from '../auth/sessions';
-import { hashToken, signAccessToken, verifyAccessToken } from '../auth/tokens';
+import { createSession, findActiveSession } from '../modules/auth/sessions';
+import { hashToken, signAccessToken, verifyAccessToken } from '../modules/auth/tokens';
 import type { Config } from '../config';
 import { apiKeys, users, type SessionRow, type UserRow } from '../db/schema';
 import { forbidden, unauthorized } from '../errors';

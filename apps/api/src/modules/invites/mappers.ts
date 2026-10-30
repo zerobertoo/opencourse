@@ -1,22 +1,5 @@
-import { type Invite, type InviteStatus, toLocale, type User } from '@opencourse/shared';
-import type { InviteRow, UserRow } from './db/schema';
-
-export { toLocale };
-
-/** The public shape of a user: never includes the password hash. */
-export function toPublicUser(row: UserRow): User {
-  return {
-    id: row.id,
-    name: row.name,
-    email: row.email,
-    avatarUrl: row.avatarUrl,
-    role: row.role,
-    locale: toLocale(row.locale),
-    timeZone: row.timeZone,
-    active: row.active,
-    createdAt: row.createdAt.toISOString(),
-  };
-}
+import type { Invite, InviteStatus } from '@opencourse/shared';
+import type { InviteRow } from '../../db/schema';
 
 /** A pending invite past its expiry date counts as expired, without needing a cleanup job. */
 export function effectiveInviteStatus(row: InviteRow, now: Date): InviteStatus {
