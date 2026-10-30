@@ -17,6 +17,7 @@ import {
   type VideoAssetRow,
 } from '../../db/schema';
 import { toLocale } from '../../mappers';
+import { readQuiz } from './lesson-fields';
 import type { Database } from '../../plugins/db';
 import { toFileAttachment } from '../files/service';
 import { readExternalVideo, toLocalVideoAsset } from '../video/service';
@@ -83,7 +84,7 @@ function toLesson(
     case 'file':
       return { ...base, type: 'file' };
     case 'quiz':
-      return { ...base, type: 'quiz', quiz: row.quiz ?? { passingScore: 70, questions: [] } };
+      return { ...base, type: 'quiz', quiz: readQuiz(row.quiz) };
   }
 }
 
