@@ -59,6 +59,8 @@ declare module 'fastify' {
     authenticateOrApiKey: preHandlerAsyncHookHandler;
     /** preHandler that requires a valid session and one of the given roles. */
     requireRole(...roles: Role[]): preHandlerAsyncHookHandler;
+    /** `requireRole` for routes that also take an API key, which always acts as an admin. */
+    requireRoleOrApiKey(...roles: Role[]): preHandlerAsyncHookHandler;
     /** Creates a session for the user and sets both cookies on the reply. */
     startSession(request: FastifyRequest, reply: FastifyReply, user: UserRow): Promise<void>;
     /** Sets a fresh access cookie (and the rotated refresh cookie, when given). */
@@ -193,6 +195,15 @@ export const authPlugin = fp<{ config: Config }>(async (app, { config }) => {
       if (!request.auth || !roles.includes(request.auth.user.role)) throw forbidden();
     };
     AUTH_KINDS.set(handler, 'session');
+    return handler;
+  });
+
+  app.decorate('requireRoleOrApiKey', (...roles: Role[]): preHandlerAsyncHookHandler => {
+    const handler: preHandlerAsyncHookHandler = async function (request, reply) {
+      await authenticateOrApiKey.call(this, request, reply);
+      if (!request.auth || !roles.includes(request.auth.user.role)) throw forbidden();
+    };
+    AUTH_KINDS.set(handler, 'apiKey');
     return handler;
   });
 });

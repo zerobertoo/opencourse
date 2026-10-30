@@ -23,6 +23,7 @@ import { toListedCourse } from './listed';
 import { assertPublishable } from './publish';
 import { redactQuizAnswers } from './redact';
 import { slugify } from './slug';
+import { ownedUnlessAdmin } from '../../ownership';
 import { authContext } from '../../plugins/auth';
 
 const MAX_SLUG_ATTEMPTS = 20;
@@ -63,7 +64,7 @@ export const courseRoutes: FastifyPluginAsyncZod = async (app) => {
       let visibility: SQL | undefined;
       if (scope === 'managed') {
         if (user.role === 'student') throw forbidden();
-        visibility = user.role === 'admin' ? undefined : eq(courses.instructorId, user.id);
+        visibility = ownedUnlessAdmin(user, courses.instructorId);
       } else {
         const grantedCourseIds = app.db
           .select({ id: grants.courseId })

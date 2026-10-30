@@ -5,6 +5,7 @@ import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod';
 import { courses, grants, users } from '../../db/schema';
 import { loadCourseDetails } from '../courses/detail';
 import { loadStudentProgress, progressOf, summarizeStudent } from '../progress/stats';
+import { ownedUnlessAdmin } from '../../ownership';
 import { authContext } from '../../plugins/auth';
 
 export const studioRoutes: FastifyPluginAsyncZod = async (app) => {
@@ -27,7 +28,7 @@ export const studioRoutes: FastifyPluginAsyncZod = async (app) => {
       const rows = await app.db
         .select()
         .from(courses)
-        .where(user.role === 'admin' ? undefined : eq(courses.instructorId, user.id));
+        .where(ownedUnlessAdmin(user, courses.instructorId));
       if (rows.length === 0) {
         return { activeStudents: 0, publishedCourses: 0, completionRate: 0, courses: [] };
       }

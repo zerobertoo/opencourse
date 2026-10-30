@@ -10,11 +10,12 @@ import {
 import { and, desc, eq, isNotNull, isNull, lte, } from 'drizzle-orm';
 import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod';
 import { courses, grants, users } from '../../db/schema';
-import { badRequest, conflict, forbidden, isUniqueViolation, notFound } from '../../errors';
+import { badRequest, conflict, isUniqueViolation, notFound } from '../../errors';
 import { requireManagedCourseById } from '../courses/access';
 import { activeGrantCondition } from './active';
 import { toGrant } from './mappers';
 import { grantOrExtend, loadManagedGrant, revokeGrantRow, setGrantExpiry } from './service';
+import { ownedUnlessAdmin } from '../../ownership';
 import { authContext } from '../../plugins/auth';
 
 /** SQL form of the effective status, so filtering agrees with what `toGrant` reports. */
@@ -33,13 +34,7 @@ export const grantRoutes: FastifyPluginAsyncZod = async (app) => {
   app.get(
     '/grants',
     {
-      preHandler: [
-        app.authenticateOrApiKey,
-        async (request) => {
-          // same rule as requireRole('admin', 'instructor')
-          if (!['admin', 'instructor'].includes(authContext(request).user.role)) throw forbidden();
-        },
-      ],
+      preHandler: app.requireRoleOrApiKey('admin', 'instructor'),
       schema: {
         tags: ['grants'],
         summary: 'List grants',
@@ -59,7 +54,7 @@ export const grantRoutes: FastifyPluginAsyncZod = async (app) => {
         .innerJoin(courses, eq(courses.id, grants.courseId))
         .where(
           and(
-            user.role === 'admin' ? undefined : eq(courses.instructorId, user.id),
+            ownedUnlessAdmin(user, courses.instructorId),
             courseId ? eq(grants.courseId, courseId) : undefined,
             userId ? eq(grants.userId, userId) : undefined,
             status ? statusCondition(status, now) : undefined,

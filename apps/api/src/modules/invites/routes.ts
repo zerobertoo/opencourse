@@ -20,6 +20,7 @@ import { effectiveInviteStatus, toLocale, toPublicInvite, toPublicUser } from '.
 import { createUser } from '../../users/create-user';
 import { resolveCourseAccess } from '../courses/access';
 import { createGrantRow } from '../grants/service';
+import { ownedUnlessAdmin } from '../../ownership';
 import { authContext } from '../../plugins/auth';
 
 const DEFAULT_INVITE_TTL_MS = 14 * 24 * 60 * 60 * 1000;
@@ -119,7 +120,7 @@ export const inviteRoutes: FastifyPluginAsyncZod<{ config: Config }> = async (ap
         .from(invites)
         .where(
           and(
-            user.role === 'admin' ? undefined : eq(invites.createdById, user.id),
+            ownedUnlessAdmin(user, invites.createdById),
             request.query.courseId ? eq(invites.courseId, request.query.courseId) : undefined,
           ),
         )
