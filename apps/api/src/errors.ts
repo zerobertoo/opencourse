@@ -7,8 +7,8 @@ export class HttpError extends Error {
   /** Optional context sent to the client as `error.details`, such as publish issues. */
   readonly details: unknown;
 
-  constructor(statusCode: number, message: string, details?: unknown) {
-    super(message);
+  constructor(statusCode: number, message: string, details?: unknown, options?: ErrorOptions) {
+    super(message, options);
     this.name = 'HttpError';
     this.statusCode = statusCode;
     this.details = details;
@@ -21,7 +21,9 @@ export const unauthorized = (message = 'Authentication required') => new HttpErr
 export const forbidden = (message = 'You do not have access to this resource') =>
   new HttpError(403, message);
 export const notFound = (message = 'Not found') => new HttpError(404, message);
-export const conflict = (message: string) => new HttpError(409, message);
+export const conflict = (message: string, details?: unknown) =>
+  new HttpError(409, message, details);
+export const tooManyRequests = (message: string) => new HttpError(429, message);
 
 /** True for the Postgres unique-violation error (SQLSTATE 23505), however the driver wraps it. */
 export function isUniqueViolation(error: unknown): boolean {

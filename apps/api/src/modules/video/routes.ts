@@ -23,7 +23,7 @@ import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod';
 import { findActiveSession } from '../../auth/sessions';
 import type { Config } from '../../config';
 import { lessons, users, videoAssets, type CourseRow, type VideoAssetRow } from '../../db/schema';
-import { HttpError, badRequest, conflict, forbidden, notFound, unauthorized } from '../../errors';
+import { badRequest, conflict, forbidden, notFound, unauthorized } from '../../errors';
 import {
   addTranscodeJob,
   DEFAULT_QUEUE_PREFIX,
@@ -478,7 +478,7 @@ export const videoRoutes: FastifyPluginAsyncZod<VideoRoutesOptions> = async (
           return false;
         });
         if (heldElsewhere) {
-          throw new HttpError(409, 'This account is playing a video on another device', {
+          throw conflict('This account is playing a video on another device', {
             reason: STREAM_IN_USE_REASON,
           });
         }
