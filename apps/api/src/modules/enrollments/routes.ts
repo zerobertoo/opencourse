@@ -8,12 +8,13 @@ import {
   type CourseStudentItem,
   type EnrolledCourseItem,
 } from '@opencourse/shared';
-import { and, desc, eq, gt, isNull, ne, or } from 'drizzle-orm';
+import { and, desc, eq, isNull, ne, } from 'drizzle-orm';
 import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod';
 import { courses, grants, users } from '../../db/schema';
 import { requireManagedCourse } from '../courses/access';
 import { loadCourseDetail, loadCourseDetails } from '../courses/detail';
 import { toListedCourse } from '../courses/listed';
+import { activeGrantCondition } from '../grants/active';
 import { toGrant } from '../grants/mappers';
 import { loadStudentProgress, progressOf, summarizeStudent } from '../progress/stats';
 
@@ -30,8 +31,7 @@ export const enrollmentRoutes: FastifyPluginAsyncZod = async (app) => {
       .where(
         and(
           eq(grants.userId, userId),
-          isNull(grants.revokedAt),
-          or(isNull(grants.expiresAt), gt(grants.expiresAt, now)),
+          activeGrantCondition(now),
           ne(courses.status, 'draft'),
         ),
       );

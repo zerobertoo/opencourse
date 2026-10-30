@@ -1,5 +1,6 @@
 import { studioMetricsSchema, type StudioMetrics } from '@opencourse/shared';
-import { and, eq, gt, inArray, isNull, or } from 'drizzle-orm';
+import { and, eq, inArray } from 'drizzle-orm';
+import { activeGrantCondition } from '../grants/active';
 import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod';
 import { courses, grants, users } from '../../db/schema';
 import { loadCourseDetails } from '../courses/detail';
@@ -37,11 +38,7 @@ export const studioRoutes: FastifyPluginAsyncZod = async (app) => {
         // deactivated people cannot study, so they are not students
         .innerJoin(users, and(eq(users.id, grants.userId), eq(users.active, true)))
         .where(
-          and(
-            inArray(grants.courseId, courseIds),
-            isNull(grants.revokedAt),
-            or(isNull(grants.expiresAt), gt(grants.expiresAt, now)),
-          ),
+          and(inArray(grants.courseId, courseIds), activeGrantCondition(now)),
         );
       const studentIds = [...new Set(active.map((grant) => grant.userId))];
       // ponytail: whole curricula and every record in memory; per-course SQL counts if instances grow large

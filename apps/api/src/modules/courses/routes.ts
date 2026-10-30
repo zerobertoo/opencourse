@@ -7,7 +7,7 @@ import {
   listCoursesResponseSchema,
   updateCourseRequestSchema,
 } from '@opencourse/shared';
-import { and, desc, eq, gt, inArray, isNull, or, sql, type SQL } from 'drizzle-orm';
+import { and, desc, eq, inArray, isNull, or, sql, type SQL } from 'drizzle-orm';
 import type { FastifyRequest } from 'fastify';
 import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod';
 import { courses, courseTranslations, grants, type CourseRow } from '../../db/schema';
@@ -15,6 +15,7 @@ import { recordAudit } from '../../audit';
 import { conflict, forbidden, isUniqueViolation, notFound } from '../../errors';
 import { escapeLike } from '../../sql';
 import { requireManagedCourse, resolveCourseAccess } from './access';
+import { activeGrantCondition } from '../grants/active';
 import { toGrant } from '../grants/mappers';
 import { deleteReplacedCover } from './cover';
 import { loadCourseDetail, loadCourseDetails } from './detail';
@@ -67,11 +68,7 @@ export const courseRoutes: FastifyPluginAsyncZod = async (app) => {
           .select({ id: grants.courseId })
           .from(grants)
           .where(
-            and(
-              eq(grants.userId, user.id),
-              isNull(grants.revokedAt),
-              or(isNull(grants.expiresAt), gt(grants.expiresAt, now)),
-            ),
+            and(eq(grants.userId, user.id), activeGrantCondition(now)),
           );
         visibility = or(
           eq(courses.status, 'published'),

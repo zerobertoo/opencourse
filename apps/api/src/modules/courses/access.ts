@@ -1,4 +1,5 @@
-import { and, eq, gt, isNull, or } from 'drizzle-orm';
+import { and, eq } from 'drizzle-orm';
+import { activeGrantCondition } from '../grants/active';
 import { grants, type CourseRow, type UserRow } from '../../db/schema';
 import { forbidden, notFound } from '../../errors';
 import type { Database } from '../../plugins/db';
@@ -33,8 +34,7 @@ export async function hasActiveGrant(
       and(
         eq(grants.userId, userId),
         eq(grants.courseId, courseId),
-        isNull(grants.revokedAt),
-        or(isNull(grants.expiresAt), gt(grants.expiresAt, now)),
+        activeGrantCondition(now),
       ),
     )
     .limit(1);

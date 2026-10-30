@@ -7,11 +7,12 @@ import {
   listGrantsResponseSchema,
   type GrantStatus,
 } from '@opencourse/shared';
-import { and, desc, eq, gt, isNotNull, isNull, lte, or } from 'drizzle-orm';
+import { and, desc, eq, isNotNull, isNull, lte, } from 'drizzle-orm';
 import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod';
 import { courses, grants, users } from '../../db/schema';
 import { badRequest, conflict, forbidden, isUniqueViolation, notFound } from '../../errors';
 import { requireManagedCourse } from '../courses/access';
+import { activeGrantCondition } from './active';
 import { toGrant } from './mappers';
 import { grantOrExtend, loadManagedGrant, revokeGrantRow, setGrantExpiry } from './service';
 
@@ -23,7 +24,7 @@ function statusCondition(status: GrantStatus, now: Date) {
     case 'expired':
       return and(isNull(grants.revokedAt), isNotNull(grants.expiresAt), lte(grants.expiresAt, now));
     case 'active':
-      return and(isNull(grants.revokedAt), or(isNull(grants.expiresAt), gt(grants.expiresAt, now)));
+      return activeGrantCondition(now);
   }
 }
 
