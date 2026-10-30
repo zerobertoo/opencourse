@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { isSenderAddress, updatePlatformSettingsRequestSchema } from './entities';
+import { isSenderAddress, updatePlatformSettingsRequestSchema } from './settings';
 
 describe('isSenderAddress', () => {
   it.each([

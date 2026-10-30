@@ -7,6 +7,12 @@ export type Locale = z.infer<typeof localeSchema>;
 
 export const DEFAULT_LOCALE: Locale = 'pt-BR';
 
+/** Falls back to the default for a language that is not supported (or not known yet). */
+export function toLocale(value: string | null | undefined): Locale {
+  const parsed = localeSchema.safeParse(value);
+  return parsed.success ? parsed.data : DEFAULT_LOCALE;
+}
+
 /** Platform access roles (RBAC). */
 export const roleSchema = z.enum(['student', 'instructor', 'admin']);
 export type Role = z.infer<typeof roleSchema>;

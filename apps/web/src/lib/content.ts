@@ -1,5 +1,6 @@
 import {
   resolveTranslation,
+  toLocale,
   type CourseDetail,
   type CourseModuleWithLessons,
   type Locale,
@@ -7,10 +8,7 @@ import {
   type QuizQuestion,
 } from '@opencourse/shared';
 
-/** Active interface language, restricted to the supported languages. */
-export function toLocale(language: string | undefined): Locale {
-  return language === 'en' ? 'en' : 'pt-BR';
-}
+export { toLocale };
 
 export interface LocalizedCourse {
   title: string;

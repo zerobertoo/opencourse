@@ -1,18 +1,7 @@
-import {
-  DEFAULT_LOCALE,
-  localeSchema,
-  type Invite,
-  type InviteStatus,
-  type Locale,
-  type User,
-} from '@opencourse/shared';
+import { type Invite, type InviteStatus, toLocale, type User } from '@opencourse/shared';
 import type { InviteRow, UserRow } from './db/schema';
 
-/** Falls back to the default for a stored locale that is no longer supported. */
-export function toLocale(value: string): Locale {
-  const parsed = localeSchema.safeParse(value);
-  return parsed.success ? parsed.data : DEFAULT_LOCALE;
-}
+export { toLocale };
 
 /** The public shape of a user: never includes the password hash. */
 export function toPublicUser(row: UserRow): User {
