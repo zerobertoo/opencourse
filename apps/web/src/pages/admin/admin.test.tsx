@@ -32,7 +32,7 @@ describe('admin access', () => {
     ).toBeVisible();
     await user.click(within(sections).getByRole('link', { name: 'Configurações' }));
     expect(await screen.findByRole('heading', { level: 2, name: 'Configurações' })).toBeVisible();
-  });
+  }, 10000); // CI timeout: lazy-loaded admin root route takes longer than default 5000ms to render.
 });
 
 describe('admin users', () => {

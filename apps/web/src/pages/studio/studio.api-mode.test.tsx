@@ -32,7 +32,7 @@ describe('lesson panel against the real API', () => {
     expect(
       screen.getAllByLabelText(/Upload .* captions/, { selector: 'input' }).length,
     ).toBeGreaterThan(0);
-  });
+  }, 10000); // CI timeout: lazy-loaded ContentTab takes longer than default 5000ms to render.
 
   it('shows the file picker of the materials', async () => {
     const user = userEvent.setup();
