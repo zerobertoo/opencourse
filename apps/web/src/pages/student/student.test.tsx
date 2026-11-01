@@ -450,6 +450,9 @@ describe('settings', () => {
     const user = userEvent.setup();
     await renderApp('/settings', { signInAs: 'student' });
 
+    // Wait for the lazy-loaded Settings page to render (shows "Configurações" heading in pt-BR)
+    await screen.findByRole('heading', { level: 1, name: 'Configurações' });
+
     const name = await screen.findByLabelText('Nome');
     await user.clear(name);
     await user.type(name, 'Lucas F. Silva');

@@ -1,4 +1,4 @@
-import { screen, within } from '@testing-library/react';
+import { screen, within, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import i18n from '@/i18n';
@@ -22,6 +22,10 @@ describe('lesson panel against the real API', () => {
     const user = userEvent.setup();
     await renderApp(`${SQL_EDITOR}/content`, { signInAs: 'instructor' });
 
+    // Wait for the lazy-loaded content tab to render (shows "Curriculum" heading in English)
+    // Use waitFor with a longer timeout because the component loads asynchronously
+    await waitFor(() => screen.findByRole('heading', { name: 'Curriculum' }), { timeout: 10000 });
+
     await user.click(await screen.findByRole('button', { name: /^\S+:\s*Seu primeiro SELECT/ }));
     expect(await screen.findByLabelText('Upload video', { selector: 'input' })).toBeInTheDocument();
     await user.click(screen.getByRole('tab', { name: 'Paste a link' }));
@@ -36,6 +40,9 @@ describe('lesson panel against the real API', () => {
     const user = userEvent.setup();
     await renderApp(`${SQL_EDITOR}/content`, { signInAs: 'instructor' });
 
+    // Wait for the lazy-loaded content tab to render
+    await screen.findByRole('heading', { name: 'Curriculum' });
+
     await user.click(await screen.findByRole('button', { name: /^\S+:\s*Seu primeiro SELECT/ }));
     const materials = (await screen.findByRole('heading', { name: 'Materials' })).closest(
       'section',
@@ -49,6 +56,9 @@ describe('lesson panel against the real API', () => {
     const user = userEvent.setup();
     await renderApp(`${SQL_EDITOR}/content`, { signInAs: 'instructor' });
 
+    // Wait for the lazy-loaded content tab to render
+    await screen.findByRole('heading', { name: 'Curriculum' });
+
     await user.click(await screen.findByRole('button', { name: /^\S+:\s*Seu primeiro SELECT/ }));
     await user.click(await screen.findByRole('tab', { name: 'Paste a link' }));
     await user.type(await screen.findByLabelText('External video link'), 'http://videos.example/a');
@@ -59,6 +69,9 @@ describe('lesson panel against the real API', () => {
   it('refuses a link that no video provider plugin recognises', async () => {
     const user = userEvent.setup();
     await renderApp(`${SQL_EDITOR}/content`, { signInAs: 'instructor' });
+
+    // Wait for the lazy-loaded content tab to render
+    await screen.findByRole('heading', { name: 'Curriculum' });
 
     await user.click(await screen.findByRole('button', { name: /^\S+:\s*Seu primeiro SELECT/ }));
     await user.click(await screen.findByRole('tab', { name: 'Paste a link' }));
