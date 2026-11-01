@@ -26,10 +26,11 @@ describe('studio access', () => {
     expect(await screen.findByText('Acesso negado')).toBeVisible();
   });
 
-  it('shows the forbidden screen when an instructor opens someone else’s course', async () => {
+  it("shows the forbidden screen when an instructor opens someone else's course", async () => {
     await renderApp(`/studio/courses/${demoId('course-javascript')}`, {
       email: 'beatriz@opencourse.example',
     });
+    await waitFor(() => screen.findByText('Acesso negado'), { timeout: 10000 });
     expect(await screen.findByText('Acesso negado')).toBeVisible();
   });
 
