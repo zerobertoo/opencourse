@@ -34,7 +34,7 @@ services:
 
   # S3-compatible object storage. The API only speaks generic S3, so this can be swapped.
   storage:
-    image: rustfs/rustfs:1.0.3
+    image: rustfs/rustfs:1.0.4
     environment:
       RUSTFS_ACCESS_KEY: ${S3_ACCESS_KEY:-opencourse}
       RUSTFS_SECRET_KEY: ${S3_SECRET_KEY:-opencourse-secret}
@@ -49,7 +49,7 @@ services:
 
   # one-shot job: creates the bucket once the storage answers
   storage-init:
-    image: amazon/aws-cli:2.38.4
+    image: amazon/aws-cli:2.39.1
     depends_on:
       - storage
     environment:
@@ -70,7 +70,7 @@ services:
   # development inbox: it captures e-mails and never delivers them, and its UI has no login.
   # Off by default; start it with `--profile dev` (naming it, as `pnpm infra` does, also starts it).
   mailpit:
-    image: axllent/mailpit:v1.31
+    image: axllent/mailpit:v1.32
     profiles: [dev]
     ports:
       - '${MAILPIT_SMTP_PORT:-1025}:1025'
