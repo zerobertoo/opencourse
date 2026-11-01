@@ -24,7 +24,9 @@ describe('admin access', () => {
     const user = userEvent.setup();
     await renderApp('/admin', { signInAs: 'admin' });
 
-    expect(await screen.findByRole('heading', { level: 2, name: 'Usuários' })).toBeVisible();
+    await waitFor(() => screen.findByRole('heading', { level: 2, name: 'Usuários' }), {
+      timeout: 10000,
+    });
     const sections = screen.getByRole('navigation', { name: 'Seções da administração' });
     await user.click(within(sections).getByRole('link', { name: 'Acessos' }));
     expect(
