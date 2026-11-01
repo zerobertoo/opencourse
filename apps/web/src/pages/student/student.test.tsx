@@ -446,24 +446,20 @@ describe('certificates', () => {
 });
 
 describe('settings', () => {
-  it(
-    'updates the profile and switches the interface language',
-    async () => {
-      const user = userEvent.setup();
-      await renderApp('/settings', { signInAs: 'student' });
+  it('updates the profile and switches the interface language', async () => {
+    const user = userEvent.setup();
+    await renderApp('/settings', { signInAs: 'student' });
 
-      const name = await screen.findByLabelText('Nome');
-      await user.clear(name);
-      await user.type(name, 'Lucas F. Silva');
-      await chooseOption(user, within(screen.getByRole('main')).getByLabelText('Idioma'), 'English');
-      await user.click(screen.getByRole('button', { name: 'Salvar perfil' }));
+    await screen.findByRole('heading', { level: 1, name: 'Configurações' });
 
-      expect(await screen.findByRole('heading', { level: 1, name: 'Settings' })).toBeVisible();
-    },
-    // CI timeout: Radix Select portal doesn't render in jsdom, so chooseOption hangs on
-    // findByRole('listbox'). 10s gives the test enough headroom on slow runners.
-    10000,
-  );
+    const name = await screen.findByLabelText('Nome');
+    await user.clear(name);
+    await user.type(name, 'Lucas F. Silva');
+    await chooseOption(user, within(screen.getByRole('main')).getByLabelText('Idioma'), 'English');
+    await user.click(screen.getByRole('button', { name: 'Salvar perfil' }));
+
+    expect(await screen.findByRole('heading', { level: 1, name: 'Settings' })).toBeVisible();
+  }, 10000); // findByRole('listbox'). 10s gives the test enough headroom on slow runners. // CI timeout: Radix Select portal doesn't render in jsdom, so chooseOption hangs on
 
   it('validates the new password confirmation', async () => {
     const user = userEvent.setup();
