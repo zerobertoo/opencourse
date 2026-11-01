@@ -22,11 +22,11 @@
       "eslint>minimatch": ">=11.0.1",
       "@eslint/config-array>minimatch": ">=11.0.1",
       "@typescript-eslint/typescript-estree>minimatch": ">=11.0.1",
-      "eslint-plugin-jsx-a11y>minimatch": "3.1.2"
+      "eslint-plugin-jsx-a11y>minimatch": "3.1.5"
     }
   },
   "devDependencies": {
-    "@biomejs/biome": "2.6.2",
+    "@biomejs/biome": "2.6.4",
     "@eslint/js": "^10.0.1",
     "eslint": "^10.13.0",
     "eslint-plugin-jsx-a11y": "^6.10.2",
@@ -35,7 +35,7 @@
     "globals": "^17.13.0",
     "turbo": "^2.11.10",
     "typescript": "^6.0.3",
-    "typescript-eslint": "^8.72.0"
+    "typescript-eslint": "^8.72.1"
   },
   "type": "module"
 }
