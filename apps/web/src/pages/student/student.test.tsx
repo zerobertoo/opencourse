@@ -457,8 +457,7 @@ describe('settings', () => {
     await user.click(screen.getByRole('button', { name: 'Salvar perfil' }));
 
     expect(await screen.findByRole('heading', { level: 1, name: 'Settings' })).toBeVisible();
-  }, // CI timeout: Radix Select portal doesn't render in jsdom, so chooseOption hangs on
-  // findByRole('listbox'). 10s gives the test enough headroom on slow runners.
+  }, // findByRole('listbox'). 10s gives the test enough headroom on slow runners. // CI timeout: Radix Select portal doesn't render in jsdom, so chooseOption hangs on
   10000);
 
   it('validates the new password confirmation', async () => {
