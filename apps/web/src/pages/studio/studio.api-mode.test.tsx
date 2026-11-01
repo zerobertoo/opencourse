@@ -22,8 +22,6 @@ describe('lesson panel against the real API', () => {
     const user = userEvent.setup();
     await renderApp(`${SQL_EDITOR}/content`, { signInAs: 'instructor' });
 
-    // Wait for the lazy-loaded content tab to render (shows "Curriculum" heading in English)
-    // Use waitFor with a longer timeout because the component loads asynchronously
     await waitFor(() => screen.findByRole('heading', { name: 'Curriculum' }), { timeout: 10000 });
 
     await user.click(await screen.findByRole('button', { name: /^\S+:\s*Seu primeiro SELECT/ }));
@@ -40,7 +38,6 @@ describe('lesson panel against the real API', () => {
     const user = userEvent.setup();
     await renderApp(`${SQL_EDITOR}/content`, { signInAs: 'instructor' });
 
-    // Wait for the lazy-loaded content tab to render
     await screen.findByRole('heading', { name: 'Curriculum' });
 
     await user.click(await screen.findByRole('button', { name: /^\S+:\s*Seu primeiro SELECT/ }));
@@ -56,7 +53,6 @@ describe('lesson panel against the real API', () => {
     const user = userEvent.setup();
     await renderApp(`${SQL_EDITOR}/content`, { signInAs: 'instructor' });
 
-    // Wait for the lazy-loaded content tab to render
     await screen.findByRole('heading', { name: 'Curriculum' });
 
     await user.click(await screen.findByRole('button', { name: /^\S+:\s*Seu primeiro SELECT/ }));
@@ -70,7 +66,6 @@ describe('lesson panel against the real API', () => {
     const user = userEvent.setup();
     await renderApp(`${SQL_EDITOR}/content`, { signInAs: 'instructor' });
 
-    // Wait for the lazy-loaded content tab to render
     await screen.findByRole('heading', { name: 'Curriculum' });
 
     await user.click(await screen.findByRole('button', { name: /^\S+:\s*Seu primeiro SELECT/ }));
