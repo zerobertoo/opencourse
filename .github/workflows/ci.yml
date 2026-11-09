@@ -99,13 +99,11 @@ jobs:
       - name: Install ffmpeg
         timeout-minutes: 5
         env:
-          FFMPEG_TAG: autobuild-2026-10-22-13-06
-          FFMPEG_ARCHIVE: ffmpeg-n8.1.3-23-g5c4f5744cd-linux64-gpl-8.1
-          FFMPEG_SHA256: 1aa0c5526768bf4db3e62cba954169e3e0be38327c9cbbb6c5675794df6c03df
+          FFMPEG_SHA256: 95f5e9b439c5ff72bb5669cff06c5793b91eb27ce94337e68fe2b9ee37e0cf09
         run: |
-          curl -fsSL --retry 3 -o ffmpeg.tar.xz "https://github.com/BtbN/FFmpeg-Builds/releases/download/${FFMPEG_TAG}/${FFMPEG_ARCHIVE}.tar.xz"
+          curl -fsSL --retry 3 -o ffmpeg.tar.xz "https://github.com/FFmpeg-Builds/FFmpeg-Builds/releases/download/latest/ffmpeg-n8.1-latest-linux64-gpl-8.1.tar.xz"
           echo "${FFMPEG_SHA256}  ffmpeg.tar.xz" | sha256sum -c -
-          sudo tar -xJf ffmpeg.tar.xz --strip-components=2 -C /usr/local/bin "${FFMPEG_ARCHIVE}/bin/ffmpeg" "${FFMPEG_ARCHIVE}/bin/ffprobe"
+          sudo tar -xJf ffmpeg.tar.xz --strip-components=2 -C /usr/local/bin ffmpeg-n8.1-latest-linux64-gpl-8.1/bin/ffmpeg ffmpeg-n8.1-latest-linux64-gpl-8.1/bin/ffprobe
           rm ffmpeg.tar.xz
           ffmpeg -version | head -1
 
