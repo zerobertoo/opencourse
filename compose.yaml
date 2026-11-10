@@ -49,7 +49,7 @@ services:
 
   # one-shot job: creates the bucket once the storage answers
   storage-init:
-    image: amazon/aws-cli:2.39.1
+    image: amazon/aws-cli:2.39.6
     depends_on:
       - storage
     environment:
