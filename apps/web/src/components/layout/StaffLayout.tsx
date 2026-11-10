@@ -77,8 +77,8 @@ export function StaffLayout() {
 
       <aside
         className={cn(
-          'fixed inset-y-0 start-0 z-40 flex w-64 flex-col border-e bg-surface text-surface-foreground transition-transform motion-reduce:transition-none md:sticky md:top-0 md:h-dvh md:translate-x-0 md:transition-[width]',
-          mobileOpen ? 'translate-x-0' : '-translate-x-full rtl:translate-x-full',
+          'fixed inset-y-0 start-0 z-40 flex w-64 flex-col border-e bg-surface text-surface-foreground transition-[transform,visibility] motion-reduce:transition-none md:sticky md:top-0 md:h-dvh md:translate-x-0 md:transition-[width]',
+          mobileOpen ? 'translate-x-0' : '-translate-x-full rtl:translate-x-full max-md:invisible',
           collapsed && 'md:w-16',
         )}
       >

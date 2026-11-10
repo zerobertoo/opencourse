@@ -5,7 +5,9 @@ import { Link } from 'react-router-dom';
 import { toast } from 'sonner';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { ErrorState } from '@/components/StateViews';
 import { Card } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
 import { usePlatformSettings, useUpdateSettings } from '@/hooks/adminQueries';
 import { useServiceErrorMessage } from '@/lib/serviceError';
 
@@ -19,6 +21,7 @@ const EXTENSIONS = [
 /** Lists the extension points, linking to the ones that are available and marking the rest. */
 export function AdminPlugins() {
   const { t } = useTranslation('admin');
+  const { t: tCommon } = useTranslation();
   const settings = usePlatformSettings();
   const update = useUpdateSettings();
   const describeError = useServiceErrorMessage();
@@ -86,53 +89,57 @@ export function AdminPlugins() {
           </h3>
           <p className="text-sm text-muted-foreground">{t('plugins.videoProviders.description')}</p>
         </div>
-        <ul
-          className="grid grid-cols-1 gap-3 sm:grid-cols-2"
-          aria-label={t('plugins.videoProviders.listLabel')}
-        >
-          {videoProviders.map((provider) => {
-            const enabled = enabledProviders?.includes(provider.id) ?? false;
-            // nothing is claimed about a provider until the settings have loaded
-            return (
-              <li key={provider.id} className="flex min-w-0">
-                <Card className="flex w-full items-center gap-3 p-3">
-                  <span className="grid size-9 shrink-0 place-items-center rounded-md bg-muted text-muted-foreground">
-                    <Video className="size-4" aria-hidden="true" />
-                  </span>
-                  <span className="min-w-0 flex-1 truncate text-sm font-medium">
-                    {provider.label}
-                  </span>
-                  {enabledProviders ? (
-                    <>
-                      <Badge variant={enabled ? 'success' : undefined}>
-                        {t(enabled ? 'plugins.videoProviders.on' : 'plugins.videoProviders.off')}
-                      </Badge>
-                      <Button
-                        type="button"
-                        size="sm"
-                        variant="outline"
-                        disabled={update.isPending}
-                        aria-label={t(
-                          enabled
-                            ? 'plugins.videoProviders.turnOff'
-                            : 'plugins.videoProviders.turnOn',
-                          { provider: provider.label },
-                        )}
-                        onClick={() => toggle(provider.id, !enabled)}
-                      >
-                        {t(
-                          enabled
-                            ? 'plugins.videoProviders.disable'
-                            : 'plugins.videoProviders.enable',
-                        )}
-                      </Button>
-                    </>
-                  ) : null}
-                </Card>
-              </li>
-            );
-          })}
-        </ul>
+        {settings.isError ? <ErrorState onRetry={() => void settings.refetch()} /> : null}
+        {settings.isPending ? (
+          <div role="status" aria-busy="true">
+            <span className="sr-only">{tCommon('states.loading')}</span>
+            <Skeleton className="h-16 w-full" />
+          </div>
+        ) : null}
+        {enabledProviders ? (
+          <ul
+            className="grid grid-cols-1 gap-3 sm:grid-cols-2"
+            aria-label={t('plugins.videoProviders.listLabel')}
+          >
+            {videoProviders.map((provider) => {
+              const enabled = enabledProviders.includes(provider.id);
+              return (
+                <li key={provider.id} className="flex min-w-0">
+                  <Card className="flex w-full items-center gap-3 p-3">
+                    <span className="grid size-9 shrink-0 place-items-center rounded-md bg-muted text-muted-foreground">
+                      <Video className="size-4" aria-hidden="true" />
+                    </span>
+                    <span className="min-w-0 flex-1 truncate text-sm font-medium">
+                      {provider.label}
+                    </span>
+                    <Badge variant={enabled ? 'success' : undefined}>
+                      {t(enabled ? 'plugins.videoProviders.on' : 'plugins.videoProviders.off')}
+                    </Badge>
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="outline"
+                      disabled={update.isPending}
+                      aria-label={t(
+                        enabled
+                          ? 'plugins.videoProviders.turnOff'
+                          : 'plugins.videoProviders.turnOn',
+                        { provider: provider.label },
+                      )}
+                      onClick={() => toggle(provider.id, !enabled)}
+                    >
+                      {t(
+                        enabled
+                          ? 'plugins.videoProviders.disable'
+                          : 'plugins.videoProviders.enable',
+                      )}
+                    </Button>
+                  </Card>
+                </li>
+              );
+            })}
+          </ul>
+        ) : null}
       </section>
     </section>
   );

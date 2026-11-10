@@ -14,6 +14,54 @@ export function AuthLayout() {
   const { t } = useTranslation();
   const cinema = useBrandLayout() === 'cinema';
 
+  const content = (
+    <>
+      <header
+        className={cn(
+          'flex h-16 items-center justify-between gap-2 px-4',
+          cinema ? 'lg:justify-end' : 'mx-auto max-w-5xl',
+        )}
+      >
+        <Link to="/" aria-label={t('app.name')} className={cn('min-w-0', cinema && 'lg:hidden')}>
+          <Logo />
+        </Link>
+        <div className="flex shrink-0 items-center gap-1">
+          <LanguageSwitcher />
+          <ThemeToggle />
+        </div>
+      </header>
+      <main
+        id="main-content"
+        className={cn(
+          'mx-auto w-full max-w-md px-4 pb-12 pt-6',
+          cinema ? 'flex flex-1 flex-col justify-center' : 'sm:pt-12',
+        )}
+      >
+        {cinema ? (
+          <Link to="/" aria-label={t('app.name')} className="mb-8 hidden self-center lg:block">
+            <Logo />
+          </Link>
+        ) : null}
+        <Card className={cn(cinema ? 'border-0 bg-transparent p-0' : 'p-5 sm:p-8')}>
+          <Outlet />
+        </Card>
+        <p
+          className={cn(
+            'text-center text-sm text-muted-foreground',
+            cinema ? 'mt-8 lg:hidden' : 'mt-6',
+          )}
+        >
+          {t('app.tagline')}
+        </p>
+        {isApiMode ? null : (
+          <p className="mt-2 text-center">
+            <RepositoryLink />
+          </p>
+        )}
+      </main>
+    </>
+  );
+
   return (
     <div
       className={cn(
@@ -34,51 +82,7 @@ export function AuthLayout() {
           </p>
         </aside>
       ) : null}
-      <div className={cn(cinema && 'flex min-h-dvh flex-col')}>
-        <header
-          className={cn(
-            'flex h-16 items-center justify-between gap-2 px-4',
-            cinema ? 'lg:justify-end' : 'mx-auto max-w-5xl',
-          )}
-        >
-          <Link to="/" aria-label={t('app.name')} className={cn('min-w-0', cinema && 'lg:hidden')}>
-            <Logo />
-          </Link>
-          <div className="flex shrink-0 items-center gap-1">
-            <LanguageSwitcher />
-            <ThemeToggle />
-          </div>
-        </header>
-        <main
-          id="main-content"
-          className={cn(
-            'mx-auto w-full max-w-md px-4 pb-12 pt-6',
-            cinema ? 'flex flex-1 flex-col justify-center' : 'sm:pt-12',
-          )}
-        >
-          {cinema ? (
-            <Link to="/" aria-label={t('app.name')} className="mb-8 hidden self-center lg:block">
-              <Logo />
-            </Link>
-          ) : null}
-          <Card className={cn(cinema ? 'border-0 bg-transparent p-0' : 'p-5 sm:p-8')}>
-            <Outlet />
-          </Card>
-          <p
-            className={cn(
-              'text-center text-sm text-muted-foreground',
-              cinema ? 'mt-8 lg:hidden' : 'mt-6',
-            )}
-          >
-            {t('app.tagline')}
-          </p>
-          {isApiMode ? null : (
-            <p className="mt-2 text-center">
-              <RepositoryLink />
-            </p>
-          )}
-        </main>
-      </div>
+      {cinema ? <div className="flex min-h-dvh flex-col">{content}</div> : content}
     </div>
   );
 }
