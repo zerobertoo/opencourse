@@ -84,6 +84,11 @@ export function VideoPlayer({
 
   useEffect(() => flushPosition, [flushPosition]);
 
+  const takeOverRef = useRef<HTMLButtonElement>(null);
+  useEffect(() => {
+    if (stream.blocked) takeOverRef.current?.focus();
+  }, [stream.blocked]);
+
   const mediaProps = {
     playsInline: true,
     preload: 'metadata' as const,
@@ -159,7 +164,7 @@ export function VideoPlayer({
                 <div className="space-y-3">
                   <p className="text-lg font-semibold">{t('video.streamInUse.title')}</p>
                   <p className="text-sm text-white/80">{t('video.streamInUse.description')}</p>
-                  <Button onClick={() => void stream.takeOver()}>
+                  <Button ref={takeOverRef} onClick={() => void stream.takeOver()}>
                     {t('video.streamInUse.action')}
                   </Button>
                 </div>

@@ -103,6 +103,7 @@ export function StaffLayout() {
               to={to}
               end={'end' in rest}
               onClick={() => setMobileOpen(false)}
+              title={collapsed ? t(labelKey) : undefined}
               className={({ isActive }) =>
                 cn(
                   'flex h-10 items-center gap-3 rounded-md px-3 text-sm font-medium hover:bg-muted',

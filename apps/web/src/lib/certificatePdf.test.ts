@@ -41,4 +41,16 @@ describe('buildCertificatePdf', () => {
     expect(text).toContain('Hipátia \\(Sales\\) \\\\ Ltda');
     expect(text).toContain('Título ??');
   });
+
+  it('keeps typographic characters that WinAnsi has, and flattens control characters', async () => {
+    const text = await readBytes(
+      buildCertificatePdf({
+        ...content,
+        holderName: 'Ana “Lu” – 5€\nSilva\u0085',
+      }),
+    );
+
+    // WinAnsi: “ 0x93, ” 0x94, – 0x96, € 0x80
+    expect(text).toContain(`Ana ${'\x93'}Lu${'\x94'} ${'\x96'} 5${'\x80'} Silva?`);
+  });
 });
