@@ -27,10 +27,10 @@ const allVideoProviderIds = videoProviders.map((provider) => provider.id);
 export const DEMO_PASSWORD = 'demo-password-123';
 
 export const DEMO_ACCOUNTS: ReadonlyArray<{ email: string; name: string; role: Role }> = [
-  { email: 'admin@opencourse.example', name: 'Marina Albuquerque', role: 'admin' },
-  { email: 'instructor@opencourse.example', name: 'Rafael Teixeira', role: 'instructor' },
-  { email: 'student@opencourse.example', name: 'Lucas Ferreira', role: 'student' },
-  { email: 'student2@opencourse.example', name: 'Camila Duarte', role: 'student' },
+  { email: 'admin@opencourse.example', name: 'Leonardo da Vinci', role: 'admin' },
+  { email: 'instructor@opencourse.example', name: 'Michelangelo Buonarroti', role: 'instructor' },
+  { email: 'student@opencourse.example', name: 'Donatello Bardi', role: 'student' },
+  { email: 'student2@opencourse.example', name: 'Marie Curie', role: 'student' },
 ];
 
 type Titles = Record<Locale, string>;
@@ -250,7 +250,7 @@ export async function seedDemoData(db: Database): Promise<void> {
           defaultLocale: 'en',
           certificateTemplate: {
             enabled: true,
-            signatoryName: 'Rafael Teixeira',
+            signatoryName: 'Michelangelo Buonarroti',
             signatoryRole: '',
             message: '',
           },

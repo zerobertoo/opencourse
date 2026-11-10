@@ -24,7 +24,7 @@ describe('authentication', () => {
 
     await user.click(screen.getByRole('button', { name: 'Entrar como aluno' }));
 
-    expect(await screen.findByRole('heading', { level: 1, name: 'Olá, Lucas' })).toBeVisible();
+    expect(await screen.findByRole('heading', { level: 1, name: 'Olá, Donatello' })).toBeVisible();
   });
 
   it('validates the login form inline before calling the service', async () => {
@@ -154,7 +154,7 @@ describe('course page', () => {
           ...services.courses,
           getBySlug: async (slug) => ({
             ...(await services.courses.getBySlug(slug)),
-            instructor: { id: demoId('user-rafael'), name: 'Prof. Real' },
+            instructor: { id: demoId('user-michelangelo'), name: 'Prof. Real' },
           }),
         },
         users: { ...services.users, getById: lookup },
@@ -216,7 +216,7 @@ describe('lesson player', () => {
     });
 
     expect(await screen.findByRole('heading', { level: 2, name: 'Variáveis' })).toBeVisible();
-    expect(screen.getByText('const nome = "Ana";', { exact: false })).toBeInTheDocument();
+    expect(screen.getByText('const nome = "Giotto";', { exact: false })).toBeInTheDocument();
 
     // already completed in the seed: undo, then complete again
     const toggle = await screen.findByRole('button', { name: /Concluída \(desmarcar\)/ });
@@ -456,7 +456,7 @@ describe('settings', () => {
 
     const name = await screen.findByLabelText('Nome');
     await user.clear(name);
-    await user.type(name, 'Lucas F. Silva');
+    await user.type(name, 'Donatello F. Silva');
     await chooseOption(user, within(screen.getByRole('main')).getByLabelText('Idioma'), 'English');
     await user.click(screen.getByRole('button', { name: 'Salvar perfil' }));
 

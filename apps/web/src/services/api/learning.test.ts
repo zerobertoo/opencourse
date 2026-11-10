@@ -51,7 +51,7 @@ const apiError = (status: number, code: string) => json(status, { error: { code,
 
 describe('API progress service', () => {
   it('reads the course progress and marks lessons completed or not', async () => {
-    const { services } = await createServicesSignedInAs('camila');
+    const { services } = await createServicesSignedInAs('marie');
     const records = await services.progress.getCourseProgress(demoId('course-javascript'));
     const api = setup((request) =>
       request.method === 'GET'
@@ -70,7 +70,7 @@ describe('API progress service', () => {
   });
 
   it('saves the position in whole seconds and never below zero', async () => {
-    const { services } = await createServicesSignedInAs('camila');
+    const { services } = await createServicesSignedInAs('marie');
     const [record] = await services.progress.getCourseProgress(demoId('course-javascript'));
     const api = setup(() => json(200, { progress: record }));
     await api.progress.saveVideoPosition('l1', 12.6);
@@ -82,7 +82,7 @@ describe('API progress service', () => {
   });
 
   it('submits quiz answers and lists the attempts', async () => {
-    const { services } = await createServicesSignedInAs('camila');
+    const { services } = await createServicesSignedInAs('marie');
     const submission = await services.progress.submitQuizAttempt(lessonId, {
       [demoId('q-js-1')]: demoId('q-js-1-b'),
     });
@@ -123,7 +123,7 @@ describe('API progress service', () => {
 
 describe('API enrollment service', () => {
   it('lists my courses and where to continue', async () => {
-    const { services } = await createServicesSignedInAs('camila');
+    const { services } = await createServicesSignedInAs('marie');
     const mine = await services.enrollments.listMyCourses();
     const resume = await services.enrollments.getContinueLearning();
     const api = setup((request) =>
@@ -161,7 +161,7 @@ describe('API enrollment service', () => {
   });
 
   it("lists a course's students", async () => {
-    const { services } = await createServicesSignedInAs('rafael');
+    const { services } = await createServicesSignedInAs('michelangelo');
     const students = await services.enrollments.listCourseStudents(demoId('course-javascript'));
     const api = setup(() => json(200, { students }));
     expect(await api.enrollments.listCourseStudents('c1')).toEqual(students);
@@ -172,7 +172,7 @@ describe('API enrollment service', () => {
 describe('API note service', () => {
   it('reads and saves the personal note, null included', async () => {
     const note = {
-      userId: demoId('user-camila'),
+      userId: demoId('user-marie'),
       lessonId,
       content: 'remember',
       updatedAt: '2026-06-15T12:00:00.000Z',
@@ -194,7 +194,7 @@ describe('API note service', () => {
 
 describe('API studio service', () => {
   it('reads the dashboard metrics', async () => {
-    const { services } = await createServicesSignedInAs('rafael');
+    const { services } = await createServicesSignedInAs('michelangelo');
     const dashboard = await services.studio.getDashboard();
     const api = setup(() => json(200, dashboard));
     expect(await api.studio.getDashboard()).toEqual(dashboard);

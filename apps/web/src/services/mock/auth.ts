@@ -13,7 +13,7 @@ function normalizeEmail(email: string): string {
   return email.trim().toLowerCase();
 }
 
-/** "maria.silva@x.com" becomes "Maria Silva". */
+/** "dante.alighieri@x.com" becomes "Dante Alighieri". */
 function nameFromEmail(email: string): string {
   const local = email.split('@')[0] ?? email;
   return local

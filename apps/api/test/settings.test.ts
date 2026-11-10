@@ -36,21 +36,21 @@ describe('platform settings', () => {
   it('merges a partial change, keeps it, and audits it', async () => {
     const { admin } = await createCast();
     const changed = await admin.client.patch('/api/v1/admin/settings', {
-      brand: { name: 'Acme Academy' },
-      email: { host: 'smtp.acme.test' },
+      brand: { name: 'Medici Academy' },
+      email: { host: 'smtp.medici.test' },
     });
 
     expect(changed.statusCode).toBe(200);
     expect(changed.json().brand).toEqual({
-      name: 'Acme Academy',
+      name: 'Medici Academy',
       logoUrl: null,
       primaryColor: '#2f6f5e',
       layout: 'classic',
     });
-    expect(changed.json().email).toMatchObject({ host: 'smtp.acme.test', port: 2525 });
+    expect(changed.json().email).toMatchObject({ host: 'smtp.medici.test', port: 2525 });
 
     const reread = await admin.client.get('/api/v1/settings');
-    expect(reread.json().brand.name).toBe('Acme Academy');
+    expect(reread.json().brand.name).toBe('Medici Academy');
 
     const audit = await admin.client.get('/api/v1/admin/audit');
     expect(audit.json().entries[0]).toMatchObject({
@@ -65,7 +65,7 @@ describe('platform settings', () => {
       brand: { layout: 'cinema' },
     });
     expect(changed.statusCode).toBe(200);
-    await admin.client.patch('/api/v1/admin/settings', { brand: { name: 'Acme Academy' } });
+    await admin.client.patch('/api/v1/admin/settings', { brand: { name: 'Medici Academy' } });
 
     const publicRead = await admin.client.get('/api/v1/settings');
     expect(publicRead.json().brand.layout).toBe('cinema');
@@ -80,7 +80,7 @@ describe('platform settings', () => {
     const { admin } = await createCast();
     const sender = 'OpenCourse <no-reply@opencourse.local>';
     const changed = await admin.client.patch('/api/v1/admin/settings', {
-      brand: { name: 'Acme Academy' },
+      brand: { name: 'Medici Academy' },
       email: { fromAddress: sender },
     });
 
@@ -99,7 +99,7 @@ describe('platform settings', () => {
     const reread = await admin.client.get('/api/v1/settings');
     expect(reread.json().brand.logoUrl).toBeNull();
     const renamed = await admin.client.patch('/api/v1/admin/settings', {
-      brand: { name: 'Acme Academy' },
+      brand: { name: 'Medici Academy' },
     });
     expect(renamed.statusCode).toBe(200);
     expect(renamed.json().brand.logoUrl).toBeNull();

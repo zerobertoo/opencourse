@@ -77,7 +77,7 @@ describe('outbound webhooks', () => {
       await createEndpoint(admin, { active: false });
       await createEndpoint(admin, { events: ['grant.revoked'] });
 
-      await registerClient(ctx.app, 'ana@example.com', 'Ana');
+      await registerClient(ctx.app, 'giotto@example.com', 'Giotto');
       worker = await startWorker();
       await worker.drain();
 
@@ -119,7 +119,7 @@ describe('outbound webhooks', () => {
     it('sends a signed envelope the receiver can verify', async () => {
       const admin = await setup();
       const endpoint = await createEndpoint(admin);
-      const { userId } = await registerClient(ctx.app, 'ana@example.com', 'Ana');
+      const { userId } = await registerClient(ctx.app, 'giotto@example.com', 'Giotto');
 
       worker = await startWorker();
       await worker.drain();
@@ -129,7 +129,7 @@ describe('outbound webhooks', () => {
       const envelope = webhookEnvelopeSchema.parse(JSON.parse(request!.body));
       expect(envelope).toMatchObject({
         type: 'user.created',
-        data: { userId, name: 'Ana', email: 'ana@example.com', locale: 'pt-BR' },
+        data: { userId, name: 'Giotto', email: 'giotto@example.com', locale: 'pt-BR' },
       });
       expect(request!.headers['opencourse-event']).toBe('user.created');
       expect(request!.headers['opencourse-delivery']).toBe(delivery!.id);
@@ -153,7 +153,7 @@ describe('outbound webhooks', () => {
     it('delivers an event that was written while no worker was running', async () => {
       const admin = await setup();
       await createEndpoint(admin);
-      await registerClient(ctx.app, 'ana@example.com', 'Ana');
+      await registerClient(ctx.app, 'giotto@example.com', 'Giotto');
       expect(receiver.requests).toHaveLength(0);
       expect(await deliveries()).toHaveLength(0);
 
@@ -168,7 +168,7 @@ describe('outbound webhooks', () => {
       await createEndpoint(admin);
       receiver.respond = (_request, response, count) =>
         response.writeHead(count < 3 ? 503 : 200).end();
-      await registerClient(ctx.app, 'ana@example.com', 'Ana');
+      await registerClient(ctx.app, 'giotto@example.com', 'Giotto');
 
       worker = await startWorker();
       await worker.drain();
@@ -181,7 +181,7 @@ describe('outbound webhooks', () => {
       await createEndpoint(admin);
       receiver.respond = (_request, response, count) =>
         response.writeHead(count < 2 ? 429 : 200).end();
-      await registerClient(ctx.app, 'ana@example.com', 'Ana');
+      await registerClient(ctx.app, 'giotto@example.com', 'Giotto');
 
       worker = await startWorker();
       await worker.drain();
@@ -193,7 +193,7 @@ describe('outbound webhooks', () => {
       const admin = await setup();
       await createEndpoint(admin);
       receiver.respond = (_request, response) => response.writeHead(500).end();
-      await registerClient(ctx.app, 'ana@example.com', 'Ana');
+      await registerClient(ctx.app, 'giotto@example.com', 'Giotto');
 
       worker = await startWorker();
       await worker.drain();
@@ -208,7 +208,7 @@ describe('outbound webhooks', () => {
       const admin = await setup();
       await createEndpoint(admin);
       receiver.respond = (_request, response) => response.writeHead(400).end();
-      await registerClient(ctx.app, 'ana@example.com', 'Ana');
+      await registerClient(ctx.app, 'giotto@example.com', 'Giotto');
 
       worker = await startWorker();
       await worker.drain();
@@ -223,7 +223,7 @@ describe('outbound webhooks', () => {
       const admin = await setup();
       await createEndpoint(admin);
       receiver.respond = () => undefined;
-      await registerClient(ctx.app, 'ana@example.com', 'Ana');
+      await registerClient(ctx.app, 'giotto@example.com', 'Giotto');
 
       worker = await startWorker({ webhookTimeoutMs: 100 });
       await worker.drain(20_000);
@@ -239,7 +239,7 @@ describe('outbound webhooks', () => {
       const elsewhere = await WebhookReceiver.start();
       receiver.respond = (_request, response) =>
         response.writeHead(302, { location: elsewhere.url }).end();
-      await registerClient(ctx.app, 'ana@example.com', 'Ana');
+      await registerClient(ctx.app, 'giotto@example.com', 'Giotto');
 
       worker = await startWorker();
       await worker.drain();
@@ -254,7 +254,7 @@ describe('outbound webhooks', () => {
     it('sends nothing for an endpoint deleted before the worker ran', async () => {
       const admin = await setup();
       const endpoint = await createEndpoint(admin);
-      await registerClient(ctx.app, 'ana@example.com', 'Ana');
+      await registerClient(ctx.app, 'giotto@example.com', 'Giotto');
       await admin.client.delete(`/api/v1/admin/webhooks/${endpoint.id}`);
 
       worker = await startWorker();
@@ -430,7 +430,7 @@ describe('outbound webhooks', () => {
       const created = await createEndpoint(admin);
       const rotated = await admin.client.post(`/api/v1/admin/webhooks/${created.id}/rotate-secret`);
       const newSecret = rotated.json().webhook.secret as string;
-      await registerClient(ctx.app, 'ana@example.com', 'Ana');
+      await registerClient(ctx.app, 'giotto@example.com', 'Giotto');
 
       worker = await startWorker();
       await worker.drain();
@@ -483,7 +483,7 @@ describe('outbound webhooks', () => {
       const endpoint = await createEndpoint(admin);
       let failing = true;
       receiver.respond = (_request, response) => response.writeHead(failing ? 400 : 200).end();
-      await registerClient(ctx.app, 'ana@example.com', 'Ana');
+      await registerClient(ctx.app, 'giotto@example.com', 'Giotto');
       worker = await startWorker();
       await worker.drain();
 
@@ -513,7 +513,7 @@ describe('outbound webhooks', () => {
       const admin = await setup();
       const endpoint = await createEndpoint(admin);
       const url = `/api/v1/admin/webhooks/${endpoint.id}/deliveries`;
-      await registerClient(ctx.app, 'ana@example.com', 'Ana');
+      await registerClient(ctx.app, 'giotto@example.com', 'Giotto');
       await registerClient(ctx.app, 'bia@example.com', 'Bia');
       worker = await startWorker();
       await worker.drain();
@@ -541,7 +541,7 @@ describe('outbound webhooks', () => {
     it('deletes the history with the endpoint', async () => {
       const admin = await setup();
       const endpoint = await createEndpoint(admin);
-      await registerClient(ctx.app, 'ana@example.com', 'Ana');
+      await registerClient(ctx.app, 'giotto@example.com', 'Giotto');
       worker = await startWorker();
       await worker.drain();
       expect(await deliveries()).toHaveLength(1);

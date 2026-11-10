@@ -9,7 +9,7 @@ describe('isSenderAddress', () => {
   it.each([
     'no-reply@opencourse.local',
     'OpenCourse <no-reply@opencourse.local>',
-    '  Acme Academy <hello@acme.test> ',
+    '  Medici Academy <hello@medici.test> ',
     '<no-reply@opencourse.local>',
   ])('accepts %j', (value) => {
     expect(isSenderAddress(value)).toBe(true);
@@ -21,7 +21,7 @@ describe('isSenderAddress', () => {
     'OpenCourse <nope>',
     'OpenCourse no-reply@opencourse.local',
     'a@x.test, b@y.test <c@z.test>',
-    'Acme; Evil <c@z.test>',
+    'Medici; Evil <c@z.test>',
     'Evil\r\nBcc: x@y.test <a@b.test>',
   ])('refuses %j', (value) => {
     expect(isSenderAddress(value)).toBe(false);
@@ -70,8 +70,8 @@ describe('updatePlatformSettingsRequestSchema', () => {
   it('takes only http and https for the logo, or null to clear it', () => {
     const logo = (logoUrl: string | null) =>
       updatePlatformSettingsRequestSchema.safeParse({ brand: { logoUrl } }).success;
-    expect(logo('https://cdn.acme.test/logo.png')).toBe(true);
-    expect(logo('http://cdn.acme.test/logo.png')).toBe(true);
+    expect(logo('https://cdn.medici.test/logo.png')).toBe(true);
+    expect(logo('http://cdn.medici.test/logo.png')).toBe(true);
     expect(logo(null)).toBe(true);
     for (const value of [
       'javascript:alert(1)',
@@ -86,9 +86,9 @@ describe('updatePlatformSettingsRequestSchema', () => {
   it('refuses keys it does not know, at the top level and inside a group', () => {
     const parses = (body: unknown) => updatePlatformSettingsRequestSchema.safeParse(body).success;
     expect(parses({ foo: 1 })).toBe(false);
-    expect(parses({ brand: { name: 'Acme', color: 'red' } })).toBe(false);
-    expect(parses({ email: { host: 'smtp.acme.test', password: 'x' } })).toBe(false);
-    expect(parses({ brand: { name: 'Acme' } })).toBe(true);
+    expect(parses({ brand: { name: 'Medici', color: 'red' } })).toBe(false);
+    expect(parses({ email: { host: 'smtp.medici.test', password: 'x' } })).toBe(false);
+    expect(parses({ brand: { name: 'Medici' } })).toBe(true);
   });
 
   it('refuses a sender that is not an address', () => {

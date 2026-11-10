@@ -67,7 +67,7 @@ describe('theme', () => {
 describe('layouts and routes', () => {
   it('renders the student topbar with search, language and theme controls', async () => {
     await renderApp('/', { signInAs: 'student' });
-    expect(await screen.findByRole('heading', { level: 1, name: /Olá, Lucas/ })).toBeVisible();
+    expect(await screen.findByRole('heading', { level: 1, name: /Olá, Donatello/ })).toBeVisible();
     expect(screen.getAllByRole('search').length).toBeGreaterThan(0);
     expect(screen.getByRole('combobox', { name: 'Idioma' })).toBeInTheDocument();
   });

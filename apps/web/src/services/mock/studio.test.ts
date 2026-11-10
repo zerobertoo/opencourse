@@ -4,10 +4,10 @@ import { demoId } from '@/services/mock/seed/ids';
 
 describe('mock studio service', () => {
   it('summarizes the instructor courses, students and completion', async () => {
-    const { services } = await createServicesSignedInAs('rafael');
+    const { services } = await createServicesSignedInAs('michelangelo');
     const dashboard = await services.studio.getDashboard();
 
-    // Rafael owns the JavaScript and SQL courses (published) and Time Management (archived)
+    // Michelangelo owns the JavaScript and SQL courses (published) and Time Management (archived)
     expect(dashboard.courses.map((course) => course.courseId).sort()).toEqual([
       demoId('course-javascript'),
       demoId('course-sql'),
@@ -16,7 +16,7 @@ describe('mock studio service', () => {
     expect(dashboard.publishedCourses).toBe(2);
 
     const sql = dashboard.courses.find((course) => course.courseId === demoId('course-sql'));
-    // lucas, camila, renata and gustavo have an active SQL grant; only lucas finished it
+    // donatello, marie, clarice and alberto have an active SQL grant; only donatello finished it
     expect(sql).toMatchObject({ students: 4, completedStudents: 1, completionRate: 0.25 });
 
     const totalEnrollments = dashboard.courses.reduce((sum, course) => sum + course.students, 0);
@@ -27,18 +27,18 @@ describe('mock studio service', () => {
   });
 
   it('shows every course to admins and only their own to other instructors', async () => {
-    const admin = (await createServicesSignedInAs('marina')).services;
+    const admin = (await createServicesSignedInAs('leonardo')).services;
     expect((await admin.studio.getDashboard()).courses).toHaveLength(5);
 
-    const beatriz = (await createServicesSignedInAs('beatriz')).services;
-    expect((await beatriz.studio.getDashboard()).courses).toHaveLength(2);
+    const ada = (await createServicesSignedInAs('ada')).services;
+    expect((await ada.studio.getDashboard()).courses).toHaveLength(2);
   });
 
   it('is limited to instructors and admins', async () => {
     await expect(createTestServices().services.studio.getDashboard()).rejects.toMatchObject({
       code: 'unauthorized',
     });
-    const student = (await createServicesSignedInAs('lucas')).services;
+    const student = (await createServicesSignedInAs('donatello')).services;
     await expect(student.studio.getDashboard()).rejects.toMatchObject({ code: 'forbidden' });
   });
 });
