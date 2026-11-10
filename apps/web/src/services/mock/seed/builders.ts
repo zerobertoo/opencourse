@@ -105,6 +105,10 @@ export function attachment(id: string, name: string, sizeBytes: number): FileAtt
   return { id, name, sizeBytes, url: `${import.meta.env.BASE_URL}media/files/${name}` };
 }
 
+export function demoCover(name: string): string {
+  return `${import.meta.env.BASE_URL}media/covers/${name}.jpg`;
+}
+
 export function courseModule(
   id: string,
   courseId: string,

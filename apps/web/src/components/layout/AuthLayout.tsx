@@ -1,6 +1,5 @@
 import { useTranslation } from 'react-i18next';
 import { Link, Outlet } from 'react-router-dom';
-import { CourseCover } from '@/components/CourseCover';
 import { LanguageSwitcher } from '@/components/LanguageSwitcher';
 import { Logo } from '@/components/Logo';
 import { RepositoryLink } from '@/components/RepositoryLink';
@@ -19,10 +18,10 @@ export function AuthLayout() {
     <div className={cn('min-h-dvh', cinema && 'lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(28rem,36rem)]')}>
       {cinema ? (
         <aside aria-hidden="true" className="relative hidden overflow-hidden bg-player lg:block">
-          <CourseCover
-            imageUrl={null}
-            seed="opencourse-login"
-            className="absolute inset-0 opacity-60"
+          <img
+            src={`${import.meta.env.BASE_URL}media/covers/login-cover.jpg`}
+            alt={''}
+            className="absolute inset-0 size-full object-cover"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-player/80 via-player/20 to-transparent" />
           <p className="absolute inset-x-0 bottom-0 p-10 text-center text-sm text-player-foreground/90">
