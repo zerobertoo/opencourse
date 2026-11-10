@@ -41,7 +41,7 @@ and both are served only to people who can see the course content.
 
 ## Cleanup
 
-Deleting a lesson or a module also deletes its attachments and captions from the storage. Covers that were uploaded but never confirmed stay in the storage until the course is removed from it.
+Deleting a lesson or a module also deletes its attachments and captions from the storage. Covers and banners that were uploaded but never confirmed are deleted by the worker once they are a day old; the current cover and banner of a course are never touched.
 
 ## Configuration
 

@@ -9,7 +9,7 @@ Tags `progress`, `me`, `studio` e `certificates` na referência OpenAPI.
 
 `PUT /lessons/:id/progress` marca uma aula como concluída (ou não) e guarda a posição do vídeo. `GET /courses/:id/progress` lista os registros de quem chama. Só quem pode ler o curso pode gravar.
 
-- Em cursos com ordem sequencial o servidor recusa concluir, guardar posição ou fazer quiz em uma aula bloqueada.
+- Em cursos com ordem sequencial o servidor recusa concluir, guardar posição, fazer quiz ou reproduzir o vídeo de uma aula bloqueada (o instrutor e os admins ficam isentos).
 - Aulas de vídeo só são concluídas quando o cliente pede (o player decide quando, por exemplo em cerca de 90%). Players embutidos de um provedor não informam a posição, então os alunos marcam essas aulas por conta própria.
 - Aulas de quiz só são concluídas ao passar.
 

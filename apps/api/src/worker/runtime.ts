@@ -6,6 +6,7 @@ import pino, { type Logger } from 'pino';
 import type { Config } from '../config';
 import { outboxEvents } from '../db/schema';
 import { createSmtpMailer, type Mailer } from '../mail/mailer';
+import { removeStaleCourseImages } from '../modules/courses/images';
 import { removeStaleAttachments } from '../modules/files/service';
 import { requeueOrphanedVideos } from '../modules/video/requeue';
 import { removeStaleUploads } from '../modules/video/service';
@@ -142,6 +143,9 @@ export async function startWorker(
     );
     await removeStaleAttachments(db, storage, log).catch((error: unknown) =>
       log.error({ err: error }, 'stale attachment cleanup failed'),
+    );
+    await removeStaleCourseImages(db, storage, log).catch((error: unknown) =>
+      log.error({ err: error }, 'stale course image cleanup failed'),
     );
   };
   const loop = (async () => {

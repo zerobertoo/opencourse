@@ -33,6 +33,7 @@ import {
 import { requireManagedCourse, resolveCourseAccess } from '../courses/access';
 import { changeCurriculum, findCourseOfLesson } from '../courses/curriculum';
 import { loadCourseDetail } from '../courses/detail';
+import { loadCompletedLessonIds, requireUnlocked } from '../progress/service';
 import { loadPlatformSettings } from '../settings/service';
 import {
   PLAYBACK_TOKEN_TTL_SECONDS,
@@ -344,7 +345,8 @@ export const videoRoutes: FastifyPluginAsyncZod<VideoRoutesOptions> = async (
         tags: ['video'],
         summary: 'Address to stream a ready video from',
         description:
-          'The address carries a token that expires; every playlist request checks the access again.',
+          'The address carries a token that expires; every playlist request checks the access again. ' +
+          'The video of a locked lesson in a sequential course is refused, except for the instructor and admins.',
         params: videoAssetParamsSchema,
         response: { 200: videoPlaybackResponseSchema },
       },
@@ -356,6 +358,7 @@ export const videoRoutes: FastifyPluginAsyncZod<VideoRoutesOptions> = async (
       const access = await resolveCourseAccess(app.db, user, context.course, new Date());
       if (!access.isVisible) throw notFound('Video not found');
       if (!access.canViewContent) throw forbidden('Access to this course requires a grant');
+      await requireLessonOpen(user.id, context, access.canManage);
       if (context.asset.status !== 'ready') throw conflict('The video is not ready yet');
 
       const token = signPlaybackToken(
@@ -378,6 +381,17 @@ export const videoRoutes: FastifyPluginAsyncZod<VideoRoutesOptions> = async (
    * Checks a playback token and, again, that the person still has access to the video's course.
    * Players cannot send cookies with every request, so playlists and keys share this credential.
    */
+  async function requireLessonOpen(
+    userId: string,
+    context: { course: CourseRow; lesson: { id: string } },
+    canManage: boolean,
+  ) {
+    if (canManage || !context.course.sequentialOrder) return;
+    const detail = await loadCourseDetail(app.db, context.course);
+    const completed = await loadCompletedLessonIds(app.db, userId, detail);
+    requireUnlocked(detail, completed, context.lesson.id);
+  }
+
   async function authorizeToken(assetId: string, token: string) {
     const claims = verifyPlaybackToken(config.AUTH_SECRET, token, new Date());
     if (claims?.assetId !== assetId) throw unauthorized('Invalid or expired playback address');
@@ -394,6 +408,7 @@ export const videoRoutes: FastifyPluginAsyncZod<VideoRoutesOptions> = async (
     if (!access.isVisible || !access.canViewContent) {
       throw forbidden('Access to this course requires a grant');
     }
+    await requireLessonOpen(user.id, context, access.canManage);
     if (context.asset.status !== 'ready') throw conflict('The video is not ready yet');
     return { context, claims, canManage: access.canManage };
   }

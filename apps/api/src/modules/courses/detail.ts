@@ -1,5 +1,5 @@
 import type { Course, CourseDetail, Lesson } from '@opencourse/shared';
-import { and, asc, eq, inArray } from 'drizzle-orm';
+import { and, asc, eq, inArray, sql } from 'drizzle-orm';
 import {
   courseTranslations,
   lessonAttachments,
@@ -100,8 +100,13 @@ export async function loadCourseDetail(db: Reader, course: CourseRow): Promise<C
  * Courses with their curriculum, in the order given. The number of queries is fixed (one per
  * table), however many courses are loaded, so lists do not pay one query set per course.
  */
-export async function loadCourseDetails(db: Reader, rows: CourseRow[]): Promise<CourseDetail[]> {
+export async function loadCourseDetails(
+  db: Reader,
+  rows: CourseRow[],
+  options: { summary?: boolean } = {},
+): Promise<CourseDetail[]> {
   if (rows.length === 0) return [];
+  const summary = options.summary === true;
   const courseIds = rows.map((row) => row.id);
   const courseTexts = await db
     .select()
@@ -128,29 +133,37 @@ export async function loadCourseDetails(db: Reader, rows: CourseRow[]): Promise<
         .orderBy(asc(lessons.position))
     : [];
   const lessonIds = lessonRows.map((row) => row.id);
+  // a listing only counts translations, so the (possibly large) lesson text stays in the database
   const lessonTexts = lessonIds.length
     ? await db
-        .select()
+        .select({
+          lessonId: lessonTranslations.lessonId,
+          locale: lessonTranslations.locale,
+          title: lessonTranslations.title,
+          content: summary ? sql<string>`''` : lessonTranslations.content,
+        })
         .from(lessonTranslations)
         .where(inArray(lessonTranslations.lessonId, lessonIds))
     : [];
 
-  const uploadRows = lessonIds.length
-    ? await db.select().from(videoAssets).where(inArray(videoAssets.lessonId, lessonIds))
-    : [];
+  const uploadRows =
+    lessonIds.length && !summary
+      ? await db.select().from(videoAssets).where(inArray(videoAssets.lessonId, lessonIds))
+      : [];
 
-  const attachmentRows = lessonIds.length
-    ? await db
-        .select()
-        .from(lessonAttachments)
-        .where(
-          and(
-            inArray(lessonAttachments.lessonId, lessonIds),
-            eq(lessonAttachments.status, 'ready'),
-          ),
-        )
-        .orderBy(asc(lessonAttachments.position), asc(lessonAttachments.createdAt))
-    : [];
+  const attachmentRows =
+    lessonIds.length && !summary
+      ? await db
+          .select()
+          .from(lessonAttachments)
+          .where(
+            and(
+              inArray(lessonAttachments.lessonId, lessonIds),
+              eq(lessonAttachments.status, 'ready'),
+            ),
+          )
+          .orderBy(asc(lessonAttachments.position), asc(lessonAttachments.createdAt))
+      : [];
 
   const teachers = await db
     .select({ id: users.id, name: users.name })

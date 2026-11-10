@@ -42,7 +42,7 @@ export const studioRoutes: FastifyPluginAsyncZod = async (app) => {
         .where(and(inArray(grants.courseId, courseIds), activeGrantCondition(now)));
       const studentIds = [...new Set(active.map((grant) => grant.userId))];
       // ponytail: whole curricula and every record in memory; per-course SQL counts if instances grow large
-      const details = await loadCourseDetails(app.db, rows);
+      const details = await loadCourseDetails(app.db, rows, { summary: true });
       const all = await loadStudentProgress(app.db, courseIds, studentIds);
 
       const perCourse = details.map((detail) => {

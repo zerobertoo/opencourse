@@ -41,7 +41,7 @@ e ambos são entregues apenas a quem pode ver o conteúdo do curso.
 
 ## Limpeza
 
-Excluir uma aula ou um módulo também exclui seus anexos e legendas do armazenamento.
+Excluir uma aula ou um módulo também exclui seus anexos e legendas do armazenamento. Capas e banners enviados mas nunca confirmados são apagados pelo worker quando completam um dia; a capa e o banner atuais de um curso nunca são tocados.
 
 ## Configuração
 
