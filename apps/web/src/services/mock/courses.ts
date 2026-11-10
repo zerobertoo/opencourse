@@ -91,6 +91,7 @@ export function createMockCourseService(context: MockContext): CourseService {
           slug,
           status: 'draft',
           coverImageUrl: null,
+          bannerImageUrl: null,
           instructorId: user.id,
           defaultLocale: input.defaultLocale,
           sequentialOrder: false,
@@ -158,28 +159,43 @@ export function createMockCourseService(context: MockContext): CourseService {
 
     uploadCover: (id, file) =>
       context.run('courses.uploadCover', () => {
-        if (!COVER_CONTENT_TYPES.some((type) => type === file.type)) {
-          throw new ServiceError('validation', 'The cover must be a PNG, JPEG or WebP image');
-        }
-        if (file.size > COVER_MAX_BYTES) {
-          throw new ServiceError('validation', 'The cover image is too large');
-        }
+        assertImage(file);
         // ponytail: a blob address lasts until the tab is reloaded, which is fine for a demo
-        return changeCover(id, URL.createObjectURL(file));
+        return changeImage(id, 'cover', URL.createObjectURL(file));
       }),
 
-    removeCover: (id) => context.run('courses.removeCover', () => changeCover(id, null)),
+    removeCover: (id) => context.run('courses.removeCover', () => changeImage(id, 'cover', null)),
+
+    uploadBanner: (id, file) =>
+      context.run('courses.uploadBanner', () => {
+        assertImage(file);
+        return changeImage(id, 'banner', URL.createObjectURL(file));
+      }),
+
+    removeBanner: (id) =>
+      context.run('courses.removeBanner', () => changeImage(id, 'banner', null)),
   };
 
-  function changeCover(id: string, url: string | null): CourseDetail {
+  function assertImage(file: File) {
+    if (!COVER_CONTENT_TYPES.some((type) => type === file.type)) {
+      throw new ServiceError('validation', 'The image must be a PNG, JPEG or WebP image');
+    }
+    if (file.size > COVER_MAX_BYTES) {
+      throw new ServiceError('validation', 'The image is too large');
+    }
+  }
+
+  function changeImage(id: string, kind: 'cover' | 'banner', url: string | null): CourseDetail {
     const user = context.requireRole('instructor', 'admin');
     const course = findCourseById(store.db, id);
     if (!canManageCourse(user, course)) {
       throw new ServiceError('forbidden', 'Only the course instructor or an admin can edit it');
     }
-    if (course.coverImageUrl?.startsWith('blob:')) URL.revokeObjectURL(course.coverImageUrl);
+    const field = kind === 'cover' ? 'coverImageUrl' : 'bannerImageUrl';
+    const previous = course[field];
+    if (previous?.startsWith('blob:')) URL.revokeObjectURL(previous);
     store.mutate(() => {
-      course.coverImageUrl = url;
+      course[field] = url;
       course.updatedAt = context.now().toISOString();
     });
     return clone(course);

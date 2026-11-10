@@ -11,6 +11,7 @@ const course = {
   slug: 'course',
   status: 'draft',
   coverImageUrl: `/api/v1/courses/${COURSE_ID}/cover/${COVER_ID}`,
+  bannerImageUrl: `/api/v1/courses/${COURSE_ID}/banner/${COVER_ID}`,
   instructorId: '9d4e1c27-5b8a-4f10-a3c6-7e2f9b0d1a55',
   defaultLocale: 'en',
   sequentialOrder: false,
@@ -35,9 +36,11 @@ function setup(sendFile: typeof fetch) {
     calls.push(`${init?.method ?? 'GET'} ${path}`);
     if (path.endsWith('/complete')) return Promise.resolve(json(200, { course }));
     if (init?.method === 'DELETE') {
-      return Promise.resolve(json(200, { course: { ...course, coverImageUrl: null } }));
+      const cleared = path.endsWith('/banner') ? { bannerImageUrl: null } : { coverImageUrl: null };
+      return Promise.resolve(json(200, { course: { ...course, ...cleared } }));
     }
-    return Promise.resolve(json(200, { coverId: COVER_ID, uploadUrl: 'http://storage.test/put' }));
+    const idKey = path.endsWith('/banner') ? 'bannerId' : 'coverId';
+    return Promise.resolve(json(200, { [idKey]: COVER_ID, uploadUrl: 'http://storage.test/put' }));
   });
   const client = new ApiClient({ baseUrl: 'http://api.test', fetch: fetchMock as typeof fetch });
   return { service: createApiCourseService(client, sendFile), calls };
@@ -76,5 +79,21 @@ describe('course cover service', () => {
   it('removes the cover', async () => {
     const { service } = setup(vi.fn() as unknown as typeof fetch);
     expect((await service.removeCover(COURSE_ID)).coverImageUrl).toBeNull();
+  });
+
+  it('sends a banner through its own endpoints and removes it', async () => {
+    const sendFile = vi.fn(() => Promise.resolve(new Response(null, { status: 200 })));
+    const { service, calls } = setup(sendFile as unknown as typeof fetch);
+
+    const updated = await service.uploadBanner(COURSE_ID, file);
+    const removed = await service.removeBanner(COURSE_ID);
+
+    expect(updated.bannerImageUrl).toContain('/banner/');
+    expect(removed.bannerImageUrl).toBeNull();
+    expect(calls).toEqual([
+      `POST /courses/${COURSE_ID}/banner`,
+      `POST /courses/${COURSE_ID}/banner/complete`,
+      `DELETE /courses/${COURSE_ID}/banner`,
+    ]);
   });
 });
