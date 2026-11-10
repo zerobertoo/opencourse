@@ -32,6 +32,7 @@ export const grants = pgTable(
       .on(table.userId, table.courseId)
       .where(sql`${table.revokedAt} is null`),
     index('grants_course_idx').on(table.courseId),
+    index('grants_created_by_idx').on(table.createdById),
   ],
 );
 

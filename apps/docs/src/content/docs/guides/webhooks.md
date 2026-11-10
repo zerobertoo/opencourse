@@ -36,7 +36,7 @@ function isValid(secret, header, rawBody, toleranceSeconds = 300) {
 ## Delivery and retries
 
 - Any 2xx is success.
-- A network error, a timeout (10 s), 5xx, 408 or 429 is retried 5 times with exponential backoff.
+- A network error, a timeout (10 s), 5xx, 408 or 429 is attempted up to 5 times in total, with exponential backoff starting at 30 s.
 - Any other status fails at once. Redirects are never followed.
 - The history (status, attempts, status code, error; no response body) is kept for 7 days and a failed delivery can be retried from the API or the screen.
 - `POST /admin/webhooks/:id/test` sends a `webhook.test` event right away and reports the answer.

@@ -18,11 +18,15 @@ export function AuthLayout() {
     <div
       className={cn(
         'min-h-dvh',
-        cinema && 'lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(28rem,36rem)]',
+        cinema &&
+          'flex flex-col lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(28rem,36rem)] lg:grid-rows-[auto_1fr]',
       )}
     >
       {cinema ? (
-        <aside aria-hidden="true" className="relative hidden overflow-hidden bg-player lg:block">
+        <aside
+          aria-hidden="true"
+          className="relative hidden overflow-hidden bg-player lg:col-start-1 lg:row-span-2 lg:row-start-1 lg:block"
+        >
           <img
             src={`${import.meta.env.BASE_URL}media/covers/login-cover.jpg`}
             alt={''}
@@ -34,51 +38,49 @@ export function AuthLayout() {
           </p>
         </aside>
       ) : null}
-      <div className={cn(cinema && 'flex min-h-dvh flex-col')}>
-        <header
-          className={cn(
-            'flex h-16 items-center justify-between gap-2 px-4',
-            cinema ? 'lg:justify-end' : 'mx-auto max-w-5xl',
-          )}
-        >
-          <Link to="/" aria-label={t('app.name')} className={cn('min-w-0', cinema && 'lg:hidden')}>
+      <header
+        className={cn(
+          'flex h-16 items-center justify-between gap-2 px-4',
+          cinema ? 'lg:col-start-2 lg:justify-end' : 'mx-auto max-w-5xl',
+        )}
+      >
+        <Link to="/" aria-label={t('app.name')} className={cn('min-w-0', cinema && 'lg:hidden')}>
+          <Logo />
+        </Link>
+        <div className="flex shrink-0 items-center gap-1">
+          <LanguageSwitcher />
+          <ThemeToggle />
+        </div>
+      </header>
+      <main
+        id="main-content"
+        className={cn(
+          'mx-auto w-full max-w-md px-4 pb-12 pt-6',
+          cinema ? 'flex flex-1 flex-col justify-center lg:col-start-2' : 'sm:pt-12',
+        )}
+      >
+        {cinema ? (
+          <Link to="/" aria-label={t('app.name')} className="mb-8 hidden self-center lg:block">
             <Logo />
           </Link>
-          <div className="flex shrink-0 items-center gap-1">
-            <LanguageSwitcher />
-            <ThemeToggle />
-          </div>
-        </header>
-        <main
-          id="main-content"
+        ) : null}
+        <Card className={cn(cinema ? 'border-0 bg-transparent p-0' : 'p-5 sm:p-8')}>
+          <Outlet />
+        </Card>
+        <p
           className={cn(
-            'mx-auto w-full max-w-md px-4 pb-12 pt-6',
-            cinema ? 'flex flex-1 flex-col justify-center' : 'sm:pt-12',
+            'text-center text-sm text-muted-foreground',
+            cinema ? 'mt-8 lg:hidden' : 'mt-6',
           )}
         >
-          {cinema ? (
-            <Link to="/" aria-label={t('app.name')} className="mb-8 hidden self-center lg:block">
-              <Logo />
-            </Link>
-          ) : null}
-          <Card className={cn(cinema ? 'border-0 bg-transparent p-0' : 'p-5 sm:p-8')}>
-            <Outlet />
-          </Card>
-          <p
-            className={cn(
-              'text-center text-sm text-muted-foreground',
-              cinema ? 'mt-8 lg:hidden' : 'mt-6',
-            )}
-          >
-            {t('app.tagline')}
+          {t('app.tagline')}
+        </p>
+        {isApiMode ? null : (
+          <p className="mt-2 text-center">
+            <RepositoryLink />
           </p>
-          {isApiMode ? null : (
-            <p className="mt-2 text-center">
-              <RepositoryLink />
-            </p>
-          )}
-        </main>
-      </div>
+        )}
+      </main>
     </div>
   );
 }

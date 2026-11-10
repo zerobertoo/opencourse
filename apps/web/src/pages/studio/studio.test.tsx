@@ -30,9 +30,8 @@ describe('studio access', () => {
     await renderApp(`/studio/courses/${demoId('course-javascript')}`, {
       email: 'ada@opencourse.example',
     });
-    await waitFor(() => screen.findByText('Acesso negado'), { timeout: 10000 });
-    expect(await screen.findByText('Acesso negado')).toBeVisible();
-  });
+    expect(await screen.findByText('Acesso negado', {}, { timeout: 10000 })).toBeVisible();
+  }, 15000);
 
   it('shows the not found state for an unknown course', async () => {
     await renderApp('/studio/courses/nao-existe', { signInAs: 'instructor' });

@@ -9,7 +9,7 @@ Tags `progress`, `me`, `studio` and `certificates` in the OpenAPI reference.
 
 `PUT /lessons/:id/progress` marks a lesson completed (or not) and saves the video position. `GET /courses/:id/progress` lists the caller's records. Only people who can read the course may write.
 
-- In courses with sequential order the server refuses to complete, save a position or take a quiz on a locked lesson.
+- In courses with sequential order the server refuses to complete, save a position, take a quiz or play the video of a locked lesson (the instructor and admins are exempt).
 - Video lessons complete only when the client asks (the player decides when, for instance at about 90%). Players embedded from a provider report no position, so students mark those lessons themselves.
 - Quiz lessons complete only by passing.
 

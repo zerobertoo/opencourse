@@ -1,5 +1,7 @@
 import {
+  apiErrorSchema,
   attachmentDownloadResponseSchema,
+  CAPTION_MAX_BYTES,
   createAttachmentResponseSchema,
   DEFAULT_ATTACHMENT_MAX_BYTES,
 } from '@opencourse/shared';
@@ -268,6 +270,14 @@ describe('lesson attachments and captions', () => {
       expect(
         (await cast.student.client.get(`/api/v1/lessons/${lesson.id}/captions/fr.vtt`)).statusCode,
       ).toBe(404);
+    });
+
+    it('refuses an oversized caption file with a 413 in the shared error shape', async () => {
+      const { cast, lesson } = await setup();
+      const oversized = Buffer.alloc(CAPTION_MAX_BYTES + 1, 'a');
+      const response = await putCaptions(cast.instructorA.client, lesson.id, 'en', oversized);
+      expect(response.statusCode).toBe(413);
+      expect(apiErrorSchema.parse(response.json()).error.code).toBe('validation');
     });
 
     it('answers 404, not a server error, when the file of a listed caption is gone', async () => {

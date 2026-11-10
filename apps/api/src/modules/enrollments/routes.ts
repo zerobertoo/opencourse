@@ -37,6 +37,7 @@ export const enrollmentRoutes: FastifyPluginAsyncZod = async (app) => {
     const details = await loadCourseDetails(
       app.db,
       rows.map((row) => row.course),
+      { summary: true },
     );
     const all = await loadStudentProgress(
       app.db,

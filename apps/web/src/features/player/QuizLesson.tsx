@@ -1,12 +1,11 @@
 import type { Locale, Quiz } from '@opencourse/shared';
 import { CircleCheck, CircleX } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import { Spinner } from '@/components/Spinner';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useQuizAttempts, useSubmitQuiz } from '@/hooks/queries';
@@ -42,6 +41,13 @@ export function QuizLesson({
   const attempts = useQuizAttempts(lessonId, true);
   const submit = useSubmitQuiz(courseId, lessonId);
 
+  const resultRef = useRef<HTMLDivElement>(null);
+  const introRef = useRef<HTMLParagraphElement>(null);
+  // the submit and retry buttons replace each other, which would drop the focus to the page body
+  useEffect(() => {
+    if (submission) resultRef.current?.focus();
+  }, [submission]);
+
   const answeredCount = quiz.questions.filter((question) => answers[question.id]).length;
   const isComplete = answeredCount === quiz.questions.length;
   const result = submission?.feedback;
@@ -63,14 +69,19 @@ export function QuizLesson({
 
   return (
     <form onSubmit={onSubmit} className="space-y-6" noValidate>
-      <p className="text-sm text-muted-foreground">
+      <p ref={introRef} tabIndex={-1} className="text-sm text-muted-foreground outline-none">
         {t('quiz.intro', { count: quiz.questions.length, passingScore: quiz.passingScore })}
       </p>
 
       {result ? (
-        <Card
+        <div
+          ref={resultRef}
+          tabIndex={-1}
           role="status"
-          className={cn('space-y-1 p-4', result.passed ? 'border-primary' : 'border-destructive')}
+          className={cn(
+            'space-y-1 rounded-xl border bg-surface p-4 text-surface-foreground outline-none',
+            result.passed ? 'border-primary' : 'border-destructive',
+          )}
         >
           <p className="flex items-center gap-2 text-lg font-semibold">
             {result.passed ? (
@@ -92,7 +103,7 @@ export function QuizLesson({
               {t('quiz.failedHint', { passingScore: quiz.passingScore })}
             </p>
           ) : null}
-        </Card>
+        </div>
       ) : null}
 
       <ol className="space-y-6">
@@ -179,6 +190,7 @@ export function QuizLesson({
             onClick={() => {
               setSubmission(null);
               setAnswers({});
+              introRef.current?.focus();
             }}
           >
             {t('quiz.retry')}

@@ -1,5 +1,6 @@
 import type { FileAttachment } from '@opencourse/shared';
 import { Download, Paperclip } from 'lucide-react';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import { EmptyState } from '@/components/StateViews';
@@ -12,9 +13,11 @@ export function AttachmentList({ attachments }: { attachments: FileAttachment[] 
   const { t, i18n } = useTranslation('player');
   const { video } = useServices();
   const describeError = useServiceErrorMessage();
+  const [pendingId, setPendingId] = useState<string | null>(null);
 
   /** Asks for the download address (renewing the session if needed), then saves the file. */
   const download = async (attachment: FileAttachment) => {
+    setPendingId(attachment.id);
     try {
       const link = document.createElement('a');
       link.href = await video.getDownloadUrl(attachment.url);
@@ -22,6 +25,8 @@ export function AttachmentList({ attachments }: { attachments: FileAttachment[] 
       link.click();
     } catch (error) {
       toast.error(describeError(error));
+    } finally {
+      setPendingId(null);
     }
   };
 
@@ -45,8 +50,10 @@ export function AttachmentList({ attachments }: { attachments: FileAttachment[] 
           <button
             type="button"
             onClick={() => void download(attachment)}
+            disabled={pendingId === attachment.id}
+            aria-busy={pendingId === attachment.id}
             aria-label={t('materials.downloadFile', { name: attachment.name })}
-            className="inline-flex h-11 shrink-0 sm:h-9 items-center gap-2 rounded-md border bg-surface px-3 text-sm font-medium hover:bg-muted"
+            className="inline-flex h-11 shrink-0 sm:h-9 items-center gap-2 rounded-md border bg-surface px-3 text-sm font-medium hover:bg-muted disabled:opacity-60"
           >
             <Download className="size-4" aria-hidden="true" />
             <span className="hidden sm:inline">{t('materials.download')}</span>

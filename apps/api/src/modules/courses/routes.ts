@@ -87,7 +87,7 @@ export const courseRoutes: FastifyPluginAsyncZod = async (app) => {
         .orderBy(desc(courses.createdAt));
       if (rows.length === 0) return { courses: [] };
 
-      const details = await loadCourseDetails(app.db, rows);
+      const details = await loadCourseDetails(app.db, rows, { summary: true });
       // the caller's own open grant per course (at most one: the partial unique index)
       const ownGrants = await app.db
         .select()

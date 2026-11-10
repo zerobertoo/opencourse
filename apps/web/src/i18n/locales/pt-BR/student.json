@@ -74,6 +74,7 @@
     "download": "Baixar PDF",
     "downloadFor": "Baixar certificado de {title} em PDF",
     "downloadStarted": "Download do certificado iniciado.",
+    "downloadFailed": "Não foi possível gerar o PDF do certificado.",
     "dialogTitle": "Pré-visualização do certificado",
     "dialogDescription": "Esta é a aparência do certificado em PDF."
   },

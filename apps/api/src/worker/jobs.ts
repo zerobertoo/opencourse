@@ -17,11 +17,13 @@ export const JOB_NAMES = {
   transcodeVideo: 'transcode-video',
 } as const;
 
+/** A domain event, or the marker of a job that the API or another consumer queued. */
+export type JobEventName = DomainEventName | 'video.upload' | 'webhook.delivery';
+
 /** Data carried by every queue job: which outbox event it answers, and its payload. */
 export interface JobData {
   eventId: string;
-  /** A domain event, or the marker of a job that the API or another consumer queued. */
-  eventName: DomainEventName | 'video.upload' | 'webhook.delivery';
+  eventName: JobEventName;
   /** When the event was written, as ISO 8601. */
   eventCreatedAt: string;
   payload: unknown;

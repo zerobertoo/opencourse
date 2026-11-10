@@ -1,5 +1,4 @@
 import { setTimeout as sleep } from 'node:timers/promises';
-import type { DomainEventName } from '@opencourse/shared';
 import { Queue, Worker, type Job } from 'bullmq';
 import { count, isNull } from 'drizzle-orm';
 import { Redis } from 'ioredis';
@@ -7,6 +6,7 @@ import pino, { type Logger } from 'pino';
 import type { Config } from '../config';
 import { outboxEvents } from '../db/schema';
 import { createSmtpMailer, type Mailer } from '../mail/mailer';
+import { removeStaleCourseImages } from '../modules/courses/images';
 import { removeStaleAttachments } from '../modules/files/service';
 import { requeueOrphanedVideos } from '../modules/video/requeue';
 import { removeStaleUploads } from '../modules/video/service';
@@ -88,8 +88,7 @@ export async function startWorker(
     if (!consumer) throw new Error(`No consumer named ${job.name}`);
     await consumer.run(context, job.data.payload, {
       eventId: job.data.eventId,
-      // jobs queued by consumers or by the API carry no domain event; their consumers never read this
-      eventName: job.data.eventName as DomainEventName,
+      eventName: job.data.eventName,
       eventCreatedAt: job.data.eventCreatedAt,
       isLastAttempt: job.attemptsMade + 1 >= (job.opts.attempts ?? JOB_ATTEMPTS),
     });
@@ -132,21 +131,33 @@ export async function startWorker(
   const stopSignal = new AbortController();
   let lastPurge = 0;
   let lastRequeue = 0;
+  // one pass at a time, and never inside the relay loop: slow storage must not hold events back
+  let maintenance: Promise<void> = Promise.resolve();
+  let maintenanceRunning = false;
+  const runMaintenance = async () => {
+    await purgeDispatchedEvents(db).catch((error: unknown) =>
+      log.error({ err: error }, 'outbox purge failed'),
+    );
+    await removeStaleUploads(db, storage, log).catch((error: unknown) =>
+      log.error({ err: error }, 'stale upload cleanup failed'),
+    );
+    await removeStaleAttachments(db, storage, log).catch((error: unknown) =>
+      log.error({ err: error }, 'stale attachment cleanup failed'),
+    );
+    await removeStaleCourseImages(db, storage, log).catch((error: unknown) =>
+      log.error({ err: error }, 'stale course image cleanup failed'),
+    );
+  };
   const loop = (async () => {
     while (!stopSignal.signal.aborted) {
       // a full batch means there may be more: go again without waiting
       while ((await relayOnce()) > 0 && !stopSignal.signal.aborted);
-      if (Date.now() - lastPurge > PURGE_EVERY_MS) {
+      if (!maintenanceRunning && Date.now() - lastPurge > PURGE_EVERY_MS) {
         lastPurge = Date.now();
-        await purgeDispatchedEvents(db).catch((error: unknown) =>
-          log.error({ err: error }, 'outbox purge failed'),
-        );
-        await removeStaleUploads(db, storage, log).catch((error: unknown) =>
-          log.error({ err: error }, 'stale upload cleanup failed'),
-        );
-        await removeStaleAttachments(db, storage, log).catch((error: unknown) =>
-          log.error({ err: error }, 'stale attachment cleanup failed'),
-        );
+        maintenanceRunning = true;
+        maintenance = runMaintenance().finally(() => {
+          maintenanceRunning = false;
+        });
       }
       if (Date.now() - lastRequeue > REQUEUE_EVERY_MS) {
         lastRequeue = Date.now();
@@ -179,6 +190,7 @@ export async function startWorker(
       // an encode can run for an hour: cut it, the queue hands the job out again on the next start
       killRunningEncodes();
       await loop;
+      await maintenance;
       await worker.close();
       await videoWorker.close();
       await queue.close();

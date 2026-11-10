@@ -370,6 +370,28 @@ describe('video upload, processing and playback', () => {
     expect(await ctx.app.db.select().from(videoAssets)).toHaveLength(0);
   });
 
+  it('removes the assembled source of an upload that crashed after being claimed', async () => {
+    const { cast, lesson } = await setup();
+    const started = await cast.instructorA.client.post(
+      `/api/v1/lessons/${lesson.id}/video/upload`,
+      {
+        filename: 'clip.mp4',
+        contentType: 'video/mp4',
+        sizeBytes: clip.length,
+      },
+    );
+    const { assetId } = started.json();
+    // what is left when the API dies between assembling the file and marking it processing
+    await ctx.app.db.update(videoAssets).set({ uploadId: null }).where(eq(videoAssets.id, assetId));
+    await ctx.app.storage.putText(`videos/${assetId}/source`, 'assembled', 'video/mp4');
+
+    const log = { warn: () => undefined };
+    const inTwoDays = new Date(Date.now() + 48 * 3600_000);
+    expect(await removeStaleUploads(ctx.app.db, ctx.app.storage, log, inTwoDays)).toBe(1);
+
+    expect(await ctx.app.storage.sizeOf(`videos/${assetId}/source`)).toBeNull();
+  });
+
   const videoProcessedEvents = () =>
     ctx.app.db.select().from(outboxEvents).where(eq(outboxEvents.name, 'video.processed'));
 

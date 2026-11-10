@@ -76,7 +76,7 @@ function HeroSection({ timeZone }: { timeZone: string }) {
         }
       />
       {cinema ? (
-        <div className="absolute inset-0 -z-10 bg-gradient-to-r from-player/85 via-player/50 to-transparent rtl:bg-gradient-to-l" />
+        <div className="absolute inset-0 -z-10 bg-gradient-to-t from-player/90 via-player/70 to-player/30 md:bg-gradient-to-r md:from-player/85 md:via-player/50 md:to-transparent md:rtl:bg-gradient-to-l" />
       ) : null}
       <div
         className={

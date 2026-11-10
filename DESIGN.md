@@ -129,7 +129,6 @@ The system is an Operate surface: scanability and consistency outrank expression
 **Known drift and open items.** The directional drift recorded earlier (light default, green-tinted dark, serif headings, grid home) is resolved. What remains:
 - Touch targets: below `sm` buttons, icon buttons, drag handles and the dialog close are 40 to 44px (`size-11`, `h-10`), back to 36 to 40px from `sm`; native checkboxes and radios are 20px; inline text links stay at text height, except stand-alone links ("View all", the repository link), which are at least 44px high. Radios and checkboxes sit inside labels that are about 44px tall, so the whole label is the target.
 - Short count phrases ("4 of 10 lessons", "40%") are set in mono as a whole span, not digit by digit, because the number is embedded in a translated phrase.
-- `PRODUCT.md`, `CLAUDE.md` and `docs/PRD.md` still list `#f4f6f2` as the brand background; the light page background is now `#f6f7f8`.
 
 ## Colors
 

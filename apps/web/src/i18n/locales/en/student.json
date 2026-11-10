@@ -74,6 +74,7 @@
     "download": "Download PDF",
     "downloadFor": "Download certificate for {title} as PDF",
     "downloadStarted": "Certificate download started.",
+    "downloadFailed": "Could not generate the certificate PDF.",
     "dialogTitle": "Certificate preview",
     "dialogDescription": "This is what the PDF certificate looks like."
   },

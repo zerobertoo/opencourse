@@ -344,7 +344,7 @@ export function LessonPlayer() {
       <div className="flex flex-wrap items-center justify-between gap-2">
         <Link
           to={routes.course(courseQuery.data.slug)}
-          className="inline-flex min-w-0 items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"
+          className="-my-2 inline-flex min-h-11 min-w-0 items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"
         >
           <ArrowLeft className="size-4 shrink-0 rtl:rotate-180" aria-hidden="true" />
           <span className="truncate">{courseTitle}</span>
@@ -426,7 +426,6 @@ export function LessonPlayer() {
               <Button
                 variant={isCompleted ? 'secondary' : 'primary'}
                 className="sm:order-2"
-                aria-pressed={isCompleted}
                 disabled={setCompleted.isPending}
                 onClick={() => toggleCompleted(!isCompleted)}
               >

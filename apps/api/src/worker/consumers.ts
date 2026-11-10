@@ -17,7 +17,7 @@ import type { Logger } from 'pino';
 import type { Database } from '../plugins/db';
 import type { Storage } from '../storage/s3';
 import { processVideo } from '../modules/video/process';
-import { JOB_NAMES } from './jobs';
+import { JOB_NAMES, type JobEventName } from './jobs';
 
 const deliveryJobPayloadSchema = z.object({ deliveryId: z.uuid() });
 const transcodeJobPayloadSchema = z.object({ assetId: z.uuid() });
@@ -38,7 +38,7 @@ export interface WorkerContext {
 /** What a consumer may need to know about the job that is running it. */
 export interface JobInfo {
   eventId: string;
-  eventName: DomainEventName;
+  eventName: JobEventName;
   /** When the event was written, as ISO 8601. */
   eventCreatedAt: string;
   /** True when the queue will not retry this job again. */
@@ -103,17 +103,19 @@ export const consumers: readonly Consumer[] = [
   {
     name: 'fan-out-webhooks',
     events: domainEventNameSchema.options,
-    run: ({ db, addDeliveryJob }, payload, job) =>
-      fanOutWebhooks(
+    run: ({ db, addDeliveryJob }, payload, job) => {
+      const eventName = domainEventNameSchema.parse(job.eventName);
+      return fanOutWebhooks(
         db,
         {
           eventId: job.eventId,
-          eventName: job.eventName,
+          eventName,
           createdAt: job.eventCreatedAt,
-          data: domainEventPayloadSchemas[job.eventName].parse(payload),
+          data: domainEventPayloadSchemas[eventName].parse(payload),
         },
         addDeliveryJob,
-      ),
+      );
+    },
   },
 
   // queued by `fan-out-webhooks` and by the manual retry, never by the relay

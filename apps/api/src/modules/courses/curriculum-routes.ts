@@ -13,7 +13,7 @@ import {
   updateModuleRequestSchema,
   uploadedCaptionPath,
 } from '@opencourse/shared';
-import { eq, inArray } from 'drizzle-orm';
+import { eq, inArray, sql } from 'drizzle-orm';
 import type { FastifyRequest } from 'fastify';
 import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod';
 import {
@@ -361,17 +361,26 @@ export const curriculumRoutes: FastifyPluginAsyncZod<{ config: Config }> = async
             );
           }
 
-          for (const [moduleIndex, item] of layout.entries()) {
-            await tx
-              .update(modules)
-              .set({ position: moduleIndex })
-              .where(eq(modules.id, item.moduleId));
-            for (const [lessonIndex, lessonId] of item.lessonIds.entries()) {
-              await tx
-                .update(lessons)
-                .set({ moduleId: item.moduleId, position: lessonIndex })
-                .where(eq(lessons.id, lessonId));
-            }
+          // two statements however large the course is, instead of one per module and lesson
+          const modulePlacements = layout.map(
+            (item, index) => sql`(${item.moduleId}::uuid, ${index}::int)`,
+          );
+          if (modulePlacements.length) {
+            await tx.execute(sql`
+              update modules set position = placement.position
+              from (values ${sql.join(modulePlacements, sql`, `)}) as placement(id, position)
+              where modules.id = placement.id`);
+          }
+          const lessonPlacements = layout.flatMap((item) =>
+            item.lessonIds.map(
+              (lessonId, index) => sql`(${lessonId}::uuid, ${item.moduleId}::uuid, ${index}::int)`,
+            ),
+          );
+          if (lessonPlacements.length) {
+            await tx.execute(sql`
+              update lessons set module_id = placement.module_id, position = placement.position
+              from (values ${sql.join(lessonPlacements, sql`, `)}) as placement(id, module_id, position)
+              where lessons.id = placement.id`);
           }
         },
       );

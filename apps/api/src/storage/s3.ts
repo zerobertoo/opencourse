@@ -62,6 +62,8 @@ export interface Storage {
   uploadFile(key: string, filePath: string, contentType: string): Promise<void>;
   /** Deletes every object whose key starts with the prefix. */
   deletePrefix(prefix: string): Promise<void>;
+  /** Every object whose key starts with the prefix, with when it was last written. */
+  listObjects(prefix: string): Promise<Array<{ key: string; lastModified: Date }>>;
   /** Lets the web app PUT parts and read segments straight from the storage. */
   allowBrowserAccess(origins: readonly string[]): Promise<void>;
 }
@@ -212,6 +214,26 @@ export function createS3Storage(config: Config): Storage {
         }
         continuationToken = page.IsTruncated ? page.NextContinuationToken : undefined;
       } while (continuationToken);
+    },
+    async listObjects(prefix) {
+      const objects: Array<{ key: string; lastModified: Date }> = [];
+      let continuationToken: string | undefined;
+      do {
+        const page = await client.send(
+          new ListObjectsV2Command({
+            Bucket,
+            Prefix: prefix,
+            ContinuationToken: continuationToken,
+          }),
+        );
+        for (const item of page.Contents ?? []) {
+          if (item.Key && item.LastModified) {
+            objects.push({ key: item.Key, lastModified: item.LastModified });
+          }
+        }
+        continuationToken = page.IsTruncated ? page.NextContinuationToken : undefined;
+      } while (continuationToken);
+      return objects;
     },
     async allowBrowserAccess(origins) {
       await client.send(
