@@ -1,5 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { isSenderAddress, updatePlatformSettingsRequestSchema } from './settings';
+import {
+  isSenderAddress,
+  platformSettingsSchema,
+  updatePlatformSettingsRequestSchema,
+} from './settings';
 
 describe('isSenderAddress', () => {
   it.each([
@@ -21,6 +25,30 @@ describe('isSenderAddress', () => {
     'Evil\r\nBcc: x@y.test <a@b.test>',
   ])('refuses %j', (value) => {
     expect(isSenderAddress(value)).toBe(false);
+  });
+});
+
+describe('brand layout', () => {
+  const stored = {
+    brand: { name: 'Old', logoUrl: null, primaryColor: '#2f6f5e' },
+    enabledLocales: ['pt-BR'],
+    defaultLocale: 'pt-BR',
+    email: { host: 'h', port: 25, username: '', fromAddress: 'a@b.test', secure: false },
+  };
+
+  it('reads settings saved before the field existed as classic', () => {
+    expect(platformSettingsSchema.parse(stored).brand.layout).toBe('classic');
+  });
+
+  it('does not fill in a layout on a patch, so a save cannot reset the stored one', () => {
+    const patch = updatePlatformSettingsRequestSchema.parse({ brand: { name: 'New' } });
+    expect(patch.brand).toEqual({ name: 'New' });
+  });
+
+  it('refuses an unknown layout', () => {
+    expect(
+      updatePlatformSettingsRequestSchema.safeParse({ brand: { layout: 'neon' } }).success,
+    ).toBe(false);
   });
 });
 

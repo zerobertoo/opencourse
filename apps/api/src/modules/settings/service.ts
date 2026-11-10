@@ -21,7 +21,7 @@ const SETTINGS_LOCK_ID = 7_301_003;
 /** What the platform uses until an admin saves something: branding stock, e-mail from the environment. */
 export function defaultPlatformSettings(config: Config): PlatformSettings {
   return {
-    brand: { name: 'OpenCourse', logoUrl: null, primaryColor: '#2f6f5e' },
+    brand: { name: 'OpenCourse', logoUrl: null, primaryColor: '#2f6f5e', layout: 'classic' },
     enabledLocales: ['pt-BR', 'en'],
     defaultLocale: 'pt-BR',
     email: {
