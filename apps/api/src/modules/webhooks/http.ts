@@ -1,7 +1,7 @@
 import { lookup } from 'node:dns/promises';
 import { request as httpRequest } from 'node:http';
 import { request as httpsRequest } from 'node:https';
-import { isIP } from 'node:net';
+import { isIP, type LookupFunction } from 'node:net';
 import {
   WEBHOOK_DELIVERY_HEADER,
   WEBHOOK_EVENT_HEADER,
@@ -34,15 +34,31 @@ function failure(message: string, refused = false): WebhookResponse {
   return { statusCode: null, error: message.slice(0, MAX_ERROR_LENGTH), refused };
 }
 
-interface ResolvedAddress {
+export interface ResolvedAddress {
   address: string;
   family: number;
 }
 
-/** Where a webhook may go: the parsed address and the IP to connect to, or why nothing may be sent. */
+/** Where a webhook may go: the parsed address and the IPs to connect to, or why nothing may be sent. */
 export type Destination =
-  | { url: URL; target: ResolvedAddress; failure?: undefined }
-  | { url?: undefined; target?: undefined; failure: WebhookResponse };
+  | { url: URL; targets: [ResolvedAddress, ...ResolvedAddress[]]; failure?: undefined }
+  | { url?: undefined; targets?: undefined; failure: WebhookResponse };
+
+/**
+ * A DNS lookup that only ever answers with the addresses that passed the check. All of them are
+ * offered, so the connection can fall back to the next one when the first is unreachable (an AAAA
+ * record on a host without IPv6, say), and DNS can still not change between check and request.
+ */
+export function pinnedLookup(targets: [ResolvedAddress, ...ResolvedAddress[]]): LookupFunction {
+  return (_host, options, callback) => {
+    if (options.all) {
+      callback(null, targets);
+      return;
+    }
+    const [first] = targets;
+    callback(null, first.address, first.family);
+  };
+}
 
 /**
  * The destination rule, shared by delivery and by saving an endpoint: only https (http too when
@@ -91,12 +107,12 @@ export async function resolveDestination(
       timedOut.catch(() => undefined);
     }
   }
-  const target = addresses[0];
-  if (!target) return { failure: failure('Host did not resolve to any address') };
+  const [first, ...rest] = addresses;
+  if (!first) return { failure: failure('Host did not resolve to any address') };
   if (!allowPrivateNetworks && !addresses.every(({ address }) => isPublicAddress(address))) {
     return { failure: failure('Destination is not a public address', true) };
   }
-  return { url, target };
+  return { url, targets: [first, ...rest] };
 }
 
 const MAX_DRAINED_RESPONSE_BYTES = 64 * 1024;
@@ -116,7 +132,7 @@ export async function postWebhook(input: WebhookRequest): Promise<WebhookRespons
     input.timeoutMs,
   );
   if (destination.failure) return destination.failure;
-  const { url, target } = destination;
+  const { url, targets } = destination;
 
   const send = url.protocol === 'https:' ? httpsRequest : httpRequest;
   return new Promise<WebhookResponse>((resolve) => {
@@ -126,14 +142,7 @@ export async function postWebhook(input: WebhookRequest): Promise<WebhookRespons
       {
         method: 'POST',
         signal,
-        // connect to the address that passed the check
-        lookup: (_host, options, callback) => {
-          if ((options as { all?: boolean }).all) {
-            (callback as (error: null, result: ResolvedAddress[]) => void)(null, [target]);
-          } else {
-            callback(null, target.address, target.family);
-          }
-        },
+        lookup: pinnedLookup(targets),
         headers: {
           'content-type': 'application/json',
           'content-length': Buffer.byteLength(input.body),

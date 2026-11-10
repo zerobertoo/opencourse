@@ -14,12 +14,34 @@ export function AuthLayout() {
   const { t } = useTranslation();
   const cinema = useBrandLayout() === 'cinema';
 
-  const content = (
-    <>
+  return (
+    <div
+      className={cn(
+        'min-h-dvh',
+        cinema &&
+          'flex flex-col lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(28rem,36rem)] lg:grid-rows-[auto_1fr]',
+      )}
+    >
+      {cinema ? (
+        <aside
+          aria-hidden="true"
+          className="relative hidden overflow-hidden bg-player lg:col-start-1 lg:row-span-2 lg:row-start-1 lg:block"
+        >
+          <img
+            src={`${import.meta.env.BASE_URL}media/covers/login-cover.jpg`}
+            alt={''}
+            className="absolute inset-0 size-full object-cover"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-player/80 via-player/20 to-transparent" />
+          <p className="absolute inset-x-0 bottom-0 p-10 text-center text-sm text-player-foreground/90">
+            {t('app.tagline')}
+          </p>
+        </aside>
+      ) : null}
       <header
         className={cn(
           'flex h-16 items-center justify-between gap-2 px-4',
-          cinema ? 'lg:justify-end' : 'mx-auto max-w-5xl',
+          cinema ? 'lg:col-start-2 lg:justify-end' : 'mx-auto max-w-5xl',
         )}
       >
         <Link to="/" aria-label={t('app.name')} className={cn('min-w-0', cinema && 'lg:hidden')}>
@@ -34,7 +56,7 @@ export function AuthLayout() {
         id="main-content"
         className={cn(
           'mx-auto w-full max-w-md px-4 pb-12 pt-6',
-          cinema ? 'flex flex-1 flex-col justify-center' : 'sm:pt-12',
+          cinema ? 'flex flex-1 flex-col justify-center lg:col-start-2' : 'sm:pt-12',
         )}
       >
         {cinema ? (
@@ -59,30 +81,6 @@ export function AuthLayout() {
           </p>
         )}
       </main>
-    </>
-  );
-
-  return (
-    <div
-      className={cn(
-        'min-h-dvh',
-        cinema && 'lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(28rem,36rem)]',
-      )}
-    >
-      {cinema ? (
-        <aside aria-hidden="true" className="relative hidden overflow-hidden bg-player lg:block">
-          <img
-            src={`${import.meta.env.BASE_URL}media/covers/login-cover.jpg`}
-            alt={''}
-            className="absolute inset-0 size-full object-cover"
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-player/80 via-player/20 to-transparent" />
-          <p className="absolute inset-x-0 bottom-0 p-10 text-center text-sm text-player-foreground/90">
-            {t('app.tagline')}
-          </p>
-        </aside>
-      ) : null}
-      {cinema ? <div className="flex min-h-dvh flex-col">{content}</div> : content}
     </div>
   );
 }

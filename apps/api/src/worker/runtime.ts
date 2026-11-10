@@ -130,21 +130,30 @@ export async function startWorker(
   const stopSignal = new AbortController();
   let lastPurge = 0;
   let lastRequeue = 0;
+  // one pass at a time, and never inside the relay loop: slow storage must not hold events back
+  let maintenance: Promise<void> = Promise.resolve();
+  let maintenanceRunning = false;
+  const runMaintenance = async () => {
+    await purgeDispatchedEvents(db).catch((error: unknown) =>
+      log.error({ err: error }, 'outbox purge failed'),
+    );
+    await removeStaleUploads(db, storage, log).catch((error: unknown) =>
+      log.error({ err: error }, 'stale upload cleanup failed'),
+    );
+    await removeStaleAttachments(db, storage, log).catch((error: unknown) =>
+      log.error({ err: error }, 'stale attachment cleanup failed'),
+    );
+  };
   const loop = (async () => {
     while (!stopSignal.signal.aborted) {
       // a full batch means there may be more: go again without waiting
       while ((await relayOnce()) > 0 && !stopSignal.signal.aborted);
-      if (Date.now() - lastPurge > PURGE_EVERY_MS) {
+      if (!maintenanceRunning && Date.now() - lastPurge > PURGE_EVERY_MS) {
         lastPurge = Date.now();
-        await purgeDispatchedEvents(db).catch((error: unknown) =>
-          log.error({ err: error }, 'outbox purge failed'),
-        );
-        await removeStaleUploads(db, storage, log).catch((error: unknown) =>
-          log.error({ err: error }, 'stale upload cleanup failed'),
-        );
-        await removeStaleAttachments(db, storage, log).catch((error: unknown) =>
-          log.error({ err: error }, 'stale attachment cleanup failed'),
-        );
+        maintenanceRunning = true;
+        maintenance = runMaintenance().finally(() => {
+          maintenanceRunning = false;
+        });
       }
       if (Date.now() - lastRequeue > REQUEUE_EVERY_MS) {
         lastRequeue = Date.now();
@@ -177,6 +186,7 @@ export async function startWorker(
       // an encode can run for an hour: cut it, the queue hands the job out again on the next start
       killRunningEncodes();
       await loop;
+      await maintenance;
       await worker.close();
       await videoWorker.close();
       await queue.close();

@@ -149,7 +149,10 @@ export async function deleteVideoFiles(
   }
 }
 
-/** Drops uploads that sat unfinished for a day: aborts the multipart upload and removes the row. */
+/**
+ * Drops uploads that sat unfinished for a day: removes the row, aborts the multipart upload and
+ * deletes any file already assembled (a crash after the claim leaves the source behind).
+ */
 export async function removeStaleUploads(
   db: Database,
   storage: Storage,
@@ -166,15 +169,8 @@ export async function removeStaleUploads(
       ),
     );
   for (const asset of stale) {
-    try {
-      if (asset.uploadId) {
-        await storage.abortMultipartUpload(videoKeys.source(asset.id), asset.uploadId);
-      }
-    } catch (error) {
-      // the upload may already be gone at the storage; the row is removed either way
-      log.warn({ err: error, assetId: asset.id }, 'could not abort a stale upload');
-    }
     await db.delete(videoAssets).where(eq(videoAssets.id, asset.id));
+    await deleteVideoFiles(storage, [{ id: asset.id, uploadId: asset.uploadId }], log);
   }
   return stale.length;
 }
