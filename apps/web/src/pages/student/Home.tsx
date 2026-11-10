@@ -10,6 +10,8 @@ import { Button } from '@/components/ui/button';
 import { ProgressBar } from '@/components/ui/progress';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useContinueLearning, useMyCertificates, useMyCourses } from '@/hooks/queries';
+import { cn } from '@/lib/utils';
+import { useBrandLayout } from '@/lib/brandLayout';
 import { formatClock } from '@/lib/duration';
 import { localizeCourse, localizeLesson, toLocale } from '@/lib/content';
 import { useFormatters } from '@/lib/intl';
@@ -21,6 +23,7 @@ function HeroSection({ timeZone }: { timeZone: string }) {
   const { formatPercent } = useFormatters(timeZone);
   const continueQuery = useContinueLearning();
   const coursesQuery = useMyCourses();
+  const cinema = useBrandLayout() === 'cinema';
   const [params] = useSearchParams();
   const search = params.get('q')?.trim() ?? '';
   const locale = toLocale(i18n.resolvedLanguage);
@@ -52,18 +55,36 @@ function HeroSection({ timeZone }: { timeZone: string }) {
   const lessonContent = resume ? localizeLesson(resume.lesson, locale, course.defaultLocale) : null;
   const target = resume ? routes.lesson(course.slug, resume.lesson.id) : routes.course(course.slug);
   const resumeSeconds = resume?.lesson.type === 'video' ? resume.videoPositionSeconds : 0;
+  const subtle = cinema ? 'text-player-foreground/80' : 'text-muted-foreground';
 
   return (
     <section
       aria-labelledby="hero-heading"
-      className="overflow-hidden rounded-xl border bg-surface md:grid md:grid-cols-[minmax(0,5fr)_minmax(0,6fr)]"
+      className={
+        cinema
+          ? 'relative isolate flex min-h-80 items-end overflow-hidden rounded-xl bg-player text-player-foreground md:min-h-[26rem]'
+          : 'overflow-hidden rounded-xl border bg-surface md:grid md:grid-cols-[minmax(0,5fr)_minmax(0,6fr)]'
+      }
     >
       <CourseCover
         imageUrl={course.coverImageUrl}
         seed={course.id}
-        className="aspect-video w-full md:order-last md:aspect-auto md:min-h-80"
+        className={
+          cinema
+            ? 'absolute inset-0 -z-20 size-full'
+            : 'aspect-video w-full md:order-last md:aspect-auto md:min-h-80'
+        }
       />
-      <div className="flex flex-col justify-center gap-6 p-5 sm:p-8 lg:p-10">
+      {cinema ? (
+        <div className="absolute inset-0 -z-10 bg-gradient-to-r from-player/85 via-player/50 to-transparent rtl:bg-gradient-to-l" />
+      ) : null}
+      <div
+        className={
+          cinema
+            ? 'flex max-w-xl flex-col justify-center gap-6 p-5 sm:p-8 lg:p-12'
+            : 'flex flex-col justify-center gap-6 p-5 sm:p-8 lg:p-10'
+        }
+      >
         <div className="space-y-3">
           <h2 id="hero-heading" className="sr-only">
             {resume ? t('home.continueTitle') : t('home.featuredTitle')}
@@ -72,12 +93,12 @@ function HeroSection({ timeZone }: { timeZone: string }) {
             {courseContent.title}
           </p>
           {lessonContent ? (
-            <p className="text-muted-foreground">{lessonContent.title}</p>
+            <p className={subtle}>{lessonContent.title}</p>
           ) : courseContent.description ? (
-            <p className="line-clamp-3 text-muted-foreground">{courseContent.description}</p>
+            <p className={cn('line-clamp-3', subtle)}>{courseContent.description}</p>
           ) : null}
           {resumeSeconds > 0 ? (
-            <p className="font-mono text-xs text-muted-foreground">
+            <p className={cn('font-mono text-xs', subtle)}>
               {t('home.resumeAt', { time: formatClock(resumeSeconds) })}
             </p>
           ) : null}
@@ -87,7 +108,7 @@ function HeroSection({ timeZone }: { timeZone: string }) {
             value={progress.percent}
             label={t('course.progressLabel', { title: courseContent.title })}
           />
-          <p className="font-mono text-xs text-muted-foreground">
+          <p className={cn('font-mono text-xs', subtle)}>
             {t('course.lessonsCompleted', {
               completed: progress.completedCount,
               total: progress.totalCount,

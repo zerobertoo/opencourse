@@ -137,7 +137,13 @@
       "name": "Nome da plataforma",
       "logoUrl": "Link do logo",
       "logoUrlHint": "Opcional. Deixe vazio para usar o logo padrão.",
-      "primaryColor": "Cor principal"
+      "primaryColor": "Cor principal",
+      "layout": "Visual da plataforma",
+      "layoutHint": "Vale para todos os alunos: login e vitrine.",
+      "layouts": {
+        "cinema": "Cinema (estilo catálogo de streaming)",
+        "classic": "Clássico"
+      }
     },
     "languages": {
       "title": "Idiomas",

@@ -4,7 +4,9 @@ import { CourseCover } from '@/components/CourseCover';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
 import { ProgressBar } from '@/components/ui/progress';
+import { useBrandLayout } from '@/lib/brandLayout';
 import { localizeCourse, toLocale } from '@/lib/content';
+import { cn } from '@/lib/utils';
 import { useFormatters } from '@/lib/intl';
 import type { EnrolledCourse } from '@/services';
 import { routes } from '@/lib/routes';
@@ -19,6 +21,7 @@ export function CourseCard({
 }) {
   const { t, i18n } = useTranslation('student');
   const { formatDate, formatPercent } = useFormatters(timeZone);
+  const cinema = useBrandLayout() === 'cinema';
   const { course, progress, grant } = enrolled;
   const { title } = localizeCourse(course, toLocale(i18n.resolvedLanguage));
 
@@ -29,15 +32,27 @@ export function CourseCard({
       : ('inProgress' as const);
 
   return (
-    <Card className="group relative flex w-full flex-col overflow-hidden transition-shadow focus-within:ring-2 focus-within:ring-ring hover:shadow-md">
+    <Card
+      className={cn(
+        'group relative flex w-full flex-col overflow-hidden focus-within:ring-2 focus-within:ring-ring hover:shadow-md',
+        cinema
+          ? 'transition-transform duration-200 hover:scale-[1.03] motion-reduce:transition-none motion-reduce:hover:scale-100'
+          : 'transition-shadow',
+      )}
+    >
       <CourseCover
         imageUrl={course.coverImageUrl}
         seed={course.id}
-        className="aspect-video w-full"
+        className={cn('w-full', cinema ? 'aspect-[2/3]' : 'aspect-video')}
       />
-      <div className="flex flex-1 flex-col gap-3 p-4">
-        <div className="flex items-start justify-between gap-2">
-          <h3 className="text-lg font-semibold leading-snug">
+      <div className={cn('flex flex-1 flex-col gap-3', cinema ? 'p-3' : 'p-4')}>
+        <div
+          className={cn(
+            'flex gap-2',
+            cinema ? 'flex-col items-start' : 'items-start justify-between',
+          )}
+        >
+          <h3 className={cn('font-semibold leading-snug', cinema ? 'text-base' : 'text-lg')}>
             {/* the whole card is clickable through the stretched link */}
             <Link
               to={routes.course(course.slug)}
@@ -46,7 +61,10 @@ export function CourseCard({
               {title}
             </Link>
           </h3>
-          <Badge variant={status === 'completed' ? 'success' : 'neutral'} className="shrink-0">
+          <Badge
+            variant={status === 'completed' ? 'success' : 'neutral'}
+            className={cinema ? undefined : 'shrink-0'}
+          >
             {t(`course.status.${status}`)}
           </Badge>
         </div>
