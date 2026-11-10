@@ -30,25 +30,29 @@ export function Certificates() {
   const download = (certificate: CertificateDetails) => {
     const courseTitle = pickCertificateTitle(certificate, locale);
     const template = certificate.template;
-    const blob = buildCertificatePdf({
-      heading: t('certificates.heading'),
-      intro: t('certificates.intro'),
-      holderName: certificate.holderName,
-      completion: t('certificates.completion'),
-      courseTitle,
-      issuedLine: t('certificates.issuedOn', { date: issuedOn(certificate) }),
-      codeLine: t('certificates.code', { code: certificate.code }),
-      message: template.message || undefined,
-      signatoryLine:
-        [template.signatoryName, template.signatoryRole].filter(Boolean).join(', ') || undefined,
-    });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `${certificate.code}.pdf`;
-    link.click();
-    URL.revokeObjectURL(url);
-    toast.success(t('certificates.downloadStarted'));
+    try {
+      const blob = buildCertificatePdf({
+        heading: t('certificates.heading'),
+        intro: t('certificates.intro'),
+        holderName: certificate.holderName,
+        completion: t('certificates.completion'),
+        courseTitle,
+        issuedLine: t('certificates.issuedOn', { date: issuedOn(certificate) }),
+        codeLine: t('certificates.code', { code: certificate.code }),
+        message: template.message || undefined,
+        signatoryLine:
+          [template.signatoryName, template.signatoryRole].filter(Boolean).join(', ') || undefined,
+      });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `${certificate.code}.pdf`;
+      link.click();
+      URL.revokeObjectURL(url);
+      toast.success(t('certificates.downloadStarted'));
+    } catch {
+      toast.error(t('certificates.downloadFailed'));
+    }
   };
 
   let body: React.ReactNode;

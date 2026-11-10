@@ -78,6 +78,7 @@
   },
   "states": {
     "loading": "Loading",
+    "notifications": "Notifications",
     "underConstruction": {
       "title": "Under construction",
       "description": "This area will be built in the next steps."
