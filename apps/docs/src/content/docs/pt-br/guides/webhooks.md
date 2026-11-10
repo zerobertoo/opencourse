@@ -36,7 +36,7 @@ function isValid(secret, header, rawBody, toleranceSeconds = 300) {
 ## Entrega e novas tentativas
 
 - Qualquer 2xx é sucesso.
-- Um erro de rede, timeout (10 s), 5xx, 408 ou 429 é tentado de novo 5 vezes, com espera exponencial.
+- Um erro de rede, timeout (10 s), 5xx, 408 ou 429 é tentado até 5 vezes no total, com espera exponencial a partir de 30 s.
 - Qualquer outro status falha na hora. Redirecionamentos nunca são seguidos.
 - O histórico (estado, tentativas, código de status, erro; sem o corpo da resposta) fica por 7 dias, e uma entrega com falha pode ser reenviada pela API ou pela tela.
 - `POST /admin/webhooks/:id/test` envia um evento `webhook.test` na hora e mostra a resposta.

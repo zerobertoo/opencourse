@@ -32,6 +32,7 @@ export const certificates = pgTable(
     // one certificate per student and course, forever: this is the idempotency guarantee
     unique('certificates_user_course_unique').on(table.userId, table.courseId),
     index('certificates_user_idx').on(table.userId),
+    index('certificates_course_idx').on(table.courseId),
   ],
 );
 

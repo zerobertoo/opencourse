@@ -22,7 +22,11 @@ export const invites = pgTable(
     acceptedAt: timestamp('accepted_at', { withTimezone: true }),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   },
-  (table) => [index('invites_email_idx').on(table.email)],
+  (table) => [
+    index('invites_email_idx').on(table.email),
+    index('invites_course_idx').on(table.courseId),
+    index('invites_created_by_idx').on(table.createdById),
+  ],
 );
 
 export type InviteRow = typeof invites.$inferSelect;

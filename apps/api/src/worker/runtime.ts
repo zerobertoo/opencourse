@@ -1,5 +1,4 @@
 import { setTimeout as sleep } from 'node:timers/promises';
-import type { DomainEventName } from '@opencourse/shared';
 import { Queue, Worker, type Job } from 'bullmq';
 import { count, isNull } from 'drizzle-orm';
 import { Redis } from 'ioredis';
@@ -88,8 +87,7 @@ export async function startWorker(
     if (!consumer) throw new Error(`No consumer named ${job.name}`);
     await consumer.run(context, job.data.payload, {
       eventId: job.data.eventId,
-      // jobs queued by consumers or by the API carry no domain event; their consumers never read this
-      eventName: job.data.eventName as DomainEventName,
+      eventName: job.data.eventName,
       eventCreatedAt: job.data.eventCreatedAt,
       isLastAttempt: job.attemptsMade + 1 >= (job.opts.attempts ?? JOB_ATTEMPTS),
     });
