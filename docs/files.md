@@ -34,6 +34,11 @@ and both are served only to people who can see the course content.
 - The cover address is `GET /api/v1/courses/:id/cover/:coverId`, which redirects to a short-lived address of the image. It needs no session on purpose: an `<img>` cannot renew an expired one, and a cover is not a secret. Only the current cover answers, and every upload gets a new address, so browsers never show a stale one.
 - A link to an image hosted elsewhere can still be set through `PATCH /courses/:id` (`coverImageUrl`, https only).
 
+## Course banners
+
+- Under **Details**, **Home banner** takes a wide image (21:9 works best) for the hero of the student home in the Cinema look. It follows the same rules as a cover: PNG, JPEG or WebP up to 5 MiB, one presigned `PUT`, and replacing or removing it deletes the old file.
+- Without a banner the hero uses the cover, and the Classic look never uses it. The banner has its own endpoints (`POST /courses/:id/banner`, `/banner/complete`, `DELETE /courses/:id/banner`) and a public address like the cover's: `GET /api/v1/courses/:id/banner/:bannerId`.
+
 ## Cleanup
 
 Deleting a lesson or a module also deletes its attachments and captions from the storage. Covers that were uploaded but never confirmed stay in the storage until the course is removed from it.
