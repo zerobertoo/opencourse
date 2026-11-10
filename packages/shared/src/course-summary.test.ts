@@ -21,6 +21,7 @@ function course(lessonLocales: Array<'pt-BR' | 'en'>): CourseDetail {
     slug: 'course',
     status: 'published',
     coverImageUrl: null,
+    bannerImageUrl: null,
     instructorId: ID(3),
     defaultLocale: 'en',
     sequentialOrder: false,

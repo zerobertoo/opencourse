@@ -67,7 +67,7 @@ function HeroSection({ timeZone }: { timeZone: string }) {
       }
     >
       <CourseCover
-        imageUrl={course.coverImageUrl}
+        imageUrl={cinema ? (course.bannerImageUrl ?? course.coverImageUrl) : course.coverImageUrl}
         seed={course.id}
         className={
           cinema

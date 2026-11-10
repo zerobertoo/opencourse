@@ -34,6 +34,11 @@ e ambos são entregues apenas a quem pode ver o conteúdo do curso.
 - O endereço da capa é `GET /api/v1/courses/:id/cover/:coverId`, que redireciona para um endereço temporário da imagem. Ele não exige sessão de propósito: um `<img>` não consegue renovar uma sessão expirada, e a capa não é segredo. Só a capa atual responde, e cada envio gera um endereço novo, então o navegador nunca mostra uma capa velha.
 - Um link para imagem hospedada em outro lugar ainda pode ser definido por `PATCH /courses/:id` (`coverImageUrl`, só https).
 
+## Banners de curso
+
+- Em **Detalhes**, **Banner da página inicial** recebe uma imagem larga (21:9 funciona melhor) para o destaque da home do aluno no visual Cinema. Segue as mesmas regras da capa: PNG, JPEG ou WebP de até 5 MiB, um `PUT` assinado, e trocar ou remover apaga o arquivo antigo.
+- Sem banner, o destaque usa a capa, e o visual Clássico nunca usa o banner. Ele tem endpoints próprios (`POST /courses/:id/banner`, `/banner/complete`, `DELETE /courses/:id/banner`) e um endereço público como o da capa: `GET /api/v1/courses/:id/banner/:bannerId`.
+
 ## Limpeza
 
 Excluir uma aula ou um módulo também exclui seus anexos e legendas do armazenamento.

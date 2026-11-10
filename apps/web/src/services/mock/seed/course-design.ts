@@ -21,6 +21,7 @@ export function buildDesignCourse(createdAt: string): CourseDetail {
     slug: 'design-de-interfaces-na-pratica',
     status: 'published',
     coverImageUrl: demoCover('design'),
+    bannerImageUrl: null,
     instructorId: 'user-beatriz',
     defaultLocale: 'pt-BR',
     sequentialOrder: true,

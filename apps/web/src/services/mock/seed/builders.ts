@@ -109,6 +109,10 @@ export function demoCover(name: string): string {
   return `${import.meta.env.BASE_URL}media/covers/${name}.jpg`;
 }
 
+export function demoBanner(name: string): string {
+  return `${import.meta.env.BASE_URL}media/covers/${name}-banner.jpg`;
+}
+
 export function courseModule(
   id: string,
   courseId: string,

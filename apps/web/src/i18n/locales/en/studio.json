@@ -88,6 +88,17 @@
       "tooLarge": "The image is larger than {max} MB.",
       "savedToast": "Cover updated.",
       "removedToast": "Cover removed."
+    },
+    "banner": {
+      "title": "Home banner",
+      "hint": "Wide image for the home page hero (21:9), PNG, JPEG or WebP, up to {max} MB. Without one, the hero uses the cover.",
+      "upload": "Upload banner",
+      "replace": "Replace banner",
+      "remove": "Remove banner",
+      "invalidType": "Choose a PNG, JPEG or WebP image.",
+      "tooLarge": "The image is larger than {max} MB.",
+      "savedToast": "Banner updated.",
+      "removedToast": "Banner removed."
     }
   },
   "content": {

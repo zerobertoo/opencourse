@@ -29,6 +29,7 @@ const PUBLIC_OPERATIONS = new Set([
   'POST /api/v1/invites/{token}/accept',
   // addressed by an unguessable id, a playback token or a presigned URL
   'GET /api/v1/courses/{id}/cover/{coverId}',
+  'GET /api/v1/courses/{id}/banner/{bannerId}',
   'GET /api/v1/videos/{assetId}/{file}',
   'GET /api/v1/videos/{assetId}/key',
 ]);

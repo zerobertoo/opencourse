@@ -1,5 +1,6 @@
 import {
   courseResponseSchema,
+  createBannerUploadResponseSchema,
   createCoverUploadResponseSchema,
   listCoursesResponseSchema,
 } from '@opencourse/shared';
@@ -49,31 +50,43 @@ export function createApiCourseService(
 
     update: (id, input) => readCourse('PATCH', `/courses/${encodeURIComponent(id)}`, input),
 
-    async uploadCover(id, file) {
-      const coverUrl = `/courses/${encodeURIComponent(id)}/cover`;
-      const started = await client.request('POST', coverUrl, {
-        body: { contentType: file.type, sizeBytes: file.size },
-        schema: createCoverUploadResponseSchema,
-      });
-      let response: Response;
-      try {
-        response = await sendFile(started.uploadUrl, {
-          method: 'PUT',
-          headers: { 'content-type': file.type },
-          body: file,
-        });
-      } catch {
-        throw new ServiceError('unavailable', 'Could not reach the storage to upload the image');
-      }
-      if (!response.ok) throw new ServiceError('unavailable', 'The image upload failed');
-      return (
-        await client.request('POST', `${coverUrl}/complete`, {
-          body: { coverId: started.coverId },
-          schema: courseResponseSchema,
-        })
-      ).course;
-    },
-
+    uploadCover: (id, file) => uploadImage(id, 'cover', file),
     removeCover: (id) => readCourse('DELETE', `/courses/${encodeURIComponent(id)}/cover`),
+    uploadBanner: (id, file) => uploadImage(id, 'banner', file),
+    removeBanner: (id) => readCourse('DELETE', `/courses/${encodeURIComponent(id)}/banner`),
   };
+
+  /** Covers and banners share the flow: ask for an address, PUT the file, report it done. */
+  async function uploadImage(id: string, kind: 'cover' | 'banner', file: File) {
+    const url = `/courses/${encodeURIComponent(id)}/${kind}`;
+    const started =
+      kind === 'cover'
+        ? await client.request('POST', url, {
+            body: { contentType: file.type, sizeBytes: file.size },
+            schema: createCoverUploadResponseSchema,
+          })
+        : await client.request('POST', url, {
+            body: { contentType: file.type, sizeBytes: file.size },
+            schema: createBannerUploadResponseSchema,
+          });
+    let response: Response;
+    try {
+      response = await sendFile(started.uploadUrl, {
+        method: 'PUT',
+        headers: { 'content-type': file.type },
+        body: file,
+      });
+    } catch {
+      throw new ServiceError('unavailable', 'Could not reach the storage to upload the image');
+    }
+    if (!response.ok) throw new ServiceError('unavailable', 'The image upload failed');
+    const done =
+      'coverId' in started ? { coverId: started.coverId } : { bannerId: started.bannerId };
+    return (
+      await client.request('POST', `${url}/complete`, {
+        body: done,
+        schema: courseResponseSchema,
+      })
+    ).course;
+  }
 }

@@ -10,6 +10,8 @@ All notable changes to OpenCourse. Releases are tagged `vX.Y.Z`; the PRD in [doc
 
 - A platform look, chosen by the owner under Administration → Settings → Branding and shared by every student. **Classic** is the default and keeps the interface as it was. **Cinema** gives sign-in a cover panel beside the form, turns the home hero into a full-bleed cover and shows courses as 2:3 posters, like a streaming catalog. An instance that never saved the setting stays on Classic.
 
+- A home banner for each course, uploaded under Details in the Studio next to the cover. In the Cinema look the home hero shows the banner (a wide image) and falls back to the cover; the Classic look is unchanged. The migration only adds a nullable column.
+
 ### Changed
 
 - Mailpit now runs only with the `dev` Compose profile (`docker compose --profile dev up`; `pnpm infra` still starts it). A plain `docker compose up` no longer starts a development inbox, so set `SMTP_*` (or save an SMTP server under Administration → Settings) to deliver e-mail, or add `--profile dev` to keep capturing it.

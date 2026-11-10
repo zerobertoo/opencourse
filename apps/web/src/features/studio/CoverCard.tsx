@@ -9,33 +9,43 @@ import { Spinner } from '@/components/Spinner';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { FilePicker } from '@/components/ui/file-picker';
-import { useCourseCover } from '@/hooks/studioQueries';
+import { useCourseBanner, useCourseCover } from '@/hooks/studioQueries';
 import { useServiceErrorMessage } from '@/lib/serviceError';
+import { cn } from '@/lib/utils';
 
 const MEGABYTE = 1024 ** 2;
 
-/** Cover image of the course: upload one, replace it, or go back to the generated cover. */
-export function CoverCard({ course }: { course: CourseDetail }) {
+/** Image of the course: the cover (poster) or the banner (wide, for the home hero). */
+export function CoverCard({
+  course,
+  kind = 'cover',
+}: {
+  course: CourseDetail;
+  kind?: 'cover' | 'banner';
+}) {
   const { t } = useTranslation('studio');
   const describeError = useServiceErrorMessage();
   const cover = useCourseCover(course.id);
+  const banner = useCourseBanner(course.id);
+  const image = kind === 'cover' ? cover : banner;
+  const imageUrl = kind === 'cover' ? course.coverImageUrl : course.bannerImageUrl;
   const [error, setError] = useState<string | null>(null);
-  const isBusy = cover.upload.isPending || cover.remove.isPending;
+  const isBusy = image.upload.isPending || image.remove.isPending;
 
   async function onPick([file]: File[]) {
     if (!file) return;
     setError(null);
     if (!COVER_CONTENT_TYPES.some((type) => type === file.type)) {
-      setError(t('details.cover.invalidType'));
+      setError(t(`details.${kind}.invalidType`));
       return;
     }
     if (file.size > COVER_MAX_BYTES) {
-      setError(t('details.cover.tooLarge', { max: COVER_MAX_BYTES / MEGABYTE }));
+      setError(t(`details.${kind}.tooLarge`, { max: COVER_MAX_BYTES / MEGABYTE }));
       return;
     }
     try {
-      await cover.upload.mutateAsync(file);
-      toast.success(t('details.cover.savedToast'));
+      await image.upload.mutateAsync(file);
+      toast.success(t(`details.${kind}.savedToast`));
     } catch (failure) {
       setError(describeError(failure));
     }
@@ -44,8 +54,8 @@ export function CoverCard({ course }: { course: CourseDetail }) {
   async function onRemove() {
     setError(null);
     try {
-      await cover.remove.mutateAsync();
-      toast.success(t('details.cover.removedToast'));
+      await image.remove.mutateAsync();
+      toast.success(t(`details.${kind}.removedToast`));
     } catch (failure) {
       setError(describeError(failure));
     }
@@ -54,31 +64,34 @@ export function CoverCard({ course }: { course: CourseDetail }) {
   return (
     <Card className="max-w-3xl space-y-3 p-4 sm:p-5">
       <div>
-        <h2 className="font-medium">{t('details.cover.title')}</h2>
+        <h2 className="font-medium">{t(`details.${kind}.title`)}</h2>
         <p className="text-sm text-muted-foreground">
-          {t('details.cover.hint', { max: COVER_MAX_BYTES / MEGABYTE })}
+          {t(`details.${kind}.hint`, { max: COVER_MAX_BYTES / MEGABYTE })}
         </p>
       </div>
       <FormError message={error} />
       <div className="flex flex-wrap items-center gap-4">
         <CourseCover
-          imageUrl={course.coverImageUrl}
+          imageUrl={imageUrl}
           seed={course.id}
-          className="aspect-video w-48 rounded-md"
+          className={cn(
+            'rounded-md',
+            kind === 'cover' ? 'aspect-video w-48' : 'aspect-[21/9] w-72',
+          )}
         />
         <div className="flex flex-wrap gap-2">
           <FilePicker
-            label={course.coverImageUrl ? t('details.cover.replace') : t('details.cover.upload')}
+            label={imageUrl ? t(`details.${kind}.replace`) : t(`details.${kind}.upload`)}
             accept={COVER_CONTENT_TYPES.join(',')}
             icon={ImagePlus}
-            loading={cover.upload.isPending}
+            loading={image.upload.isPending}
             disabled={isBusy}
             onFiles={(files) => void onPick(files)}
           />
-          {course.coverImageUrl ? (
+          {imageUrl ? (
             <Button type="button" variant="ghost" disabled={isBusy} onClick={onRemove}>
-              {cover.remove.isPending ? <Spinner /> : <Trash2 aria-hidden="true" />}
-              {t('details.cover.remove')}
+              {image.remove.isPending ? <Spinner /> : <Trash2 aria-hidden="true" />}
+              {t(`details.${kind}.remove`)}
             </Button>
           ) : null}
         </div>

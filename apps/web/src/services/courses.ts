@@ -48,4 +48,8 @@ export interface CourseService {
   uploadCover(id: string, file: File): Promise<CourseDetail>;
   /** Goes back to the generated cover. */
   removeCover(id: string): Promise<CourseDetail>;
+  /** Makes the image the home banner (same types and size as a cover). */
+  uploadBanner(id: string, file: File): Promise<CourseDetail>;
+  /** The hero goes back to the cover. */
+  removeBanner(id: string): Promise<CourseDetail>;
 }

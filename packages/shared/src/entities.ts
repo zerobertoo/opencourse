@@ -45,6 +45,8 @@ export const courseSchema = z.object({
   slug: z.string().min(1),
   status: courseStatusSchema,
   coverImageUrl: z.string().nullable(),
+  /** Wide image for the home hero; without one the hero falls back to the cover. */
+  bannerImageUrl: z.string().nullable(),
   instructorId: idSchema,
   defaultLocale: localeSchema,
   /** When true, the next lesson only unlocks after the previous one is completed. */

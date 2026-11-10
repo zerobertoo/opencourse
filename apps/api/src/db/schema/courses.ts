@@ -30,6 +30,7 @@ export const courses = pgTable(
     slug: text('slug').notNull().unique(),
     status: courseStatus('status').notNull().default('draft'),
     coverImageUrl: text('cover_image_url'),
+    bannerImageUrl: text('banner_image_url'),
     instructorId: uuid('instructor_id')
       .notNull()
       .references(() => users.id, { onDelete: 'restrict' }),

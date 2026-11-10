@@ -117,6 +117,7 @@ export function CourseEditor() {
         {/* editors keep their unsaved state while another tab is open */}
         <TabsContent value="details" forceMount className="space-y-5 data-[state=inactive]:hidden">
           <CoverCard course={course} />
+          <CoverCard course={course} kind="banner" />
           <DetailsTab course={course} />
         </TabsContent>
         <TabsContent value="content" forceMount className="data-[state=inactive]:hidden">

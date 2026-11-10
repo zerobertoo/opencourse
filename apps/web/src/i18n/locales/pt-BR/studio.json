@@ -88,6 +88,17 @@
       "tooLarge": "A imagem é maior que {max} MB.",
       "savedToast": "Capa atualizada.",
       "removedToast": "Capa removida."
+    },
+    "banner": {
+      "title": "Banner da página inicial",
+      "hint": "Imagem larga para o destaque da página inicial (21:9), PNG, JPEG ou WebP, até {max} MB. Sem imagem, o destaque usa a capa.",
+      "upload": "Enviar banner",
+      "replace": "Trocar banner",
+      "remove": "Remover banner",
+      "invalidType": "Escolha uma imagem PNG, JPEG ou WebP.",
+      "tooLarge": "A imagem é maior que {max} MB.",
+      "savedToast": "Banner atualizado.",
+      "removedToast": "Banner removido."
     }
   },
   "content": {

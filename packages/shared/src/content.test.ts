@@ -36,6 +36,7 @@ function buildCourse(overrides: Partial<CourseDetail> = {}): CourseDetail {
     slug: 'curso',
     status: 'published',
     coverImageUrl: null,
+    bannerImageUrl: null,
     instructorId: 'u1',
     defaultLocale: 'pt-BR',
     sequentialOrder: false,
