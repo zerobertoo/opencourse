@@ -15,7 +15,12 @@ export function AuthLayout() {
   const cinema = useBrandLayout() === 'cinema';
 
   return (
-    <div className={cn('min-h-dvh', cinema && 'lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(28rem,36rem)]')}>
+    <div
+      className={cn(
+        'min-h-dvh',
+        cinema && 'lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(28rem,36rem)]',
+      )}
+    >
       {cinema ? (
         <aside aria-hidden="true" className="relative hidden overflow-hidden bg-player lg:block">
           <img
