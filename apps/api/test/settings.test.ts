@@ -45,6 +45,7 @@ describe('platform settings', () => {
       name: 'Acme Academy',
       logoUrl: null,
       primaryColor: '#2f6f5e',
+      layout: 'classic',
     });
     expect(changed.json().email).toMatchObject({ host: 'smtp.acme.test', port: 2525 });
 
@@ -56,6 +57,23 @@ describe('platform settings', () => {
       action: 'settings.updated',
       metadata: { fields: ['brand', 'email'] },
     });
+  });
+
+  it('stores the platform look, readable by everyone, and refuses an unknown one', async () => {
+    const { admin } = await createCast();
+    const changed = await admin.client.patch('/api/v1/admin/settings', {
+      brand: { layout: 'cinema' },
+    });
+    expect(changed.statusCode).toBe(200);
+    await admin.client.patch('/api/v1/admin/settings', { brand: { name: 'Acme Academy' } });
+
+    const publicRead = await admin.client.get('/api/v1/settings');
+    expect(publicRead.json().brand.layout).toBe('cinema');
+
+    const refused = await admin.client.patch('/api/v1/admin/settings', {
+      brand: { layout: 'neon' },
+    });
+    expect(refused.statusCode).toBe(400);
   });
 
   it('saves the default sender, written as "Name <e-mail>", back unchanged', async () => {

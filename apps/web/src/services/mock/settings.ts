@@ -12,7 +12,9 @@ export function createMockSettingsService(context: MockContext): SettingsService
   const { store } = context;
 
   return {
-    get: () => context.run('settings.get', () => clone(store.db.settings)),
+    // a store saved before a field existed gets that field's schema default
+    get: () =>
+      context.run('settings.get', () => platformSettingsSchema.parse(clone(store.db.settings))),
 
     update: (patch) =>
       context.run('settings.update', () => {

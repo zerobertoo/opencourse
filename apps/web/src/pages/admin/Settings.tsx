@@ -23,6 +23,7 @@ function toFormValues(settings: PlatformSettings): PlatformSettingsFormValues {
     brandName: settings.brand.name,
     logoUrl: settings.brand.logoUrl ?? '',
     primaryColor: settings.brand.primaryColor,
+    layout: settings.brand.layout,
     enabledLocales: settings.enabledLocales,
     defaultLocale: settings.defaultLocale,
     host: settings.email.host,
@@ -42,6 +43,7 @@ function toSettingsPatch(values: PlatformSettingsFormValues): UpdatePlatformSett
       name: values.brandName,
       logoUrl: values.logoUrl === '' ? null : values.logoUrl,
       primaryColor: values.primaryColor,
+      layout: values.layout,
     },
     enabledLocales: values.enabledLocales,
     defaultLocale: values.defaultLocale,
@@ -121,6 +123,16 @@ function SettingsForm({ settings }: { settings: PlatformSettings }) {
               style={{ backgroundColor: primaryColor }}
             />
           </div>
+          <FormSelectField
+            control={control}
+            name="layout"
+            label={t('admin:settings.brand.layout')}
+            hint={t('admin:settings.brand.layoutHint')}
+            options={(['cinema', 'classic'] as const).map((layout) => ({
+              value: layout,
+              label: t(`admin:settings.brand.layouts.${layout}`),
+            }))}
+          />
         </div>
       </Card>
 

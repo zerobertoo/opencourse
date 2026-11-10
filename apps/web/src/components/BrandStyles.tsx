@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { useLocation } from 'react-router-dom';
 import { usePlatformSettings } from '@/hooks/adminQueries';
 import { brandCss } from '@/lib/brandColor';
+import { applyBrandLayout } from '@/lib/brandLayout';
 import { pageTitleKey } from '@/lib/pageTitle';
 
 const STYLE_ELEMENT_ID = 'opencourse-brand';
@@ -11,8 +12,9 @@ const DEFAULT_PRIMARY = '#2f6f5e';
 const HEX_COLOR = /^#[0-9a-fA-F]{6}$/;
 
 /**
- * Applies the instance branding (primary color in both themes) and keeps the browser title as
- * "Page · Platform name", so tabs and history entries can be told apart. Renders nothing.
+ * Applies the instance branding (primary color in both themes and the platform look) and keeps
+ * the browser title as "Page · Platform name", so tabs and history entries can be told apart.
+ * Renders nothing.
  */
 export function BrandStyles() {
   const { data } = usePlatformSettings();
@@ -20,6 +22,7 @@ export function BrandStyles() {
   const { pathname } = useLocation();
   const name = data?.brand.name;
   const primaryColor = data?.brand.primaryColor;
+  const layout = data?.brand.layout;
   const pageTitle = t(`pageTitle.${pageTitleKey(pathname)}`);
 
   useEffect(() => {
@@ -31,6 +34,10 @@ export function BrandStyles() {
     document.head.appendChild(style);
     return () => style.remove();
   }, [primaryColor]);
+
+  useEffect(() => {
+    if (layout) applyBrandLayout(layout);
+  }, [layout]);
 
   useEffect(() => {
     document.title = `${pageTitle} · ${name ?? t('app.name')}`;

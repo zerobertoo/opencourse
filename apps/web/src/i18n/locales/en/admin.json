@@ -137,7 +137,13 @@
       "name": "Platform name",
       "logoUrl": "Logo link",
       "logoUrlHint": "Optional. Leave empty to use the default logo.",
-      "primaryColor": "Primary color"
+      "primaryColor": "Primary color",
+      "layout": "Platform look",
+      "layoutHint": "Applies to every student: sign-in and the course showcase.",
+      "layouts": {
+        "cinema": "Cinema (streaming-catalog style)",
+        "classic": "Classic"
+      }
     },
     "languages": {
       "title": "Languages",

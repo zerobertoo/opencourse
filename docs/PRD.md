@@ -206,7 +206,7 @@ Sign-in, sign-up, forgot password, reset password and accept invite. Visible lan
 
 * **Users:** table with search, role filter, edit, deactivate, invite.
 * **Grants:** global list with filters, revoke and extend expiry.
-* **Settings:** branding (name, logo, colors), enabled and default languages, transactional e-mail (mocked form).
+* **Settings:** branding (name, logo, colors, platform look: classic or cinema), enabled and default languages, transactional e-mail (mocked form).
 
 #### Navigation
 

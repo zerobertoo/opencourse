@@ -2,11 +2,16 @@ import { z } from 'zod';
 import { localeSchema } from './base';
 import { defaultEnabledVideoProviders, findVideoProvider } from './video-providers';
 
+export const brandLayoutSchema = z.enum(['classic', 'cinema']);
+export type BrandLayout = z.infer<typeof brandLayoutSchema>;
+
 export const platformSettingsSchema = z.object({
   brand: z.object({
     name: z.string().min(1),
     logoUrl: z.string().nullable(),
     primaryColor: z.string().regex(/^#[0-9a-fA-F]{6}$/),
+    // settings saved before this field existed still parse and keep the original look
+    layout: brandLayoutSchema.default('classic'),
   }),
   enabledLocales: z.array(localeSchema).min(1),
   defaultLocale: localeSchema,
@@ -55,7 +60,11 @@ export function isHttpUrl(value: string): boolean {
 export const updatePlatformSettingsRequestSchema = z
   .object({
     brand: platformSettingsSchema.shape.brand
-      .extend({ logoUrl: z.string().refine(isHttpUrl, 'Enter an http(s) address').nullable() })
+      .extend({
+        logoUrl: z.string().refine(isHttpUrl, 'Enter an http(s) address').nullable(),
+        // no default here, or a patch without it would reset the stored look
+        layout: brandLayoutSchema,
+      })
       .partial()
       .strict()
       .optional(),

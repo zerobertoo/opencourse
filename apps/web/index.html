@@ -15,6 +15,11 @@
             dark = window.matchMedia('(prefers-color-scheme: dark)').matches;
         } catch (e) {}
         if (dark) document.documentElement.classList.add('dark');
+        var layout = 'classic';
+        try {
+          if (localStorage.getItem('opencourse.layout') === 'cinema') layout = 'cinema';
+        } catch (e) {}
+        document.documentElement.setAttribute('data-layout', layout);
       })();
     </script>
   </head>

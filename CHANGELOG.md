@@ -8,6 +8,8 @@ All notable changes to OpenCourse. Releases are tagged `vX.Y.Z`; the PRD in [doc
 
 - Video providers can be turned on and off under Administration → Plugins. Instructors can paste links only from the providers that are on; lessons that already use a provider that is later turned off keep playing. A fresh instance has YouTube and Vimeo on and the other providers (Bunny, Cloudflare, Panda, Google Drive, direct file links) off.
 
+- A platform look, chosen by the owner under Administration → Settings → Branding and shared by every student. **Classic** is the default and keeps the interface as it was. **Cinema** gives sign-in a cover panel beside the form, turns the home hero into a full-bleed cover and shows courses as 2:3 posters, like a streaming catalog. An instance that never saved the setting stays on Classic.
+
 ### Changed
 
 - Mailpit now runs only with the `dev` Compose profile (`docker compose --profile dev up`; `pnpm infra` still starts it). A plain `docker compose up` no longer starts a development inbox, so set `SMTP_*` (or save an SMTP server under Administration → Settings) to deliver e-mail, or add `--profile dev` to keep capturing it.

@@ -57,6 +57,15 @@ Ela roda as migrações, a API, o worker e o web, e lê todas as conexões de `.
 | `SMTP_*`                          | E-mail de verdade para convites, recuperação de senha e certificados.                           |
 | `WEBHOOKS_ALLOW_PRIVATE_NETWORKS` | Deixe `false`, a menos que o receptor esteja na sua rede e você confie em todos os admins.      |
 
+## Visual da plataforma
+
+Em **Administração → Configurações → Identidade visual** o dono escolhe um visual para a instância inteira, junto com nome, logo e cor principal:
+
+- **Clássico** (padrão): o login é um card centralizado e a home mostra um hero dividido com cards de curso na horizontal.
+- **Cinema**: o login ganha um painel de capa ao lado do formulário, o hero da home vira uma capa de ponta a ponta com texto branco, e os cursos aparecem como pôsteres 2:3 que crescem um pouco no hover.
+
+A escolha vale para todos os alunos e para a página de login. O último visual conhecido fica guardado no navegador, então quem volta já vê o visual certo na primeira pintura; a primeira visita começa em Clássico até as configurações chegarem. Ele é salvo como `brand.layout` na linha `platform` de configurações, então não há nada para migrar.
+
 ## Dados de demonstração
 
 ```bash

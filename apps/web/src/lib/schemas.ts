@@ -255,6 +255,7 @@ export const platformSettingsFormSchema = z
       // same rule as the API: only http(s) addresses
       .refine((value) => value === '' || isHttpUrl(value), 'validation.url'),
     primaryColor: z.string().regex(/^#[0-9a-fA-F]{6}$/, 'validation.color'),
+    layout: z.enum(['classic', 'cinema']),
     // An empty checkbox group may arrive as `false`, so every failure maps to the same message.
     enabledLocales: z
       .array(localeSchema, 'validation.localeRequired')

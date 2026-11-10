@@ -57,6 +57,15 @@ It runs the migrations, API, worker and web, and reads every connection from `.e
 | `SMTP_*`                          | Real e-mail for invites, password recovery and certificates.                                |
 | `WEBHOOKS_ALLOW_PRIVATE_NETWORKS` | Leave `false` unless a receiver is on your own network and you trust every admin.           |
 
+## Platform look
+
+Under **Administration → Settings → Branding** the owner picks one look for the whole instance, next to the name, logo and primary color:
+
+- **Classic** (default): sign-in is a centered card and the home shows a split hero with landscape course cards.
+- **Cinema**: sign-in has a cover panel beside the form, the home hero is a full-bleed cover with white text, and courses are 2:3 posters that grow slightly on hover.
+
+The choice applies to every student and to the sign-in page. The last known look is kept in the browser, so a returning visitor sees it from the first paint; a first visit starts on Classic until the settings arrive. It is stored as `brand.layout` in the `platform` settings row, so there is nothing to migrate.
+
 ## Demo data
 
 ```bash

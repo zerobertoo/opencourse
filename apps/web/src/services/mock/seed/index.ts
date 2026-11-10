@@ -269,7 +269,7 @@ function buildCertificates(daysFromNow: (days: number) => string): Certificate[]
 
 function buildSettings(): MockDatabase['settings'] {
   return {
-    brand: { name: 'OpenCourse', logoUrl: null, primaryColor: '#2f6f5e' },
+    brand: { name: 'OpenCourse', logoUrl: null, primaryColor: '#2f6f5e', layout: 'classic' },
     enabledLocales: ['pt-BR', 'en'],
     defaultLocale: 'pt-BR',
     email: {

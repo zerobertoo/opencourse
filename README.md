@@ -6,7 +6,7 @@ Open source, self-hosted course platform: courses with video, text and quizzes, 
 - **Documentation**: https://zerobertoo.github.io/opencourse/docs/ (English and Portuguese)
 - **Specification**: [docs/PRD.md](docs/PRD.md), the original intent. The documentation describes the current state.
 
-![Student home with the continue-learning card and course list](docs/images/student-home.jpg)
+![Student home in the cinema look, with the continue-learning banner and course posters](docs/images/student-home.jpg)
 
 | Lesson player                                                              | Instructor studio                                                           |
 | -------------------------------------------------------------------------- | --------------------------------------------------------------------------- |
