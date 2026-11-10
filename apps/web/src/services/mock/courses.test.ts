@@ -21,13 +21,13 @@ describe('mock course service', () => {
   });
 
   it('reports the signed in user own grant on each listed course', async () => {
-    const { services } = await createServicesSignedInAs('lucas');
+    const { services } = await createServicesSignedInAs('donatello');
     const courses = await services.courses.list();
     const granted = courses.filter((course) => course.myGrant !== null);
     expect(granted.length).toBeGreaterThan(0);
     for (const course of granted) {
       expect(course.myGrant).toMatchObject({
-        userId: demoId('user-lucas'),
+        userId: demoId('user-donatello'),
         courseId: course.id,
       });
     }
@@ -35,11 +35,11 @@ describe('mock course service', () => {
   });
 
   it('reports a past-due grant as expired and ignores revoked ones', async () => {
-    const { services } = await createServicesSignedInAs('lucas');
+    const { services } = await createServicesSignedInAs('donatello');
     const [granted, revoked] = (await services.courses.list()).filter((course) => course.myGrant);
     services.mock.store.mutate((db) => {
       for (const grant of db.grants.filter(
-        (candidate) => candidate.userId === demoId('user-lucas'),
+        (candidate) => candidate.userId === demoId('user-donatello'),
       )) {
         if (grant.courseId === granted!.id) grant.expiresAt = '2020-01-01T00:00:00.000Z';
         if (grant.courseId === revoked!.id) grant.status = 'revoked';
@@ -54,13 +54,13 @@ describe('mock course service', () => {
   });
 
   it('limits the managed scope to what the user can edit', async () => {
-    const { services } = await createServicesSignedInAs('rafael');
-    const own = await services.courses.list({ instructorId: demoId('user-rafael') });
+    const { services } = await createServicesSignedInAs('michelangelo');
+    const own = await services.courses.list({ instructorId: demoId('user-michelangelo') });
     const managed = await services.courses.list({ scope: 'managed' });
     expect(managed.map((course) => course.id).sort()).toEqual(own.map((c) => c.id).sort());
     expect(managed.length).toBeLessThan((await services.courses.list()).length);
 
-    const { services: admin } = await createServicesSignedInAs('marina');
+    const { services: admin } = await createServicesSignedInAs('leonardo');
     expect(await admin.courses.list({ scope: 'managed' })).toHaveLength(5);
   });
 
@@ -76,8 +76,8 @@ describe('mock course service', () => {
     expect(await services.courses.list({ status: 'draft' })).toHaveLength(1);
     expect(await services.courses.list({ status: 'archived' })).toHaveLength(1);
 
-    const beatriz = await services.courses.list({ instructorId: demoId('user-beatriz') });
-    expect(beatriz.map((course) => course.slug).sort()).toEqual([
+    const ada = await services.courses.list({ instructorId: demoId('user-ada') });
+    expect(ada.map((course) => course.slug).sort()).toEqual([
       'design-de-interfaces-na-pratica',
       'fotografia-para-iniciantes',
     ]);
@@ -108,7 +108,7 @@ describe('mock course service', () => {
 
   describe('create', () => {
     it('creates a draft owned by the signed in instructor with an accent-free unique slug', async () => {
-      const { services } = await createServicesSignedInAs('rafael');
+      const { services } = await createServicesSignedInAs('michelangelo');
       const created = await services.courses.create({
         title: 'Introdução à Programação!',
         description: 'Primeiros passos',
@@ -117,7 +117,7 @@ describe('mock course service', () => {
       expect(created).toMatchObject({
         slug: 'introducao-a-programacao',
         status: 'draft',
-        instructorId: demoId('user-rafael'),
+        instructorId: demoId('user-michelangelo'),
         sequentialOrder: false,
         modules: [],
       });
@@ -143,12 +143,12 @@ describe('mock course service', () => {
         anonymous.courses.create({ title: 'Curso', defaultLocale: 'pt-BR' }),
       ).rejects.toMatchObject({ code: 'unauthorized' });
 
-      const student = (await createServicesSignedInAs('lucas')).services;
+      const student = (await createServicesSignedInAs('donatello')).services;
       await expect(
         student.courses.create({ title: 'Curso', defaultLocale: 'pt-BR' }),
       ).rejects.toMatchObject({ code: 'forbidden' });
 
-      const instructor = (await createServicesSignedInAs('rafael')).services;
+      const instructor = (await createServicesSignedInAs('michelangelo')).services;
       await expect(
         instructor.courses.create({ title: '   ', defaultLocale: 'pt-BR' }),
       ).rejects.toMatchObject({ code: 'validation' });
@@ -157,7 +157,7 @@ describe('mock course service', () => {
 
   describe('publishing', () => {
     it('refuses to publish a draft that is not ready and leaves it untouched', async () => {
-      const { services } = await createServicesSignedInAs('rafael');
+      const { services } = await createServicesSignedInAs('michelangelo');
       const draft = await services.courses.create({ title: 'Rascunho', defaultLocale: 'pt-BR' });
 
       await expect(
@@ -169,7 +169,7 @@ describe('mock course service', () => {
     });
 
     it('publishes once the course has a titled lesson, in the same call that fixes it', async () => {
-      const { services } = await createServicesSignedInAs('rafael');
+      const { services } = await createServicesSignedInAs('michelangelo');
       const draft = await services.courses.create({ title: 'Rascunho', defaultLocale: 'pt-BR' });
       const { moduleId } = await services.curriculum.createModule({
         courseId: draft.id,
@@ -188,7 +188,7 @@ describe('mock course service', () => {
     });
 
     it('does not re-check courses that are already published', async () => {
-      const { services } = await createServicesSignedInAs('rafael');
+      const { services } = await createServicesSignedInAs('michelangelo');
       const updated = await services.courses.update(demoId('course-sql'), {
         sequentialOrder: true,
       });
@@ -198,7 +198,7 @@ describe('mock course service', () => {
 
   describe('update', () => {
     it('lets the owner change status, sequential order and translations by locale', async () => {
-      const { services } = await createServicesSignedInAs('rafael');
+      const { services } = await createServicesSignedInAs('michelangelo');
       const before = await services.courses.getBySlug('analise-de-dados-com-sql');
 
       const updated = await services.courses.update(before.id, {
@@ -229,18 +229,18 @@ describe('mock course service', () => {
     });
 
     it('stores the certificate template, trimming its text', async () => {
-      const { services } = await createServicesSignedInAs('rafael');
+      const { services } = await createServicesSignedInAs('michelangelo');
       const updated = await services.courses.update(demoId('course-sql'), {
         certificateTemplate: {
           enabled: false,
-          signatoryName: '  Rafael T.  ',
+          signatoryName: '  Michelangelo T.  ',
           signatoryRole: ' Instrutor ',
           message: ' Parabéns! ',
         },
       });
       expect(updated.certificateTemplate).toEqual({
         enabled: false,
-        signatoryName: 'Rafael T.',
+        signatoryName: 'Michelangelo T.',
         signatoryRole: 'Instrutor',
         message: 'Parabéns!',
       });
@@ -249,17 +249,17 @@ describe('mock course service', () => {
     it('allows admins and blocks other instructors and students', async () => {
       const id = demoId('course-javascript');
 
-      const admin = (await createServicesSignedInAs('marina')).services;
+      const admin = (await createServicesSignedInAs('leonardo')).services;
       await expect(admin.courses.update(id, { status: 'draft' })).resolves.toMatchObject({
         status: 'draft',
       });
 
-      const otherInstructor = (await createServicesSignedInAs('beatriz')).services;
+      const otherInstructor = (await createServicesSignedInAs('ada')).services;
       await expect(otherInstructor.courses.update(id, { status: 'draft' })).rejects.toMatchObject({
         code: 'forbidden',
       });
 
-      const student = (await createServicesSignedInAs('lucas')).services;
+      const student = (await createServicesSignedInAs('donatello')).services;
       await expect(student.courses.update(id, { status: 'draft' })).rejects.toMatchObject({
         code: 'forbidden',
       });
@@ -270,25 +270,25 @@ describe('mock course service', () => {
 describe('student visibility of unpublished courses', () => {
   it('keeps an archived course readable to students with a grant', async () => {
     const { services } = createTestServices();
-    await services.auth.signIn('lucas@opencourse.example', 'x');
+    await services.auth.signIn('donatello@opencourse.example', 'x');
     expect(await services.enrollments.canAccess(demoId('course-sql'))).toBe(true);
     expect((await services.enrollments.listMyCourses()).map((e) => e.course.id)).toContain(
       demoId('course-sql'),
     );
 
-    await services.auth.signIn('rafael@opencourse.example', 'x');
+    await services.auth.signIn('michelangelo@opencourse.example', 'x');
     await services.courses.update(demoId('course-sql'), { status: 'archived' });
 
-    await services.auth.signIn('lucas@opencourse.example', 'x');
+    await services.auth.signIn('donatello@opencourse.example', 'x');
     expect(await services.enrollments.canAccess(demoId('course-sql'))).toBe(true);
     expect((await services.enrollments.listMyCourses()).map((e) => e.course.id)).toContain(
       demoId('course-sql'),
     );
 
-    await services.auth.signIn('rafael@opencourse.example', 'x');
+    await services.auth.signIn('michelangelo@opencourse.example', 'x');
     await services.courses.update(demoId('course-sql'), { status: 'draft' });
 
-    await services.auth.signIn('lucas@opencourse.example', 'x');
+    await services.auth.signIn('donatello@opencourse.example', 'x');
     expect(await services.enrollments.canAccess(demoId('course-sql'))).toBe(false);
   });
 });

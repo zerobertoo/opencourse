@@ -8,7 +8,7 @@ import {
 import { describe, expect, it } from 'vitest';
 import { acceptInviteSchema, signUpSchema } from './schemas';
 
-const email = 'maria@example.com';
+const email = 'dante@example.com';
 const passwordLengths = [
   PASSWORD_MIN_LENGTH - 1,
   PASSWORD_MIN_LENGTH,
@@ -25,12 +25,12 @@ describe('form schemas agree with the API contract', () => {
   it.each(passwordLengths)('sign-up password of %i characters', (length) => {
     const password = 'p'.repeat(length);
     const form = signUpSchema.safeParse({
-      name: 'Maria',
+      name: 'Dante',
       email,
       password,
       confirmPassword: password,
     });
-    const api = registerRequestSchema.safeParse({ name: 'Maria', email, password });
+    const api = registerRequestSchema.safeParse({ name: 'Dante', email, password });
     expect(form.success).toBe(api.success);
   });
 
@@ -49,18 +49,18 @@ describe('form schemas agree with the API contract', () => {
   it.each(passwordLengths)('accept-invite password of %i characters', (length) => {
     const password = 'p'.repeat(length);
     const form = acceptInviteSchema.safeParse({
-      name: 'Maria',
+      name: 'Dante',
       password,
       confirmPassword: password,
     });
-    const api = acceptInviteRequestSchema.safeParse({ name: 'Maria', password });
+    const api = acceptInviteRequestSchema.safeParse({ name: 'Dante', password });
     expect(form.success).toBe(api.success);
   });
 
   it('names the field when the password is too long, not just a generic error', () => {
     const password = 'p'.repeat(PASSWORD_MAX_LENGTH + 1);
     const result = signUpSchema.safeParse({
-      name: 'Maria',
+      name: 'Dante',
       email,
       password,
       confirmPassword: password,

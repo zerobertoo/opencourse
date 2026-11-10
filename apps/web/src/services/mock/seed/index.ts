@@ -14,9 +14,9 @@ import { convertIdsToUuids, demoId } from './ids';
 
 /** Demo users used by the "sign in as student, instructor or admin" buttons. */
 export const DEMO_USER_IDS = {
-  student: demoId('user-lucas'),
-  instructor: demoId('user-rafael'),
-  admin: demoId('user-marina'),
+  student: demoId('user-donatello'),
+  instructor: demoId('user-michelangelo'),
+  admin: demoId('user-leonardo'),
 } as const;
 
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -47,20 +47,20 @@ function buildUsers(daysFromNow: (days: number) => string): User[] {
   });
 
   return [
-    make('user-marina', 'Marina Albuquerque', 'admin', 400),
-    make('user-rafael', 'Rafael Teixeira', 'instructor', 380),
-    make('user-beatriz', 'Beatriz Nogueira', 'instructor', 350),
-    make('user-lucas', 'Lucas Ferreira', 'student', 120),
-    make('user-camila', 'Camila Duarte', 'student', 110),
-    make('user-thiago', 'Thiago Moreira', 'student', 100),
-    make('user-juliana', 'Juliana Prado', 'student', 95),
-    make('user-felipe', 'Felipe Azevedo', 'student', 80),
-    make('user-renata', 'Renata Cardoso', 'student', 75),
-    make('user-gustavo', 'Gustavo Lima', 'student', 60),
-    make('user-patricia', 'Patrícia Sales', 'student', 45),
-    make('user-diego', 'Diego Rocha', 'student', 40, { active: false }),
-    make('user-larissa', 'Larissa Campos', 'student', 30),
-    make('user-daniel', 'Daniel Whitaker', 'student', 20, {
+    make('user-leonardo', 'Leonardo da Vinci', 'admin', 400),
+    make('user-michelangelo', 'Michelangelo Buonarroti', 'instructor', 380),
+    make('user-ada', 'Ada Lovelace', 'instructor', 350),
+    make('user-donatello', 'Donatello Bardi', 'student', 120),
+    make('user-marie', 'Marie Curie', 'student', 110),
+    make('user-raphael', 'Raphael Sanzio', 'student', 100),
+    make('user-frida', 'Frida Kahlo', 'student', 95),
+    make('user-alan', 'Alan Turing', 'student', 80),
+    make('user-clarice', 'Clarice Lispector', 'student', 75),
+    make('user-alberto', 'Alberto Santos-Dumont', 'student', 60),
+    make('user-hipatia', 'Hipátia de Alexandria', 'student', 45),
+    make('user-machado', 'Machado de Assis', 'student', 40, { active: false }),
+    make('user-nikola', 'Nikola Tesla', 'student', 30),
+    make('user-albert', 'Albert Einstein', 'student', 20, {
       locale: 'en',
       timeZone: 'America/New_York',
     }),
@@ -68,9 +68,9 @@ function buildUsers(daysFromNow: (days: number) => string): User[] {
 }
 
 const INSTRUCTOR_BY_COURSE: Record<string, string> = {
-  'course-javascript': 'user-rafael',
-  'course-design': 'user-beatriz',
-  'course-sql': 'user-rafael',
+  'course-javascript': 'user-michelangelo',
+  'course-design': 'user-ada',
+  'course-sql': 'user-michelangelo',
 };
 
 function buildGrants(daysFromNow: (days: number) => string): Grant[] {
@@ -91,7 +91,7 @@ function buildGrants(daysFromNow: (days: number) => string): Grant[] {
       userId,
       courseId,
       source: options.source ?? 'manual',
-      createdById: INSTRUCTOR_BY_COURSE[courseId] ?? 'user-marina',
+      createdById: INSTRUCTOR_BY_COURSE[courseId] ?? 'user-leonardo',
       createdAt: daysFromNow(-(options.createdDaysAgo ?? 30)),
       expiresAt:
         options.expiresInDays === undefined || options.expiresInDays === null
@@ -102,24 +102,24 @@ function buildGrants(daysFromNow: (days: number) => string): Grant[] {
   };
 
   return [
-    grant('user-lucas', 'course-javascript', { createdDaysAgo: 60 }),
-    grant('user-lucas', 'course-design', { expiresInDays: 60, createdDaysAgo: 30 }),
-    grant('user-lucas', 'course-sql', { source: 'invite', createdDaysAgo: 90 }),
-    grant('user-camila', 'course-javascript', { expiresInDays: 90, createdDaysAgo: 40 }),
-    grant('user-camila', 'course-sql', { createdDaysAgo: 35 }),
-    grant('user-thiago', 'course-javascript', { createdDaysAgo: 70 }),
-    grant('user-thiago', 'course-design', { createdDaysAgo: 50 }),
-    grant('user-juliana', 'course-javascript', { expiresInDays: -10, createdDaysAgo: 80 }),
-    grant('user-juliana', 'course-sql', { status: 'revoked', createdDaysAgo: 60 }),
-    grant('user-felipe', 'course-design', { createdDaysAgo: 45 }),
-    grant('user-renata', 'course-javascript', { createdDaysAgo: 55 }),
-    grant('user-renata', 'course-sql', { expiresInDays: 30, createdDaysAgo: 20 }),
-    grant('user-gustavo', 'course-sql', { createdDaysAgo: 25 }),
-    grant('user-patricia', 'course-design', { expiresInDays: 15, createdDaysAgo: 15 }),
-    grant('user-patricia', 'course-javascript', { source: 'invite', createdDaysAgo: 14 }),
-    grant('user-larissa', 'course-javascript', { createdDaysAgo: 18 }),
-    grant('user-daniel', 'course-javascript', { createdDaysAgo: 12 }),
-    grant('user-diego', 'course-sql', { createdDaysAgo: 38 }),
+    grant('user-donatello', 'course-javascript', { createdDaysAgo: 60 }),
+    grant('user-donatello', 'course-design', { expiresInDays: 60, createdDaysAgo: 30 }),
+    grant('user-donatello', 'course-sql', { source: 'invite', createdDaysAgo: 90 }),
+    grant('user-marie', 'course-javascript', { expiresInDays: 90, createdDaysAgo: 40 }),
+    grant('user-marie', 'course-sql', { createdDaysAgo: 35 }),
+    grant('user-raphael', 'course-javascript', { createdDaysAgo: 70 }),
+    grant('user-raphael', 'course-design', { createdDaysAgo: 50 }),
+    grant('user-frida', 'course-javascript', { expiresInDays: -10, createdDaysAgo: 80 }),
+    grant('user-frida', 'course-sql', { status: 'revoked', createdDaysAgo: 60 }),
+    grant('user-alan', 'course-design', { createdDaysAgo: 45 }),
+    grant('user-clarice', 'course-javascript', { createdDaysAgo: 55 }),
+    grant('user-clarice', 'course-sql', { expiresInDays: 30, createdDaysAgo: 20 }),
+    grant('user-alberto', 'course-sql', { createdDaysAgo: 25 }),
+    grant('user-hipatia', 'course-design', { expiresInDays: 15, createdDaysAgo: 15 }),
+    grant('user-hipatia', 'course-javascript', { source: 'invite', createdDaysAgo: 14 }),
+    grant('user-nikola', 'course-javascript', { createdDaysAgo: 18 }),
+    grant('user-albert', 'course-javascript', { createdDaysAgo: 12 }),
+    grant('user-machado', 'course-sql', { createdDaysAgo: 38 }),
   ];
 }
 
@@ -130,7 +130,7 @@ function buildInvites(daysFromNow: (days: number) => string): StoredInvite[] {
       email: 'novo.aluno@opencourse.example',
       courseId: 'course-sql',
       token: 'demo-convite-sql',
-      createdById: 'user-rafael',
+      createdById: 'user-michelangelo',
       createdAt: daysFromNow(-2),
       expiresAt: daysFromNow(12),
       status: 'pending',
@@ -140,7 +140,7 @@ function buildInvites(daysFromNow: (days: number) => string): StoredInvite[] {
       email: 'convidado.geral@opencourse.example',
       courseId: null,
       token: 'demo-convite-geral',
-      createdById: 'user-marina',
+      createdById: 'user-leonardo',
       createdAt: daysFromNow(-5),
       expiresAt: daysFromNow(9),
       status: 'pending',
@@ -150,7 +150,7 @@ function buildInvites(daysFromNow: (days: number) => string): StoredInvite[] {
       email: 'convite.vencido@opencourse.example',
       courseId: 'course-javascript',
       token: 'demo-convite-vencido',
-      createdById: 'user-rafael',
+      createdById: 'user-michelangelo',
       createdAt: daysFromNow(-30),
       expiresAt: daysFromNow(-16),
       status: 'pending',
@@ -178,28 +178,28 @@ const SQL_ALL = [
 
 function buildProgress(daysFromNow: (days: number) => string): Progress[] {
   const completions: CompletionSpec[] = [
-    { userId: 'user-lucas', lessonIds: SQL_ALL, daysAgo: 20 },
-    { userId: 'user-lucas', lessonIds: ['les-design-1-1', 'les-design-1-2'], daysAgo: 3 },
-    { userId: 'user-lucas', lessonIds: JS_MODULE_1, daysAgo: 1 },
-    { userId: 'user-camila', lessonIds: JS_MODULE_1.slice(0, 3), daysAgo: 4 },
-    { userId: 'user-camila', lessonIds: ['les-sql-1-1'], daysAgo: 9 },
+    { userId: 'user-donatello', lessonIds: SQL_ALL, daysAgo: 20 },
+    { userId: 'user-donatello', lessonIds: ['les-design-1-1', 'les-design-1-2'], daysAgo: 3 },
+    { userId: 'user-donatello', lessonIds: JS_MODULE_1, daysAgo: 1 },
+    { userId: 'user-marie', lessonIds: JS_MODULE_1.slice(0, 3), daysAgo: 4 },
+    { userId: 'user-marie', lessonIds: ['les-sql-1-1'], daysAgo: 9 },
     {
-      userId: 'user-thiago',
+      userId: 'user-raphael',
       lessonIds: [...JS_MODULE_1, ...JS_MODULE_2, 'les-js-3-1', 'les-js-3-2'],
       daysAgo: 2,
     },
-    { userId: 'user-thiago', lessonIds: ['les-design-1-1'], daysAgo: 12 },
-    { userId: 'user-juliana', lessonIds: JS_MODULE_1.slice(0, 2), daysAgo: 25 },
+    { userId: 'user-raphael', lessonIds: ['les-design-1-1'], daysAgo: 12 },
+    { userId: 'user-frida', lessonIds: JS_MODULE_1.slice(0, 2), daysAgo: 25 },
     {
-      userId: 'user-felipe',
+      userId: 'user-alan',
       lessonIds: ['les-design-1-1', 'les-design-1-2', 'les-design-1-3', 'les-design-1-4'],
       daysAgo: 6,
     },
-    { userId: 'user-renata', lessonIds: ['les-js-1-1'], daysAgo: 30 },
-    { userId: 'user-renata', lessonIds: SQL_ALL.slice(0, 4), daysAgo: 7 },
-    { userId: 'user-patricia', lessonIds: ['les-js-1-1'], daysAgo: 8 },
-    { userId: 'user-larissa', lessonIds: [...JS_MODULE_1, ...JS_MODULE_2.slice(0, 2)], daysAgo: 5 },
-    { userId: 'user-daniel', lessonIds: ['les-js-1-1', 'les-js-1-2'], daysAgo: 10 },
+    { userId: 'user-clarice', lessonIds: ['les-js-1-1'], daysAgo: 30 },
+    { userId: 'user-clarice', lessonIds: SQL_ALL.slice(0, 4), daysAgo: 7 },
+    { userId: 'user-hipatia', lessonIds: ['les-js-1-1'], daysAgo: 8 },
+    { userId: 'user-nikola', lessonIds: [...JS_MODULE_1, ...JS_MODULE_2.slice(0, 2)], daysAgo: 5 },
+    { userId: 'user-albert', lessonIds: ['les-js-1-1', 'les-js-1-2'], daysAgo: 10 },
   ];
 
   const progress: Progress[] = completions.flatMap(({ userId, lessonIds, daysAgo }) =>
@@ -214,7 +214,7 @@ function buildProgress(daysFromNow: (days: number) => string): Progress[] {
 
   // in-progress lesson of the demo student: video stopped at 5min12s
   progress.push({
-    userId: 'user-lucas',
+    userId: 'user-donatello',
     lessonId: 'les-js-2-1',
     completed: false,
     videoPositionSeconds: 312,
@@ -227,7 +227,7 @@ function buildQuizAttempts(daysFromNow: (days: number) => string): QuizAttempt[]
   return [
     {
       id: 'attempt-1',
-      userId: 'user-lucas',
+      userId: 'user-donatello',
       lessonId: 'les-js-1-4',
       answers: { 'q-js-1': 'q-js-1-a', 'q-js-2': 'q-js-2-a', 'q-js-3': 'q-js-3-a' },
       score: 33,
@@ -236,7 +236,7 @@ function buildQuizAttempts(daysFromNow: (days: number) => string): QuizAttempt[]
     },
     {
       id: 'attempt-2',
-      userId: 'user-lucas',
+      userId: 'user-donatello',
       lessonId: 'les-js-1-4',
       answers: { 'q-js-1': 'q-js-1-a', 'q-js-2': 'q-js-2-b', 'q-js-3': 'q-js-3-b' },
       score: 100,
@@ -245,7 +245,7 @@ function buildQuizAttempts(daysFromNow: (days: number) => string): QuizAttempt[]
     },
     {
       id: 'attempt-3',
-      userId: 'user-lucas',
+      userId: 'user-donatello',
       lessonId: 'les-sql-1-3',
       answers: { 'q-sql-1': 'q-sql-1-a', 'q-sql-2': 'q-sql-2-b' },
       score: 100,
@@ -259,7 +259,7 @@ function buildCertificates(daysFromNow: (days: number) => string): Certificate[]
   return [
     {
       id: 'cert-1',
-      userId: 'user-lucas',
+      userId: 'user-donatello',
       courseId: 'course-sql',
       code: 'OC-7K2M-9QXA',
       issuedAt: daysFromNow(-20),

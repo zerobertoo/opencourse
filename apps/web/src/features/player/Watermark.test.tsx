@@ -8,9 +8,9 @@ describe('Watermark', () => {
 
   it('shows the text, hides after a few seconds and returns in another place', () => {
     vi.useFakeTimers();
-    render(<Watermark text="Ana · ana@example.com" />);
+    render(<Watermark text="Giotto · giotto@example.com" />);
     const mark = () => screen.getByTestId('video-watermark');
-    expect(mark()).toHaveTextContent('Ana · ana@example.com');
+    expect(mark()).toHaveTextContent('Giotto · giotto@example.com');
     expect(mark()).toHaveAttribute('data-visible', 'true');
     const firstPlace = mark().getAttribute('style');
 

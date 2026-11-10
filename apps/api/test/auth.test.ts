@@ -55,8 +55,8 @@ describe('authentication', () => {
     it('normalizes the e-mail, stores the preferences and never returns the hash', async () => {
       const client = new TestClient(ctx.app);
       const response = await client.post('/api/v1/auth/register', {
-        name: '  Maria ',
-        email: ' Maria@Example.COM ',
+        name: '  Dante ',
+        email: ' Dante@Example.COM ',
         password: STRONG_PASSWORD,
         locale: 'en',
         timeZone: 'America/Sao_Paulo',
@@ -64,8 +64,8 @@ describe('authentication', () => {
       expect(response.statusCode).toBe(201);
       const { user } = sessionResponseSchema.parse(response.json());
       expect(user).toMatchObject({
-        name: 'Maria',
-        email: 'maria@example.com',
+        name: 'Dante',
+        email: 'dante@example.com',
         locale: 'en',
         timeZone: 'America/Sao_Paulo',
         active: true,
@@ -74,12 +74,12 @@ describe('authentication', () => {
     });
 
     it('rejects a duplicate e-mail regardless of case, and a weak password', async () => {
-      await registerClient(ctx.app, 'maria@example.com');
+      await registerClient(ctx.app, 'dante@example.com');
       const client = new TestClient(ctx.app);
 
       const duplicate = await client.post('/api/v1/auth/register', {
         name: 'Other',
-        email: 'MARIA@example.com',
+        email: 'DANTE@example.com',
         password: STRONG_PASSWORD,
       });
       expect(duplicate.statusCode).toBe(409);
@@ -96,8 +96,8 @@ describe('authentication', () => {
 
     it('sets httpOnly cookies, with the refresh cookie limited to the auth path', async () => {
       const response = await new TestClient(ctx.app).post('/api/v1/auth/register', {
-        name: 'Maria',
-        email: 'maria@example.com',
+        name: 'Dante',
+        email: 'dante@example.com',
         password: STRONG_PASSWORD,
       });
       const access = response.cookies.find((cookie) => cookie.name === 'oc_access');
@@ -109,10 +109,10 @@ describe('authentication', () => {
 
   describe('login', () => {
     it('signs in with the right password and starts a session', async () => {
-      await registerClient(ctx.app, 'maria@example.com');
+      await registerClient(ctx.app, 'dante@example.com');
       const client = new TestClient(ctx.app);
       const response = await client.post('/api/v1/auth/login', {
-        email: 'Maria@Example.com',
+        email: 'Dante@Example.com',
         password: STRONG_PASSWORD,
       });
       expect(response.statusCode).toBe(200);
@@ -120,11 +120,11 @@ describe('authentication', () => {
     });
 
     it('answers the same way for a wrong password and an unknown e-mail', async () => {
-      await registerClient(ctx.app, 'maria@example.com');
+      await registerClient(ctx.app, 'dante@example.com');
       const client = new TestClient(ctx.app);
 
       const wrongPassword = await client.post('/api/v1/auth/login', {
-        email: 'maria@example.com',
+        email: 'dante@example.com',
         password: 'not the password',
       });
       const unknownEmail = await client.post('/api/v1/auth/login', {
@@ -138,18 +138,18 @@ describe('authentication', () => {
 
     it('refuses a deactivated account only after the password is verified', async () => {
       const admin = await registerClient(ctx.app, 'admin@example.com');
-      const { userId } = await registerClient(ctx.app, 'maria@example.com');
+      const { userId } = await registerClient(ctx.app, 'dante@example.com');
       await admin.client.patch(`/api/v1/admin/users/${userId}/active`, { active: false });
 
       const client = new TestClient(ctx.app);
       const right = await client.post('/api/v1/auth/login', {
-        email: 'maria@example.com',
+        email: 'dante@example.com',
         password: STRONG_PASSWORD,
       });
       expect(right.statusCode).toBe(403);
 
       const wrong = await client.post('/api/v1/auth/login', {
-        email: 'maria@example.com',
+        email: 'dante@example.com',
         password: 'not the password',
       });
       expect(wrong.statusCode).toBe(401);
@@ -164,7 +164,7 @@ describe('authentication', () => {
     });
 
     it('rejects state-changing requests without the CSRF header', async () => {
-      const { client } = await registerClient(ctx.app, 'maria@example.com');
+      const { client } = await registerClient(ctx.app, 'dante@example.com');
       const response = await client.request('PATCH', '/api/v1/me', {
         body: { name: 'Hacked' },
         csrf: false,
@@ -175,7 +175,7 @@ describe('authentication', () => {
     });
 
     it('tells a wrong CSRF header value from a missing one', async () => {
-      const { client } = await registerClient(ctx.app, 'maria@example.com');
+      const { client } = await registerClient(ctx.app, 'dante@example.com');
       const response = await client.request('PATCH', '/api/v1/me', {
         body: { name: 'Hacked' },
         csrf: false,
@@ -188,7 +188,7 @@ describe('authentication', () => {
     });
 
     it('rejects a forged or expired access token', async () => {
-      const { client } = await registerClient(ctx.app, 'maria@example.com');
+      const { client } = await registerClient(ctx.app, 'dante@example.com');
       const [session] = await ctx.app.db.select().from(sessions);
 
       client.setCookie('oc_access', 'v1.not-a-real-token');
@@ -215,14 +215,14 @@ describe('authentication', () => {
 
     it('rejects a time zone the runtime does not know, on register and on profile update', async () => {
       const bad = await new TestClient(ctx.app).post('/api/v1/auth/register', {
-        name: 'Maria',
-        email: 'maria@example.com',
+        name: 'Dante',
+        email: 'dante@example.com',
         password: STRONG_PASSWORD,
         timeZone: 'Not/AZone',
       });
       expect(bad.statusCode).toBe(400);
 
-      const { client } = await registerClient(ctx.app, 'maria@example.com');
+      const { client } = await registerClient(ctx.app, 'dante@example.com');
       expect((await client.patch('/api/v1/me', { timeZone: 'Not/AZone' })).statusCode).toBe(400);
       // unknown fields are refused, not silently dropped
       expect((await client.patch('/api/v1/me', { role: 'admin' })).statusCode).toBe(400);
@@ -231,16 +231,16 @@ describe('authentication', () => {
     });
 
     it('updates the profile', async () => {
-      const { client } = await registerClient(ctx.app, 'maria@example.com');
-      const response = await client.patch('/api/v1/me', { name: 'Maria Silva', locale: 'en' });
+      const { client } = await registerClient(ctx.app, 'dante@example.com');
+      const response = await client.patch('/api/v1/me', { name: 'Dante Alighieri', locale: 'en' });
       expect(response.statusCode).toBe(200);
-      expect(response.json().user).toMatchObject({ name: 'Maria Silva', locale: 'en' });
+      expect(response.json().user).toMatchObject({ name: 'Dante Alighieri', locale: 'en' });
     });
   });
 
   describe('refresh', () => {
     it('recovers from an expired access token and rotates the refresh token', async () => {
-      const { client } = await registerClient(ctx.app, 'maria@example.com');
+      const { client } = await registerClient(ctx.app, 'dante@example.com');
       const firstRefresh = client.cookie('oc_refresh');
       client.setCookie('oc_access', 'v1.expired');
       expect((await client.get('/api/v1/me')).statusCode).toBe(401);
@@ -252,7 +252,7 @@ describe('authentication', () => {
     });
 
     it('tolerates a parallel request that still carries the previous token', async () => {
-      const { client } = await registerClient(ctx.app, 'maria@example.com');
+      const { client } = await registerClient(ctx.app, 'dante@example.com');
       const original = client.cookie('oc_refresh')!;
       await client.post('/api/v1/auth/refresh');
 
@@ -264,7 +264,7 @@ describe('authentication', () => {
     });
 
     it('treats a stale rotated token as theft and ends the whole session', async () => {
-      const { client } = await registerClient(ctx.app, 'maria@example.com');
+      const { client } = await registerClient(ctx.app, 'dante@example.com');
       const stolen = client.cookie('oc_refresh')!;
       await client.post('/api/v1/auth/refresh');
 
@@ -290,7 +290,7 @@ describe('authentication', () => {
 
   describe('logout', () => {
     it('ends the session on the server, not only in the browser', async () => {
-      const { client } = await registerClient(ctx.app, 'maria@example.com');
+      const { client } = await registerClient(ctx.app, 'dante@example.com');
       const access = client.cookie('oc_access')!;
       const refresh = client.cookie('oc_refresh')!;
 
@@ -306,7 +306,7 @@ describe('authentication', () => {
     });
 
     it('works with only a refresh cookie, and is harmless when signed out', async () => {
-      const { client } = await registerClient(ctx.app, 'maria@example.com');
+      const { client } = await registerClient(ctx.app, 'dante@example.com');
       client.setCookie('oc_access', 'v1.expired');
       expect((await client.post('/api/v1/auth/logout')).statusCode).toBe(204);
       const [session] = await ctx.app.db.select().from(sessions);
@@ -328,7 +328,7 @@ describe('authentication', () => {
     });
 
     it('replies before doing the account-dependent work, so timing cannot reveal accounts', async () => {
-      await registerClient(ctx.app, 'maria@example.com');
+      await registerClient(ctx.app, 'dante@example.com');
       const client = new TestClient(ctx.app);
 
       // hold back the background work instead of racing it
@@ -337,7 +337,7 @@ describe('authentication', () => {
       const held: (() => Promise<unknown>)[] = [];
       app.runInBackground = (task) => void held.push(task);
       try {
-        const response = await client.post('/api/v1/auth/forgot', { email: 'maria@example.com' });
+        const response = await client.post('/api/v1/auth/forgot', { email: 'dante@example.com' });
         // the reply is already out while the lookup, the token and the e-mail have not happened
         expect(response.statusCode).toBe(204);
         expect(held).toHaveLength(1);
@@ -349,15 +349,15 @@ describe('authentication', () => {
 
       await held[0]!();
       await ctx.app.settleBackgroundTasks();
-      expect(ctx.mailer.lastTo('maria@example.com')).toBeDefined();
+      expect(ctx.mailer.lastTo('dante@example.com')).toBeDefined();
     });
 
     it('invalidates every older reset link once one is used', async () => {
-      await registerClient(ctx.app, 'maria@example.com');
+      await registerClient(ctx.app, 'dante@example.com');
       const anonymous = new TestClient(ctx.app);
       const tokens: string[] = [];
       for (let request = 0; request < 2; request += 1) {
-        await anonymous.post('/api/v1/auth/forgot', { email: 'maria@example.com' });
+        await anonymous.post('/api/v1/auth/forgot', { email: 'dante@example.com' });
         await ctx.app.settleBackgroundTasks();
         const mail = ctx.mailer.sent[ctx.mailer.sent.length - 1]!;
         tokens.push(new URL(extractLink(mail.text)).searchParams.get('token')!);
@@ -377,21 +377,21 @@ describe('authentication', () => {
       });
       expect(stale.statusCode).toBe(400);
       const login = await anonymous.post('/api/v1/auth/login', {
-        email: 'maria@example.com',
+        email: 'dante@example.com',
         password: 'attacker chosen password',
       });
       expect(login.statusCode).toBe(401);
     });
 
     it('e-mails a one-time link that sets a new password and ends old sessions', async () => {
-      const { client } = await registerClient(ctx.app, 'maria@example.com');
+      const { client } = await registerClient(ctx.app, 'dante@example.com');
       const anonymous = new TestClient(ctx.app);
 
       expect(
-        (await anonymous.post('/api/v1/auth/forgot', { email: 'maria@example.com' })).statusCode,
+        (await anonymous.post('/api/v1/auth/forgot', { email: 'dante@example.com' })).statusCode,
       ).toBe(204);
       await ctx.app.settleBackgroundTasks();
-      const mail = ctx.mailer.lastTo('maria@example.com')!;
+      const mail = ctx.mailer.lastTo('dante@example.com')!;
       const link = new URL(extractLink(mail.text));
       expect(link.origin + link.pathname).toBe(`${ctx.config.WEB_BASE_URL}/reset-password`);
       const token = link.searchParams.get('token')!;
@@ -405,12 +405,12 @@ describe('authentication', () => {
       // the old session is gone and the old password no longer works
       expect((await client.get('/api/v1/me')).statusCode).toBe(401);
       const oldLogin = await anonymous.post('/api/v1/auth/login', {
-        email: 'maria@example.com',
+        email: 'dante@example.com',
         password: STRONG_PASSWORD,
       });
       expect(oldLogin.statusCode).toBe(401);
       const newLogin = await anonymous.post('/api/v1/auth/login', {
-        email: 'maria@example.com',
+        email: 'dante@example.com',
         password: 'a brand new password',
       });
       expect(newLogin.statusCode).toBe(200);
@@ -437,10 +437,10 @@ describe('authentication', () => {
 
   describe('change password', () => {
     it('requires the current password and signs out the other sessions only', async () => {
-      const { client } = await registerClient(ctx.app, 'maria@example.com');
+      const { client } = await registerClient(ctx.app, 'dante@example.com');
       const otherDevice = new TestClient(ctx.app);
       await otherDevice.post('/api/v1/auth/login', {
-        email: 'maria@example.com',
+        email: 'dante@example.com',
         password: STRONG_PASSWORD,
       });
 
@@ -464,7 +464,7 @@ describe('authentication', () => {
   });
 
   it('keeps a session row per sign-in and ties it to the user', async () => {
-    const { userId } = await registerClient(ctx.app, 'maria@example.com');
+    const { userId } = await registerClient(ctx.app, 'dante@example.com');
     const rows = await ctx.app.db.select().from(sessions).where(eq(sessions.userId, userId));
     expect(rows).toHaveLength(1);
     // only hashes are stored, never the token itself

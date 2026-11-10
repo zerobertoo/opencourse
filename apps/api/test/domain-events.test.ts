@@ -30,9 +30,9 @@ describe('domain events written by their producers', () => {
   }
 
   it('writes user.created when someone registers, without the password', async () => {
-    const { userId } = await registerClient(ctx.app, 'ana@example.com', 'Ana');
+    const { userId } = await registerClient(ctx.app, 'giotto@example.com', 'Giotto');
     expect(await events('user.created')).toEqual([
-      { userId, name: 'Ana', email: 'ana@example.com', locale: 'pt-BR' },
+      { userId, name: 'Giotto', email: 'giotto@example.com', locale: 'pt-BR' },
     ]);
   });
 

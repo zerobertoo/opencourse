@@ -28,7 +28,7 @@ describe('studio access', () => {
 
   it("shows the forbidden screen when an instructor opens someone else's course", async () => {
     await renderApp(`/studio/courses/${demoId('course-javascript')}`, {
-      email: 'beatriz@opencourse.example',
+      email: 'ada@opencourse.example',
     });
     await waitFor(() => screen.findByText('Acesso negado'), { timeout: 10000 });
     expect(await screen.findByText('Acesso negado')).toBeVisible();
@@ -353,7 +353,7 @@ describe('course editor: students', () => {
     const { services } = await renderApp(`${SQL_EDITOR}/students`, { signInAs: 'instructor' });
 
     const list = await screen.findByRole('list', { name: 'Alunos com acesso' });
-    expect(within(list).getByText('Lucas Ferreira')).toBeVisible();
+    expect(within(list).getByText('Donatello Bardi')).toBeVisible();
 
     await user.click(screen.getByRole('button', { name: 'Conceder acesso' }));
     const dialog = await screen.findByRole('dialog');
@@ -365,8 +365,8 @@ describe('course editor: students', () => {
     await user.click(select);
     const listbox = await screen.findByRole('listbox');
     // students who already have active access are not offered
-    expect(within(listbox).queryByRole('option', { name: /Lucas/ })).not.toBeInTheDocument();
-    await user.click(within(listbox).getByRole('option', { name: /Thiago Moreira/ }));
+    expect(within(listbox).queryByRole('option', { name: /Donatello/ })).not.toBeInTheDocument();
+    await user.click(within(listbox).getByRole('option', { name: /Raphael Sanzio/ }));
     await user.click(within(dialog).getByLabelText('Até uma data'));
     await user.click(within(dialog).getByRole('button', { name: 'Conceder acesso' }));
     expect(await within(dialog).findByText('Escolha uma data.')).toBeVisible();
@@ -379,7 +379,7 @@ describe('course editor: students', () => {
     expect(await screen.findByText('Acesso concedido.')).toBeVisible();
     const grants = await services.grants.list({
       courseId: demoId('course-sql'),
-      userId: demoId('user-thiago'),
+      userId: demoId('user-raphael'),
     });
     const expected = new Date();
     expected.setMonth(expected.getMonth() + 1, 15);
@@ -415,17 +415,17 @@ describe('course editor: students', () => {
     await user.click(
       await screen.findByRole(
         'button',
-        { name: 'Revogar o acesso de Gustavo Lima' },
+        { name: 'Revogar o acesso de Alberto Santos-Dumont' },
         { timeout: 5000 },
       ),
     );
     const dialog = await screen.findByRole('alertdialog');
     await user.click(within(dialog).getByRole('button', { name: 'Revogar acesso' }));
 
-    expect(await screen.findByText('Acesso de Gustavo Lima revogado.')).toBeVisible();
+    expect(await screen.findByText('Acesso de Alberto Santos-Dumont revogado.')).toBeVisible();
     const grants = await services.grants.list({
       courseId: demoId('course-sql'),
-      userId: demoId('user-gustavo'),
+      userId: demoId('user-alberto'),
     });
     expect(grants[0]?.status).toBe('revoked');
   });

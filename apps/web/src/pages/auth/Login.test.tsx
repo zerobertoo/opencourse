@@ -10,7 +10,7 @@ beforeEach(async () => {
 });
 
 async function submitCredentials() {
-  await userEvent.type(screen.getByLabelText('E-mail'), 'maria@example.com');
+  await userEvent.type(screen.getByLabelText('E-mail'), 'dante@example.com');
   await userEvent.type(screen.getByLabelText('Password'), 'wrong-password');
   await userEvent.click(screen.getByRole('button', { name: 'Sign in' }));
 }

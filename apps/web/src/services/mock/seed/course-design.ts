@@ -22,10 +22,10 @@ export function buildDesignCourse(createdAt: string): CourseDetail {
     status: 'published',
     coverImageUrl: demoCover('design'),
     bannerImageUrl: null,
-    instructorId: 'user-beatriz',
+    instructorId: 'user-ada',
     defaultLocale: 'pt-BR',
     sequentialOrder: true,
-    certificateTemplate: certificateTemplate('Beatriz Nogueira'),
+    certificateTemplate: certificateTemplate('Ada Lovelace'),
     createdAt,
     updatedAt: createdAt,
     translations: courseTranslations({

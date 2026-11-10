@@ -11,7 +11,7 @@ describe('mock enrollment service', () => {
   });
 
   it('lists only courses with an active grant, most recent activity first, with progress', async () => {
-    const { services } = await createServicesSignedInAs('lucas');
+    const { services } = await createServicesSignedInAs('donatello');
     const courses = await services.enrollments.listMyCourses();
 
     expect(courses.map((entry) => entry.course.id)).toEqual([
@@ -31,27 +31,27 @@ describe('mock enrollment service', () => {
   });
 
   it('hides courses whose grant expired or was revoked', async () => {
-    const { services } = await createServicesSignedInAs('juliana');
+    const { services } = await createServicesSignedInAs('frida');
     expect(await services.enrollments.listMyCourses()).toEqual([]);
     expect(await services.enrollments.canAccess(demoId('course-javascript'))).toBe(false);
     expect(await services.enrollments.canAccess(demoId('course-sql'))).toBe(false);
   });
 
   it('checks access by grant, and always allows the course instructor and admins', async () => {
-    const student = (await createServicesSignedInAs('gustavo')).services;
+    const student = (await createServicesSignedInAs('alberto')).services;
     expect(await student.enrollments.canAccess(demoId('course-sql'))).toBe(true);
     expect(await student.enrollments.canAccess(demoId('course-javascript'))).toBe(false);
 
-    const instructor = (await createServicesSignedInAs('rafael')).services;
+    const instructor = (await createServicesSignedInAs('michelangelo')).services;
     expect(await instructor.enrollments.canAccess(demoId('course-javascript'))).toBe(true);
     expect(await instructor.enrollments.canAccess(demoId('course-design'))).toBe(false);
 
-    const admin = (await createServicesSignedInAs('marina')).services;
+    const admin = (await createServicesSignedInAs('leonardo')).services;
     expect(await admin.enrollments.canAccess(demoId('course-design'))).toBe(true);
   });
 
   it('continues where the student stopped, including the saved video position', async () => {
-    const { services } = await createServicesSignedInAs('lucas');
+    const { services } = await createServicesSignedInAs('donatello');
     const item = await services.enrollments.getContinueLearning();
     expect(item?.course.id).toBe(demoId('course-javascript'));
     expect(item?.lesson.id).toBe(demoId('les-js-2-1'));
@@ -59,39 +59,39 @@ describe('mock enrollment service', () => {
   });
 
   it('has nothing to continue for a student who has not started anything', async () => {
-    const { services } = await createServicesSignedInAs('gustavo');
+    const { services } = await createServicesSignedInAs('alberto');
     expect(await services.enrollments.getContinueLearning()).toBeNull();
   });
 
   describe('listCourseStudents', () => {
     it('lists the students of the course with progress and effective grant status', async () => {
-      const { services } = await createServicesSignedInAs('rafael');
+      const { services } = await createServicesSignedInAs('michelangelo');
       const students = await services.enrollments.listCourseStudents(demoId('course-javascript'));
 
       const byName = Object.fromEntries(students.map((entry) => [entry.user.name, entry]));
       expect(Object.keys(byName)).toEqual(
-        expect.arrayContaining(['Lucas Ferreira', 'Thiago Moreira', 'Juliana Prado']),
+        expect.arrayContaining(['Donatello Bardi', 'Raphael Sanzio', 'Frida Kahlo']),
       );
-      expect(byName['Thiago Moreira']?.progress.completedCount).toBe(9);
-      expect(byName['Juliana Prado']?.grant.status).toBe('expired');
-      expect(byName['Lucas Ferreira']?.grant.status).toBe('active');
+      expect(byName['Raphael Sanzio']?.progress.completedCount).toBe(9);
+      expect(byName['Frida Kahlo']?.grant.status).toBe('expired');
+      expect(byName['Donatello Bardi']?.grant.status).toBe('active');
       expect(new Set(students.map((entry) => entry.user.id)).size).toBe(students.length);
     });
 
     it('is restricted to the course instructor and admins', async () => {
-      const other = (await createServicesSignedInAs('beatriz')).services;
+      const other = (await createServicesSignedInAs('ada')).services;
       await expect(
         other.enrollments.listCourseStudents(demoId('course-javascript')),
       ).rejects.toMatchObject({
         code: 'forbidden',
       });
-      const student = (await createServicesSignedInAs('lucas')).services;
+      const student = (await createServicesSignedInAs('donatello')).services;
       await expect(
         student.enrollments.listCourseStudents(demoId('course-javascript')),
       ).rejects.toMatchObject({
         code: 'forbidden',
       });
-      const admin = (await createServicesSignedInAs('marina')).services;
+      const admin = (await createServicesSignedInAs('leonardo')).services;
       await expect(
         admin.enrollments.listCourseStudents(demoId('course-javascript')),
       ).resolves.not.toHaveLength(0);
@@ -101,9 +101,9 @@ describe('mock enrollment service', () => {
 
 describe('mock progress service', () => {
   it('returns only the progress of the current user in the course', async () => {
-    const { services } = await createServicesSignedInAs('lucas');
+    const { services } = await createServicesSignedInAs('donatello');
     const progress = await services.progress.getCourseProgress(demoId('course-javascript'));
-    expect(progress.every((entry) => entry.userId === demoId('user-lucas'))).toBe(true);
+    expect(progress.every((entry) => entry.userId === demoId('user-donatello'))).toBe(true);
     expect(progress.filter((entry) => entry.completed)).toHaveLength(4);
     expect(
       progress.find((entry) => entry.lessonId === demoId('les-js-2-1'))?.videoPositionSeconds,
@@ -111,7 +111,7 @@ describe('mock progress service', () => {
   });
 
   it('marks a lesson as completed and updates the course summary', async () => {
-    const { services } = await createServicesSignedInAs('lucas');
+    const { services } = await createServicesSignedInAs('donatello');
     const entry = await services.progress.setLessonCompleted(demoId('les-js-2-1'), true);
     expect(entry).toMatchObject({ lessonId: demoId('les-js-2-1'), completed: true });
 
@@ -123,7 +123,7 @@ describe('mock progress service', () => {
   });
 
   it('can undo a completion', async () => {
-    const { services } = await createServicesSignedInAs('lucas');
+    const { services } = await createServicesSignedInAs('donatello');
     await services.progress.setLessonCompleted(demoId('les-js-1-1'), false);
     const js = (await services.enrollments.listMyCourses()).find(
       (c) => c.course.id === demoId('course-javascript'),
@@ -133,7 +133,7 @@ describe('mock progress service', () => {
   });
 
   it('allows any lesson when the course is not sequential', async () => {
-    const { services } = await createServicesSignedInAs('lucas');
+    const { services } = await createServicesSignedInAs('donatello');
     await expect(
       services.progress.setLessonCompleted(demoId('les-js-3-1'), true),
     ).resolves.toMatchObject({
@@ -142,8 +142,8 @@ describe('mock progress service', () => {
   });
 
   it('blocks locked lessons in a sequential course until the previous ones are done', async () => {
-    const { services } = await createServicesSignedInAs('lucas');
-    // Lucas completed the first 2 of the design course; the 3rd is unlocked, the 7th is not
+    const { services } = await createServicesSignedInAs('donatello');
+    // Donatello completed the first 2 of the design course; the 3rd is unlocked, the 7th is not
     await expect(
       services.progress.setLessonCompleted(demoId('les-design-2-1'), true),
     ).rejects.toMatchObject({
@@ -162,7 +162,7 @@ describe('mock progress service', () => {
   });
 
   it('requires an active grant', async () => {
-    const { services } = await createServicesSignedInAs('gustavo');
+    const { services } = await createServicesSignedInAs('alberto');
     await expect(
       services.progress.setLessonCompleted(demoId('les-js-1-1'), true),
     ).rejects.toMatchObject({
@@ -171,7 +171,7 @@ describe('mock progress service', () => {
   });
 
   it('fails with not_found for an unknown lesson', async () => {
-    const { services } = await createServicesSignedInAs('lucas');
+    const { services } = await createServicesSignedInAs('donatello');
     await expect(
       services.progress.setLessonCompleted(demoId('les-inexistente'), true),
     ).rejects.toMatchObject({
@@ -181,7 +181,7 @@ describe('mock progress service', () => {
 
   describe('video position', () => {
     it('saves the position and clamps it to the lesson duration', async () => {
-      const { services } = await createServicesSignedInAs('lucas');
+      const { services } = await createServicesSignedInAs('donatello');
       expect(
         (await services.progress.saveVideoPosition(demoId('les-js-2-1'), 120)).videoPositionSeconds,
       ).toBe(120);
@@ -195,7 +195,7 @@ describe('mock progress service', () => {
     });
 
     it('only applies to video lessons', async () => {
-      const { services } = await createServicesSignedInAs('lucas');
+      const { services } = await createServicesSignedInAs('donatello');
       await expect(
         services.progress.saveVideoPosition(demoId('les-js-2-2'), 10),
       ).rejects.toMatchObject({
@@ -204,7 +204,7 @@ describe('mock progress service', () => {
     });
 
     it('does not complete the lesson', async () => {
-      const { services } = await createServicesSignedInAs('lucas');
+      const { services } = await createServicesSignedInAs('donatello');
       const entry = await services.progress.saveVideoPosition(demoId('les-js-2-3'), 200);
       expect(entry.completed).toBe(false);
     });
@@ -212,7 +212,7 @@ describe('mock progress service', () => {
 
   describe('quizzes', () => {
     it('fails below the minimum score, keeps the lesson incomplete and returns per question feedback', async () => {
-      const { services } = await createServicesSignedInAs('camila');
+      const { services } = await createServicesSignedInAs('marie');
       const { attempt, feedback } = await services.progress.submitQuizAttempt(
         demoId('les-js-1-4'),
         {
@@ -220,7 +220,7 @@ describe('mock progress service', () => {
           [demoId('q-js-2')]: demoId('q-js-2-b'),
         },
       );
-      expect(attempt).toMatchObject({ score: 33, passed: false, userId: demoId('user-camila') });
+      expect(attempt).toMatchObject({ score: 33, passed: false, userId: demoId('user-marie') });
       expect(feedback.results[demoId('q-js-1')]).toMatchObject({ isCorrect: false });
       // a failed attempt does not hand out the right options
       expect(feedback.results[demoId('q-js-1')]).not.toHaveProperty('correctOptionId');
@@ -233,7 +233,7 @@ describe('mock progress service', () => {
     });
 
     it('passes, completes the lesson and records every attempt in order', async () => {
-      const { services } = await createServicesSignedInAs('camila');
+      const { services } = await createServicesSignedInAs('marie');
       await services.progress.submitQuizAttempt(demoId('les-js-1-4'), {});
       const { attempt } = await services.progress.submitQuizAttempt(demoId('les-js-1-4'), {
         [demoId('q-js-1')]: demoId('q-js-1-a'),
@@ -252,7 +252,7 @@ describe('mock progress service', () => {
     });
 
     it('lists the seeded attempts of the demo student', async () => {
-      const { services } = await createServicesSignedInAs('lucas');
+      const { services } = await createServicesSignedInAs('donatello');
       const attempts = await services.progress.listQuizAttempts(demoId('les-js-1-4'));
       expect(attempts.map((item) => [item.score, item.passed])).toEqual([
         [33, false],
@@ -261,7 +261,7 @@ describe('mock progress service', () => {
     });
 
     it('rejects attempts on lessons that are not quizzes', async () => {
-      const { services } = await createServicesSignedInAs('lucas');
+      const { services } = await createServicesSignedInAs('donatello');
       await expect(
         services.progress.submitQuizAttempt(demoId('les-js-2-1'), {}),
       ).rejects.toMatchObject({
@@ -273,12 +273,12 @@ describe('mock progress service', () => {
 
 describe('mock certificate service', () => {
   it('lists the certificates of the signed in student', async () => {
-    const { services } = await createServicesSignedInAs('lucas');
+    const { services } = await createServicesSignedInAs('donatello');
     const certificates = await services.certificates.listMine();
     expect(certificates).toHaveLength(1);
     expect(certificates[0]).toMatchObject({
       code: 'OC-7K2M-9QXA',
-      holderName: 'Lucas Ferreira',
+      holderName: 'Donatello Bardi',
       courseTitles: expect.objectContaining({ 'pt-BR': expect.any(String) }),
     });
   });
@@ -286,13 +286,13 @@ describe('mock certificate service', () => {
   it('verifies a certificate publicly, ignoring case and spaces, and returns null for unknown codes', async () => {
     const { services } = createTestServices();
     expect((await services.certificates.verify(' oc-7k2m-9qxa '))?.holderName).toBe(
-      'Lucas Ferreira',
+      'Donatello Bardi',
     );
     expect(await services.certificates.verify('OC-0000-0000')).toBeNull();
   });
 
   it('issues a certificate once, when the last lesson of the course is completed', async () => {
-    const { services } = await createServicesSignedInAs('thiago');
+    const { services } = await createServicesSignedInAs('raphael');
     expect(await services.certificates.listMine()).toHaveLength(0);
 
     // only the final quiz of the JavaScript course is missing
@@ -303,7 +303,7 @@ describe('mock certificate service', () => {
     const [certificate] = await services.certificates.listMine();
     expect(certificate).toMatchObject({
       courseId: demoId('course-javascript'),
-      holderName: 'Thiago Moreira',
+      holderName: 'Raphael Sanzio',
     });
     expect(certificate?.code).toMatch(/^OC-[A-Z2-9]{4}-[A-Z2-9]{4}$/);
     expect((await services.certificates.verify(certificate!.code))?.code).toBe(certificate?.code);
@@ -320,7 +320,7 @@ describe('mock certificate service', () => {
   });
 
   it('does not issue a certificate before the course is complete', async () => {
-    const { services } = await createServicesSignedInAs('camila');
+    const { services } = await createServicesSignedInAs('marie');
     await services.progress.setLessonCompleted(demoId('les-js-3-1'), true);
     expect(await services.certificates.listMine()).toHaveLength(0);
   });
@@ -328,7 +328,7 @@ describe('mock certificate service', () => {
 
 describe('notes and password', () => {
   it('saves, updates and removes a personal note per lesson', async () => {
-    const { services } = await createServicesSignedInAs('lucas');
+    const { services } = await createServicesSignedInAs('donatello');
     expect(await services.notes.getLessonNote(demoId('les-js-2-1'))).toBeNull();
 
     await services.notes.saveLessonNote(demoId('les-js-2-1'), 'Closures guardam o escopo');
@@ -344,19 +344,19 @@ describe('notes and password', () => {
   });
 
   it('keeps notes private to the author and blocks lessons without access', async () => {
-    const { services } = await createServicesSignedInAs('lucas');
+    const { services } = await createServicesSignedInAs('donatello');
     await services.notes.saveLessonNote(demoId('les-js-2-1'), 'Só minha');
-    await services.auth.signIn('camila@opencourse.example', 'qualquer-senha');
+    await services.auth.signIn('marie@opencourse.example', 'qualquer-senha');
     expect(await services.notes.getLessonNote(demoId('les-js-2-1'))).toBeNull();
 
-    // Camila has no active grant for the design course
+    // Marie has no active grant for the design course
     await expect(services.notes.getLessonNote(demoId('les-design-1-1'))).rejects.toMatchObject({
       code: 'forbidden',
     });
   });
 
   it('validates the password change', async () => {
-    const { services } = await createServicesSignedInAs('lucas');
+    const { services } = await createServicesSignedInAs('donatello');
     await expect(services.auth.changePassword('', 'novasenha123')).rejects.toMatchObject({
       code: 'validation',
     });

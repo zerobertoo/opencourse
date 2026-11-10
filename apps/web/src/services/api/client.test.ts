@@ -22,8 +22,8 @@ function createClient(handler: Handler) {
 
 const user = {
   id: '3f2b8a54-6d1e-4c3f-9a7b-2d5e8c1f0a11',
-  name: 'Maria',
-  email: 'maria@example.com',
+  name: 'Dante',
+  email: 'dante@example.com',
   avatarUrl: null,
   role: 'student',
   locale: 'en',
@@ -55,9 +55,9 @@ describe('ApiClient', () => {
 
   it('builds the query string and skips undefined values', async () => {
     const { client, fetchMock } = createClient(() => json(200, {}));
-    await client.request('GET', '/admin/users', { query: { search: 'ana', role: undefined } });
+    await client.request('GET', '/admin/users', { query: { search: 'giotto', role: undefined } });
     expect(String(fetchMock.mock.calls[0]![0])).toBe(
-      'http://api.test/api/v1/admin/users?search=ana',
+      'http://api.test/api/v1/admin/users?search=giotto',
     );
   });
 
@@ -126,7 +126,7 @@ describe('ApiClient', () => {
     it('renews the session once and retries the original request', async () => {
       const { client, fetchMock } = expiringSession();
       const result = await client.request('GET', '/me', { schema: sessionResponseSchema });
-      expect(result.user.email).toBe('maria@example.com');
+      expect(result.user.email).toBe('dante@example.com');
       expect(paths(fetchMock)).toEqual(['/me', '/auth/refresh', '/me']);
     });
 
