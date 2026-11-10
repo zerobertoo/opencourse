@@ -11,15 +11,15 @@ import {
 describe('auth request schemas', () => {
   it('normalizes the e-mail and trims the name on register', () => {
     const parsed = registerRequestSchema.parse({
-      name: '  Maria  ',
-      email: '  Maria@Example.COM ',
+      name: '  Dante  ',
+      email: '  Dante@Example.COM ',
       password: 'longenough',
     });
-    expect(parsed).toEqual({ name: 'Maria', email: 'maria@example.com', password: 'longenough' });
+    expect(parsed).toEqual({ name: 'Dante', email: 'dante@example.com', password: 'longenough' });
   });
 
   it('enforces the password policy on register and reset, but not on login', () => {
-    const base = { name: 'Maria', email: 'maria@example.com' };
+    const base = { name: 'Dante', email: 'dante@example.com' };
     expect(registerRequestSchema.safeParse({ ...base, password: 'short' }).success).toBe(false);
     expect(resetPasswordRequestSchema.safeParse({ token: 't', password: 'short' }).success).toBe(
       false,
@@ -29,15 +29,15 @@ describe('auth request schemas', () => {
 
   it('rejects an oversized password so argon2 never hashes huge input', () => {
     const result = registerRequestSchema.safeParse({
-      name: 'Maria',
-      email: 'maria@example.com',
+      name: 'Dante',
+      email: 'dante@example.com',
       password: 'a'.repeat(1000),
     });
     expect(result.success).toBe(false);
   });
 
   it('accepts real IANA time zones and rejects ones the UI could not format with', () => {
-    const base = { name: 'Maria', email: 'maria@example.com', password: 'longenough' };
+    const base = { name: 'Dante', email: 'dante@example.com', password: 'longenough' };
     for (const timeZone of ['UTC', 'America/Sao_Paulo', 'Europe/Lisbon']) {
       expect(registerRequestSchema.safeParse({ ...base, timeZone }).success).toBe(true);
     }
@@ -48,10 +48,10 @@ describe('auth request schemas', () => {
   });
 
   it('refuses unknown fields on a profile update instead of ignoring them', () => {
-    expect(updateProfileRequestSchema.safeParse({ name: 'Maria', role: 'admin' }).success).toBe(
+    expect(updateProfileRequestSchema.safeParse({ name: 'Dante', role: 'admin' }).success).toBe(
       false,
     );
-    expect(updateProfileRequestSchema.safeParse({ name: 'Maria' }).success).toBe(true);
+    expect(updateProfileRequestSchema.safeParse({ name: 'Dante' }).success).toBe(true);
   });
 
   it('parses boolean text in the users query', () => {

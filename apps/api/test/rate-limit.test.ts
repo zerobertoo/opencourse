@@ -21,7 +21,7 @@ describe('rate limiting', () => {
   it('blocks repeated login attempts for the same e-mail with 429', async () => {
     const client = new TestClient(ctx.app);
     const attempt = () =>
-      client.post('/api/v1/auth/login', { email: 'maria@example.com', password: 'wrong password' });
+      client.post('/api/v1/auth/login', { email: 'dante@example.com', password: 'wrong password' });
 
     for (let index = 0; index < 10; index += 1) {
       expect((await attempt()).statusCode).toBe(401);
@@ -93,7 +93,7 @@ describe('rate limiting', () => {
     const client = new TestClient(ctx.app);
     const codes: number[] = [];
     for (let index = 0; index < 6; index += 1) {
-      const response = await client.post('/api/v1/auth/forgot', { email: 'maria@example.com' });
+      const response = await client.post('/api/v1/auth/forgot', { email: 'dante@example.com' });
       codes.push(response.statusCode);
     }
     expect(codes).toEqual([204, 204, 204, 204, 204, 429]);
@@ -102,8 +102,8 @@ describe('rate limiting', () => {
   it('does not limit normal use of other routes', async () => {
     const client = new TestClient(ctx.app);
     const registered = await client.post('/api/v1/auth/register', {
-      name: 'Maria',
-      email: 'maria@example.com',
+      name: 'Dante',
+      email: 'dante@example.com',
       password: STRONG_PASSWORD,
     });
     expect(registered.statusCode).toBe(201);

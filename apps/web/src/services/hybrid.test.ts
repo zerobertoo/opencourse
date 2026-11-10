@@ -6,8 +6,8 @@ import { createMockServices } from './mock';
 
 const realUser = {
   id: '3f2b8a54-6d1e-4c3f-9a7b-2d5e8c1f0a11',
-  name: 'Maria Real',
-  email: 'maria@example.com',
+  name: 'Dante Real',
+  email: 'dante@example.com',
   avatarUrl: null,
   role: 'instructor',
   locale: 'en',
@@ -47,8 +47,8 @@ describe('hybrid services', () => {
       'POST /auth/login': () => json(200, { user: realUser }),
     });
 
-    const user = await services.auth.signIn('maria@example.com', 'secret-password');
-    expect(user.name).toBe('Maria Real');
+    const user = await services.auth.signIn('dante@example.com', 'secret-password');
+    expect(user.name).toBe('Dante Real');
 
     // mocked screens ask the mock who is signed in, and must now get the real user
     expect(await mock.auth.getCurrentUser()).toMatchObject({ id: realUser.id });
@@ -96,7 +96,7 @@ describe('hybrid services', () => {
 
   it('reads and changes the platform settings through the API', async () => {
     const settings = {
-      brand: { name: 'Acme Academy', logoUrl: null, primaryColor: '#2f6f5e' },
+      brand: { name: 'Medici Academy', logoUrl: null, primaryColor: '#2f6f5e' },
       enabledLocales: ['pt-BR', 'en'],
       defaultLocale: 'pt-BR',
       email: { host: 'smtp.test', port: 587, username: '', fromAddress: 'a@b.c', secure: false },
@@ -106,7 +106,7 @@ describe('hybrid services', () => {
       'PATCH /admin/settings': () => json(200, { ...settings, defaultLocale: 'en' }),
     });
 
-    expect((await services.settings.get()).brand.name).toBe('Acme Academy');
+    expect((await services.settings.get()).brand.name).toBe('Medici Academy');
     const updated = await services.settings.update({ defaultLocale: 'en' });
     expect(updated.defaultLocale).toBe('en');
     expect(JSON.parse(String(fetchMock.mock.calls[1]![1]?.body))).toEqual({ defaultLocale: 'en' });
@@ -135,7 +135,7 @@ describe('hybrid services', () => {
       'POST /auth/login': () => json(200, { user: realUser }),
       'POST /auth/logout': () => json(500, { error: { code: 'internal', message: 'boom' } }),
     });
-    await services.auth.signIn('maria@example.com', 'secret-password');
+    await services.auth.signIn('dante@example.com', 'secret-password');
 
     await expect(services.auth.signOut()).rejects.toThrow();
     // the real cookies are still valid and the UI still shows the user, so the mock must agree:
@@ -148,7 +148,7 @@ describe('hybrid services', () => {
       'POST /auth/login': () => json(200, { user: realUser }),
       'POST /auth/logout': () => new Response(null, { status: 204 }),
     });
-    await services.auth.signIn('maria@example.com', 'secret-password');
+    await services.auth.signIn('dante@example.com', 'secret-password');
     await services.auth.signOut();
     expect(await mock.auth.getCurrentUser()).toBeNull();
   });
@@ -157,8 +157,8 @@ describe('hybrid services', () => {
     const otherUser = {
       ...realUser,
       id: '9d4e1c27-5b8a-4f10-a3c6-7e2f9b0d1a55',
-      name: 'Ana Other',
-      email: 'ana@example.com',
+      name: 'Giotto Other',
+      email: 'giotto@example.com',
     };
     const storeUserIds = (mock: ReturnType<typeof setup>['mock']) =>
       mock.mock.store.db.users.map((user) => user.id);
@@ -168,7 +168,7 @@ describe('hybrid services', () => {
         'POST /auth/login': () => json(200, { user: realUser }),
         'POST /auth/logout': () => new Response(null, { status: 204 }),
       });
-      await services.auth.signIn('maria@example.com', 'secret-password');
+      await services.auth.signIn('dante@example.com', 'secret-password');
       expect(storeUserIds(mock)).toContain(realUser.id);
 
       await services.auth.signOut();
@@ -180,7 +180,7 @@ describe('hybrid services', () => {
         'POST /auth/login': () => json(200, { user: realUser }),
         'GET /me': () => json(200, { user: otherUser }),
       });
-      await services.auth.signIn('maria@example.com', 'secret-password');
+      await services.auth.signIn('dante@example.com', 'secret-password');
       // e.g. the session cookie now belongs to another account after a reload
       await services.auth.getCurrentUser();
 
@@ -195,7 +195,7 @@ describe('hybrid services', () => {
           json(200, { user: otherUser }),
         'POST /auth/logout': () => new Response(null, { status: 204 }),
       });
-      await services.auth.signIn('maria@example.com', 'secret-password');
+      await services.auth.signIn('dante@example.com', 'secret-password');
       await services.users.updateRole(otherUser.id, 'student');
       mock.mock.store.mutate((db) => {
         db.progress.push({
@@ -219,7 +219,7 @@ describe('hybrid services', () => {
         'POST /auth/logout': () => new Response(null, { status: 204 }),
       });
       const seedIds = storeUserIds(mock);
-      await services.auth.signIn('maria@example.com', 'secret-password');
+      await services.auth.signIn('dante@example.com', 'secret-password');
       await services.auth.signOut();
       expect(storeUserIds(mock)).toEqual(seedIds);
     });
@@ -236,15 +236,15 @@ describe('hybrid services', () => {
       'POST /auth/register': () => json(201, { user: { ...realUser, role: 'admin' } }),
     });
     await services.auth.signUp({
-      name: 'Maria',
-      email: 'maria@example.com',
+      name: 'Dante',
+      email: 'dante@example.com',
       password: 'password-123',
     });
 
     const body = JSON.parse(String(fetchMock.mock.calls[0]![1]?.body));
     expect(body).toEqual({
-      name: 'Maria',
-      email: 'maria@example.com',
+      name: 'Dante',
+      email: 'dante@example.com',
       password: 'password-123',
       locale: 'en',
       timeZone: 'UTC',
@@ -270,7 +270,7 @@ describe('hybrid services', () => {
       'GET /admin/users': () => json(200, { users: [realUser] }),
       'GET /grants': () => json(200, { grants: [] }),
     });
-    await services.auth.signIn('maria@example.com', 'secret-password');
+    await services.auth.signIn('dante@example.com', 'secret-password');
 
     expect((await services.grants.createInvite({ email: 'new@example.com' })).acceptUrl).toBe(
       'http://localhost:5173/invite/abc',
@@ -286,11 +286,11 @@ describe('hybrid services', () => {
   it('keeps the mirrored user fresh after a profile or role change', async () => {
     const { services, mock } = setup({
       'POST /auth/login': () => json(200, { user: realUser }),
-      'PATCH /me': () => json(200, { user: { ...realUser, name: 'Maria Renamed' } }),
+      'PATCH /me': () => json(200, { user: { ...realUser, name: 'Dante Renamed' } }),
     });
-    await services.auth.signIn('maria@example.com', 'secret-password');
-    await services.users.updateProfile({ name: 'Maria Renamed' });
+    await services.auth.signIn('dante@example.com', 'secret-password');
+    await services.users.updateProfile({ name: 'Dante Renamed' });
 
-    expect(await mock.auth.getCurrentUser()).toMatchObject({ name: 'Maria Renamed' });
+    expect(await mock.auth.getCurrentUser()).toMatchObject({ name: 'Dante Renamed' });
   });
 });

@@ -11,7 +11,7 @@ beforeEach(async () => {
 describe('forgot password (demo mode)', () => {
   it('offers the demo link, since the mock has no mailbox', async () => {
     await renderApp('/forgot-password');
-    await userEvent.type(screen.getByLabelText('E-mail'), 'maria@example.com');
+    await userEvent.type(screen.getByLabelText('E-mail'), 'dante@example.com');
     await userEvent.click(screen.getByRole('button', { name: /send/i }));
 
     expect(await screen.findByRole('link', { name: /demo/i })).toHaveAttribute(

@@ -9,9 +9,9 @@ describe('mock auth service', () => {
   });
 
   it.each([
-    ['student', 'Lucas Ferreira'],
-    ['instructor', 'Rafael Teixeira'],
-    ['admin', 'Marina Albuquerque'],
+    ['student', 'Donatello Bardi'],
+    ['instructor', 'Michelangelo Buonarroti'],
+    ['admin', 'Leonardo da Vinci'],
   ] as const)('signs in as the demo %s', async (role, name) => {
     const { services } = createTestServices();
     const user = await services.auth.signInAs(role);
@@ -21,15 +21,15 @@ describe('mock auth service', () => {
 
   it('accepts any credentials and signs in an existing user by email', async () => {
     const { services } = createTestServices();
-    const user = await services.auth.signIn('  CAMILA@opencourse.example ', 'qualquer-coisa');
-    expect(user.name).toBe('Camila Duarte');
+    const user = await services.auth.signIn('  MARIE@opencourse.example ', 'qualquer-coisa');
+    expect(user.name).toBe('Marie Curie');
   });
 
   it('creates a student on the fly for an unknown email', async () => {
     const { services } = createTestServices();
-    const user = await services.auth.signIn('maria.silva@exemplo.dev', 'x');
-    expect(user).toMatchObject({ name: 'Maria Silva', role: 'student', active: true });
-    expect((await services.auth.signIn('maria.silva@exemplo.dev', 'x')).id).toBe(user.id);
+    const user = await services.auth.signIn('dante.alighieri@exemplo.dev', 'x');
+    expect(user).toMatchObject({ name: 'Dante Alighieri', role: 'student', active: true });
+    expect((await services.auth.signIn('dante.alighieri@exemplo.dev', 'x')).id).toBe(user.id);
   });
 
   it('rejects malformed email and empty password', async () => {
@@ -42,7 +42,7 @@ describe('mock auth service', () => {
 
   it('blocks deactivated users', async () => {
     const { services } = createTestServices();
-    await expect(services.auth.signIn('diego@opencourse.example', 'x')).rejects.toMatchObject({
+    await expect(services.auth.signIn('machado@opencourse.example', 'x')).rejects.toMatchObject({
       code: 'forbidden',
     });
     expect(await services.auth.getCurrentUser()).toBeNull();
@@ -54,7 +54,7 @@ describe('mock auth service', () => {
     await first.auth.signInAs('student');
 
     const second = createTestServices({ storage }).services;
-    expect((await second.auth.getCurrentUser())?.name).toBe('Lucas Ferreira');
+    expect((await second.auth.getCurrentUser())?.name).toBe('Donatello Bardi');
 
     await second.auth.signOut();
     expect(await second.auth.getCurrentUser()).toBeNull();
@@ -65,13 +65,13 @@ describe('mock auth service', () => {
     it('creates a student, signs in and uses the instance default language', async () => {
       const { services } = createTestServices();
       const user = await services.auth.signUp({
-        name: ' Ana Paula ',
-        email: 'Ana@Exemplo.dev',
+        name: ' Giotto Bondone ',
+        email: 'Giotto@Exemplo.dev',
         password: 'senha-segura',
       });
       expect(user).toMatchObject({
-        name: 'Ana Paula',
-        email: 'ana@exemplo.dev',
+        name: 'Giotto Bondone',
+        email: 'giotto@exemplo.dev',
         role: 'student',
         locale: 'pt-BR',
       });
@@ -80,7 +80,7 @@ describe('mock auth service', () => {
 
     it('validates name, email and password length', async () => {
       const { services } = createTestServices();
-      const valid = { name: 'Ana', email: 'ana@exemplo.dev', password: 'senha-segura' };
+      const valid = { name: 'Giotto', email: 'giotto@exemplo.dev', password: 'senha-segura' };
       await expect(services.auth.signUp({ ...valid, name: ' ' })).rejects.toMatchObject({
         code: 'validation',
       });
@@ -96,8 +96,8 @@ describe('mock auth service', () => {
       const { services } = createTestServices();
       await expect(
         services.auth.signUp({
-          name: 'Outro Lucas',
-          email: 'lucas@opencourse.example',
+          name: 'Outro Donatello',
+          email: 'donatello@opencourse.example',
           password: 'senha-segura',
         }),
       ).rejects.toMatchObject({ code: 'conflict' });
@@ -108,7 +108,7 @@ describe('mock auth service', () => {
     it('never reveals whether the email exists', async () => {
       const { services } = createTestServices();
       await expect(
-        services.auth.requestPasswordReset('lucas@opencourse.example'),
+        services.auth.requestPasswordReset('donatello@opencourse.example'),
       ).resolves.toBeUndefined();
       await expect(
         services.auth.requestPasswordReset('ninguem@exemplo.dev'),

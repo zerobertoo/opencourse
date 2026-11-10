@@ -61,7 +61,7 @@ function setup(respond: (request: Recorded) => Response = () => json(200, {})) {
 
 /** Valid payloads taken from the mock, so the contract checks run on realistic data. */
 async function samples() {
-  const { services } = await createServicesSignedInAs('rafael');
+  const { services } = await createServicesSignedInAs('michelangelo');
   const [listed] = await services.courses.list({ scope: 'managed' });
   const course = await services.courses.getById(listed!.id);
   const [grant] = await services.grants.list();

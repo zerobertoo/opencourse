@@ -47,7 +47,7 @@ describe('AuthProvider sign out', () => {
       },
     };
     renderProbe({ ...services, auth: slowAuth });
-    await waitFor(() => expect(screen.getByTestId('who')).toHaveTextContent('Marina Albuquerque'));
+    await waitFor(() => expect(screen.getByTestId('who')).toHaveTextContent('Leonardo da Vinci'));
 
     await userEvent.setup().click(screen.getByRole('button', { name: 'sign out' }));
 

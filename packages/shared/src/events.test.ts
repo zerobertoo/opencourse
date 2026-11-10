@@ -22,8 +22,8 @@ describe('domain event contract', () => {
     expect(
       domainEventPayloadSchemas['user.created'].safeParse({
         userId: id,
-        name: 'Ana',
-        email: 'ana@example.com',
+        name: 'Giotto',
+        email: 'giotto@example.com',
         locale: 'en',
       }).success,
     ).toBe(true);

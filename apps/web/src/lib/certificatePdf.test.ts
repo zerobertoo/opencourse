@@ -4,7 +4,7 @@ import { buildCertificatePdf } from './certificatePdf';
 const content = {
   heading: 'Certificado',
   intro: 'Certificamos que',
-  holderName: 'Patrícia (Sales) \\ Ltda',
+  holderName: 'Hipátia (Sales) \\ Ltda',
   completion: 'concluiu o curso',
   courseTitle: 'Título 日本',
   issuedLine: 'Emitido em 1 de junho',
@@ -38,7 +38,7 @@ describe('buildCertificatePdf', () => {
   it('escapes PDF delimiters and replaces characters outside Latin-1', async () => {
     const text = await readBytes(buildCertificatePdf(content));
 
-    expect(text).toContain('Patrícia \\(Sales\\) \\\\ Ltda');
+    expect(text).toContain('Hipátia \\(Sales\\) \\\\ Ltda');
     expect(text).toContain('Título ??');
   });
 });

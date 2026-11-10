@@ -46,7 +46,7 @@ function setup(routes: Routes) {
 
 describe('hybrid learning services', () => {
   it('reads enrollments, progress, notes and the dashboard from the API, not from the mock', async () => {
-    const { services: demo } = await createServicesSignedInAs('camila');
+    const { services: demo } = await createServicesSignedInAs('marie');
     const mine = await demo.enrollments.listMyCourses();
     const { services, mock, calls } = setup({
       'POST /auth/login': () => json(200, { user: student }),
@@ -70,7 +70,7 @@ describe('hybrid learning services', () => {
   });
 
   it('grades quizzes on the server instead of refusing them', async () => {
-    const { services: demo } = await createServicesSignedInAs('camila');
+    const { services: demo } = await createServicesSignedInAs('marie');
     const submission = await demo.progress.submitQuizAttempt(demoId('les-js-1-4'), {
       [demoId('q-js-1')]: demoId('q-js-1-b'),
     });

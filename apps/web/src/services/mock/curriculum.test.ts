@@ -3,7 +3,7 @@ import { flattenLessons } from '@opencourse/shared';
 import { describe, expect, it } from 'vitest';
 import { createServicesSignedInAs, createTestServices } from '@/test/mock-services';
 
-async function setup(userSlug = 'rafael', options = {}) {
+async function setup(userSlug = 'michelangelo', options = {}) {
   const context = createTestServices(options);
   await context.services.auth.signIn(`${userSlug}@opencourse.example`, 'qualquer-senha');
   const { services } = context;
@@ -181,7 +181,7 @@ describe('mock curriculum service', () => {
     });
 
     it('deleting a lesson also removes the progress students recorded on it', async () => {
-      const { services } = await createServicesSignedInAs('rafael');
+      const { services } = await createServicesSignedInAs('michelangelo');
       const { store } = services.mock;
       const course = await services.courses.getBySlug('fundamentos-de-javascript');
       const lessonId = demoId('les-js-1-2');
@@ -200,7 +200,7 @@ describe('mock curriculum service', () => {
     const videoFile = (name: string) => new File(['x'], name, { type: 'video/mp4' });
 
     async function videoLesson(options = {}) {
-      const context = await setup('rafael', options);
+      const context = await setup('michelangelo', options);
       const { services, courseId } = context;
       const { moduleId } = await services.curriculum.createModule({
         courseId,
@@ -382,7 +382,7 @@ describe('mock curriculum service', () => {
   });
 
   it('only lets the course owner or an admin edit the curriculum', async () => {
-    const { services, courseId } = await setup('rafael');
+    const { services, courseId } = await setup('michelangelo');
     const { moduleId } = await services.curriculum.createModule({
       courseId,
       title: 'Módulo',
@@ -390,7 +390,7 @@ describe('mock curriculum service', () => {
     });
     const owner = services.auth;
 
-    await owner.signIn('beatriz@opencourse.example', 'x');
+    await owner.signIn('ada@opencourse.example', 'x');
     await expect(
       services.curriculum.createModule({ courseId, title: 'Intruso', locale: 'pt-BR' }),
     ).rejects.toMatchObject({ code: 'forbidden' });
@@ -398,12 +398,12 @@ describe('mock curriculum service', () => {
       code: 'forbidden',
     });
 
-    await owner.signIn('lucas@opencourse.example', 'x');
+    await owner.signIn('donatello@opencourse.example', 'x');
     await expect(services.curriculum.deleteModule(moduleId)).rejects.toMatchObject({
       code: 'forbidden',
     });
 
-    await owner.signIn('marina@opencourse.example', 'x');
+    await owner.signIn('leonardo@opencourse.example', 'x');
     await expect(services.curriculum.deleteModule(moduleId)).resolves.toBeTruthy();
   });
 });

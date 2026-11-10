@@ -90,7 +90,7 @@ describe('mock persistence', () => {
   });
 
   it('restores the original data with reset', async () => {
-    const { services } = await createServicesSignedInAs('rafael');
+    const { services } = await createServicesSignedInAs('michelangelo');
     await services.courses.create({ title: 'Temporário', defaultLocale: 'pt-BR' });
     expect(await services.courses.list()).toHaveLength(6);
 

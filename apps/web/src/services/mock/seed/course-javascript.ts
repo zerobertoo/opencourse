@@ -23,10 +23,10 @@ export function buildJavascriptCourse(createdAt: string): CourseDetail {
     status: 'published',
     coverImageUrl: demoCover('javascript'),
     bannerImageUrl: demoBanner('javascript'),
-    instructorId: 'user-rafael',
+    instructorId: 'user-michelangelo',
     defaultLocale: 'pt-BR',
     sequentialOrder: false,
-    certificateTemplate: certificateTemplate('Rafael Teixeira'),
+    certificateTemplate: certificateTemplate('Michelangelo Buonarroti'),
     createdAt,
     updatedAt: createdAt,
     translations: courseTranslations({
@@ -80,8 +80,8 @@ export function buildJavascriptCourse(createdAt: string): CourseDetail {
             },
             content: {
               'pt-BR':
-                '## Variáveis\n\nUse `const` por padrão e `let` quando o valor precisar mudar. Evite `var`.\n\n```js\nconst nome = "Ana";\nlet idade = 31;\nidade += 1;\n```\n\n## Tipos primitivos\n\n- `string`, `number`, `boolean`\n- `null` e `undefined`\n- `bigint` e `symbol`\n\nO operador `typeof` ajuda a inspecionar o tipo de um valor.',
-              en: '## Variables\n\nUse `const` by default and `let` when the value has to change. Avoid `var`.\n\n```js\nconst name = "Ana";\nlet age = 31;\nage += 1;\n```\n\n## Primitive types\n\n- `string`, `number`, `boolean`\n- `null` and `undefined`\n- `bigint` and `symbol`\n\nThe `typeof` operator helps inspect the type of a value.',
+                '## Variáveis\n\nUse `const` por padrão e `let` quando o valor precisar mudar. Evite `var`.\n\n```js\nconst nome = "Giotto";\nlet idade = 31;\nidade += 1;\n```\n\n## Tipos primitivos\n\n- `string`, `number`, `boolean`\n- `null` e `undefined`\n- `bigint` e `symbol`\n\nO operador `typeof` ajuda a inspecionar o tipo de um valor.',
+              en: '## Variables\n\nUse `const` by default and `let` when the value has to change. Avoid `var`.\n\n```js\nconst name = "Giotto";\nlet age = 31;\nage += 1;\n```\n\n## Primitive types\n\n- `string`, `number`, `boolean`\n- `null` and `undefined`\n- `bigint` and `symbol`\n\nThe `typeof` operator helps inspect the type of a value.',
             },
           }),
           fileLesson({

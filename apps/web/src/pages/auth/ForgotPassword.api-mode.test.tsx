@@ -17,10 +17,10 @@ beforeEach(async () => {
 describe('forgot password (real API)', () => {
   it('does not offer the demo link: the e-mail is real and the demo token would be rejected', async () => {
     await renderApp('/forgot-password');
-    await userEvent.type(screen.getByLabelText('E-mail'), 'maria@example.com');
+    await userEvent.type(screen.getByLabelText('E-mail'), 'dante@example.com');
     await userEvent.click(screen.getByRole('button', { name: /send/i }));
 
-    expect(await screen.findByRole('status')).toHaveTextContent('maria@example.com');
+    expect(await screen.findByRole('status')).toHaveTextContent('dante@example.com');
     expect(screen.queryByRole('link', { name: /demo/i })).not.toBeInTheDocument();
     expect(screen.getByRole('link', { name: /back to sign in|sign in/i })).toBeInTheDocument();
   });

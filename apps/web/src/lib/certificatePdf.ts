@@ -9,7 +9,7 @@ export interface CertificatePdfContent {
   codeLine: string;
   /** Custom message from the course certificate template. */
   message?: string;
-  /** Signatory name and role, already joined (for example "Rafael Teixeira, Instrutor"). */
+  /** Signatory name and role, already joined (for example "Michelangelo Buonarroti, Instrutor"). */
   signatoryLine?: string;
 }
 

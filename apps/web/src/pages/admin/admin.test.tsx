@@ -44,9 +44,9 @@ describe('admin users', () => {
 
     expect((await listItems('Usuários')).length).toBe(14);
 
-    await user.type(screen.getByLabelText('Buscar usuários'), 'daniel');
+    await user.type(screen.getByLabelText('Buscar usuários'), 'einstein');
     await waitFor(async () => expect(await listItems('Usuários')).toHaveLength(1));
-    expect(screen.getByText('Daniel Whitaker')).toBeVisible();
+    expect(screen.getByText('Albert Einstein')).toBeVisible();
 
     await user.clear(screen.getByLabelText('Buscar usuários'));
     await chooseOption(user, screen.getByLabelText('Filtrar por papel'), 'Instrutor');
@@ -55,7 +55,7 @@ describe('admin users', () => {
     await chooseOption(user, screen.getByLabelText('Filtrar por papel'), 'Todos os papéis');
     await chooseOption(user, screen.getByLabelText('Filtrar por situação'), 'Desativado');
     await waitFor(async () => expect(await listItems('Usuários')).toHaveLength(1));
-    expect(screen.getByText('Diego Rocha')).toBeVisible();
+    expect(screen.getByText('Machado de Assis')).toBeVisible();
   });
 
   it('shows an empty state with a way to clear the filters', async () => {
@@ -84,15 +84,15 @@ describe('admin users', () => {
     const user = userEvent.setup();
     const { services } = await renderApp('/admin/users', { signInAs: 'admin' });
 
-    await user.click(await screen.findByRole('button', { name: 'Editar Lucas Ferreira' }));
+    await user.click(await screen.findByRole('button', { name: 'Editar Donatello Bardi' }));
     const dialog = await screen.findByRole('dialog', { name: 'Editar usuário' });
     await chooseOption(user, within(dialog).getByLabelText('Papel'), 'Instrutor');
     await user.click(within(dialog).getByRole('button', { name: 'Salvar' }));
 
     await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
-    expect((await services.users.getById(demoId('user-lucas'))).role).toBe('instructor');
+    expect((await services.users.getById(demoId('user-donatello'))).role).toBe('instructor');
     const row = (await listItems('Usuários')).find((item) =>
-      within(item).queryByText('Lucas Ferreira'),
+      within(item).queryByText('Donatello Bardi'),
     )!;
     expect(within(row).getByText('Instrutor')).toBeVisible();
   });
@@ -101,25 +101,25 @@ describe('admin users', () => {
     const user = userEvent.setup();
     const { services } = await renderApp('/admin/users', { signInAs: 'admin' });
 
-    await user.click(await screen.findByRole('button', { name: 'Desativar Camila Duarte' }));
+    await user.click(await screen.findByRole('button', { name: 'Desativar Marie Curie' }));
     const confirm = await screen.findByRole('alertdialog', { name: 'Desativar este usuário?' });
     await user.click(within(confirm).getByRole('button', { name: 'Desativar' }));
     await waitFor(async () =>
-      expect((await services.users.getById(demoId('user-camila'))).active).toBe(false),
+      expect((await services.users.getById(demoId('user-marie'))).active).toBe(false),
     );
 
-    await user.click(await screen.findByRole('button', { name: 'Reativar Diego Rocha' }));
+    await user.click(await screen.findByRole('button', { name: 'Reativar Machado de Assis' }));
     const reactivate = await screen.findByRole('alertdialog', { name: 'Reativar este usuário?' });
     await user.click(within(reactivate).getByRole('button', { name: 'Reativar' }));
     await waitFor(async () =>
-      expect((await services.users.getById(demoId('user-diego'))).active).toBe(true),
+      expect((await services.users.getById(demoId('user-machado'))).active).toBe(true),
     );
   });
 
   it('does not let the admin edit or deactivate their own account', async () => {
     await renderApp('/admin/users', { signInAs: 'admin' });
-    expect(await screen.findByRole('button', { name: 'Editar Marina Albuquerque' })).toBeDisabled();
-    expect(screen.getByRole('button', { name: 'Desativar Marina Albuquerque' })).toBeDisabled();
+    expect(await screen.findByRole('button', { name: 'Editar Leonardo da Vinci' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Desativar Leonardo da Vinci' })).toBeDisabled();
   });
 
   it('creates an invite and shows its link', async () => {
@@ -152,7 +152,7 @@ describe('admin grants', () => {
 
     await chooseOption(user, screen.getByLabelText('Filtrar por situação'), 'Revogado');
     await waitFor(async () => expect(await listItems('Concessões de acesso')).toHaveLength(1));
-    expect(screen.getByText('Juliana Prado')).toBeVisible();
+    expect(screen.getByText('Frida Kahlo')).toBeVisible();
 
     await chooseOption(user, screen.getByLabelText('Filtrar por situação'), 'Expirado');
     await waitFor(async () => {
@@ -161,46 +161,46 @@ describe('admin grants', () => {
     });
 
     await chooseOption(user, screen.getByLabelText('Filtrar por situação'), 'Todas as situações');
-    await user.type(screen.getByLabelText('Buscar por aluno'), 'thiago');
+    await user.type(screen.getByLabelText('Buscar por aluno'), 'raphael');
     await waitFor(async () => expect(await listItems('Concessões de acesso')).toHaveLength(2));
   });
 
   it('revokes an active grant after confirmation', async () => {
     const user = userEvent.setup();
-    const { services } = await renderApp('/admin/grants?q=felipe', { signInAs: 'admin' });
+    const { services } = await renderApp('/admin/grants?q=alan', { signInAs: 'admin' });
 
-    await user.click(await screen.findByRole('button', { name: /^Revogar acesso de Felipe/ }));
+    await user.click(await screen.findByRole('button', { name: /^Revogar acesso de Alan/ }));
     const confirm = await screen.findByRole('alertdialog', { name: 'Revogar acesso?' });
     await user.click(within(confirm).getByRole('button', { name: 'Revogar acesso' }));
 
     await waitFor(async () => {
-      const [grant] = await services.grants.list({ userId: demoId('user-felipe') });
+      const [grant] = await services.grants.list({ userId: demoId('user-alan') });
       expect(grant?.status).toBe('revoked');
     });
   });
 
   it('extends an expired grant back to active, and offers no actions on revoked ones', async () => {
     const user = userEvent.setup();
-    const { services } = await renderApp('/admin/grants?q=juliana', { signInAs: 'admin' });
+    const { services } = await renderApp('/admin/grants?q=frida', { signInAs: 'admin' });
 
     const rows = await listItems('Concessões de acesso');
     expect(rows).toHaveLength(2);
     const revokedRow = rows.find((row) => within(row).queryByText('Revogado'))!;
     expect(within(revokedRow).queryByRole('button')).not.toBeInTheDocument();
 
-    await user.click(screen.getByRole('button', { name: /^Alterar validade de Juliana/ }));
+    await user.click(screen.getByRole('button', { name: /^Alterar validade de Frida/ }));
     const dialog = await screen.findByRole('dialog', { name: 'Alterar validade do acesso' });
     await user.click(within(dialog).getByRole('button', { name: 'Salvar' }));
 
     await waitFor(async () => {
-      const grants = await services.grants.list({ userId: demoId('user-juliana') });
+      const grants = await services.grants.list({ userId: demoId('user-frida') });
       expect(grants.filter((grant) => grant.status === 'active')).toHaveLength(1);
     });
   });
 
   it('validates that the new expiry date is chosen', async () => {
     const user = userEvent.setup();
-    await renderApp('/admin/grants?q=patricia', { signInAs: 'admin' });
+    await renderApp('/admin/grants?q=hipatia', { signInAs: 'admin' });
 
     const [button] = await screen.findAllByRole('button', { name: /^Alterar validade de/ });
     await user.click(button!);
