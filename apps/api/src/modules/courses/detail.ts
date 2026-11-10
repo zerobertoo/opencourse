@@ -34,6 +34,7 @@ function toCourse(row: CourseRow, translations: CourseTranslationRow[]): Course 
     slug: row.slug,
     status: row.status,
     coverImageUrl: row.coverImageUrl,
+    bannerImageUrl: row.bannerImageUrl,
     instructorId: row.instructorId,
     defaultLocale: toLocale(row.defaultLocale),
     sequentialOrder: row.sequentialOrder,

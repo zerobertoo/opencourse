@@ -83,6 +83,39 @@ export function uploadedCoverId(courseId: string, url: string | null): string | 
   return url?.startsWith(prefix) ? url.slice(prefix.length) : null;
 }
 
+/** Largest course banner image, and the types accepted (same rules as a cover). */
+export const BANNER_MAX_BYTES = COVER_MAX_BYTES;
+export const BANNER_CONTENT_TYPES = COVER_CONTENT_TYPES;
+
+export const bannerFileParamsSchema = z.object({ id: idSchema, bannerId: idSchema });
+
+export const createBannerUploadRequestSchema = z
+  .object({
+    contentType: z.enum(BANNER_CONTENT_TYPES),
+    sizeBytes: z.number().int().positive().max(BANNER_MAX_BYTES),
+  })
+  .strict();
+export type CreateBannerUploadRequest = z.infer<typeof createBannerUploadRequestSchema>;
+
+export const createBannerUploadResponseSchema = z.object({
+  bannerId: idSchema,
+  uploadUrl: z.string(),
+});
+export type CreateBannerUploadResponse = z.infer<typeof createBannerUploadResponseSchema>;
+
+export const completeBannerUploadRequestSchema = z.object({ bannerId: idSchema }).strict();
+
+/** API path of an uploaded banner; the `bannerImageUrl` of a course. It changes with every upload. */
+export function uploadedBannerPath(courseId: string, bannerId: string): string {
+  return `/api/v1/courses/${courseId}/banner/${bannerId}`;
+}
+
+/** The banner id inside `uploadedBannerPath`, or null for any other address. */
+export function uploadedBannerId(courseId: string, url: string | null): string | null {
+  const prefix = `/api/v1/courses/${courseId}/banner/`;
+  return url?.startsWith(prefix) ? url.slice(prefix.length) : null;
+}
+
 /** API path of an uploaded caption; the `url` of its entry in a lesson's captions. */
 export function uploadedCaptionPath(lessonId: string, locale: string): string {
   return `/api/v1/lessons/${lessonId}/captions/${locale}.vtt`;

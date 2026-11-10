@@ -49,6 +49,7 @@ describe('progress schemas', () => {
       slug: 'c',
       status: 'draft',
       coverImageUrl: null,
+      bannerImageUrl: null,
       instructorId: optionId,
       defaultLocale: 'en',
       sequentialOrder: false,

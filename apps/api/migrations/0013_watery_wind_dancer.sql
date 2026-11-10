@@ -1,0 +1,1 @@
+ALTER TABLE "courses" ADD COLUMN "banner_image_url" text;

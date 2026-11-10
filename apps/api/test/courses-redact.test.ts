@@ -9,6 +9,7 @@ const course = {
   slug: 's',
   status: 'published',
   coverImageUrl: null,
+  bannerImageUrl: null,
   instructorId: id(2),
   defaultLocale: 'en',
   sequentialOrder: false,
