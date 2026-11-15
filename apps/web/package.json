@@ -35,7 +35,7 @@
     "@videojs/react": "10.3.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
-    "i18next": "^26.7.2",
+    "i18next": "^27.1.1",
     "i18next-browser-languagedetector": "^8.3.0",
     "i18next-icu": "^2.7.0",
     "intl-messageformat": "^12.1.5",
