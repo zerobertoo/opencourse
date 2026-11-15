@@ -2,7 +2,9 @@
 
 All notable changes to OpenCourse. Releases are tagged `vX.Y.Z`; the PRD in [docs/PRD.md](docs/PRD.md) describes the original intent.
 
-## Unreleased
+## 1.1.0 (2026-11-15)
+
+Changes since [v1.0.0](https://github.com/zerobertoo/opencourse/compare/v1.0.0...v1.1.0). Migrations are additive only (a nullable banner column and four indexes).
 
 ### Added
 
@@ -16,6 +18,17 @@ All notable changes to OpenCourse. Releases are tagged `vX.Y.Z`; the PRD in [doc
 
 - Mailpit now runs only with the `dev` Compose profile (`docker compose --profile dev up`; `pnpm infra` still starts it). A plain `docker compose up` no longer starts a development inbox, so set `SMTP_*` (or save an SMTP server under Administration → Settings) to deliver e-mail, or add `--profile dev` to keep capturing it.
 - On upgrade, an instance that never saved the setting gets that default, so an admin who already pastes links from one of the other providers has to turn it on under Plugins before adding new ones.
+- Native selects, checkboxes, radios, date and number inputs and file pickers were replaced by shared components, so forms look and behave the same across browsers.
+- The Postgres driver moved to 4.0.0, and i18next to 27 with react-i18next 18, plus routine dependency and Docker base image updates.
+- The curriculum reorder writes modules and lessons with two statements instead of one per row, so it holds the course lock for much less time.
+- Demo data and test fixtures use names of historical figures.
+
+### Fixed
+
+- Closed mobile staff drawer is no longer focusable, "Mark complete" no longer sets a redundant `aria-pressed`, and touch targets, headings and small texts follow the accessibility audit.
+- The Plugins page shows loading and error states for the video providers.
+- A minimatch ReDoS vulnerability in the lint toolchain was patched (development only).
+- The webhook fan-out fails with a clear error on an invalid event name.
 
 ## 1.0.0 (2026-10-27)
 
